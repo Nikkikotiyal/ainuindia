@@ -1,0 +1,24 @@
+
+.ainuLogo {
+  filter: brightness(0) invert(1);
+  height: 5ch;
+}
+
+
+// footer {
+//   position: relative;
+//   bottom: 0;
+//   width: 100%;
+// }
+body, html {
+  background-color: white !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex-grow: 1;
+  padding-bottom: 5rem; /* Ensure footer space */
+  overflow-y: auto;
+}

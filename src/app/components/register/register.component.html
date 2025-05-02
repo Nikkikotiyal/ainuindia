@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-[#0b0b2e] flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+
+      <div class="px-6 py-4 border-b border-gray-200 text-center">
+        <div class="text-left">
+          <button class="text-gray-500 hover:text-gray-800 text-xl">←</button>
+        </div>
+        <h2 class="font-semibold text-gray-600 text-md mt-2">Sign up with</h2>
+
+        <div class="flex justify-center gap-4 my-4">
+          <button class="bg-white text-sm px-4 py-2 border rounded shadow flex items-center gap-2">
+            <img src="https://img.icons8.com/ios-filled/24/000000/github.png" />
+            GITHUB
+          </button>
+          <button class="bg-white text-sm px-4 py-2 border rounded shadow flex items-center gap-2">
+            <img src="https://img.icons8.com/color/24/000000/google-logo.png" />
+            GOOGLE
+          </button>
+        </div>
+
+        <p class="text-sm text-gray-400 font-medium">Or sign up with credentials</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="px-6 py-6 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1 uppercase">Name</label>
+          <input formControlName="name" placeholder="Your Name"
+            class="w-full px-4 py-3 rounded border border-gray-300 bg-white text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1 uppercase">Email</label>
+          <input formControlName="email" type="email" placeholder="Your Email"
+            class="w-full px-4 py-3 rounded border border-gray-300 bg-white text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1 uppercase">Password</label>
+          <input formControlName="password" type="password" placeholder="Password"
+            class="w-full px-4 py-3 rounded border border-gray-300 bg-white text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1 uppercase">Confirm Password</label>
+          <input formControlName="confirmPassword" type="password" placeholder="Confirm Password"
+            class="w-full px-4 py-3 rounded border border-gray-300 bg-white text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <button type="submit"
+          class="w-full bg-[#0b0b2e] hover:bg-[#1a1a40] text-white uppercase font-bold text-sm py-3 rounded shadow transition">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

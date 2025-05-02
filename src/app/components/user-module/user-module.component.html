@@ -1,0 +1,48 @@
+<div class="fixed inset-x-0 top-[4rem] bg-white shadow-lg p-6 flex flex-col h-[calc(100vh-4rem)] w-screen z-50">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold">User Module List</h2>
+
+  </div>
+
+  <div class="overflow-y-auto flex-grow">
+    <table class="w-full border-collapse border border-gray-300 text-sm">
+      <thead class="sticky top-0 bg-gray-200 z-10">
+        <tr class="text-left">
+          <th class="px-4 py-2 border"><input type="checkbox" (change)="toggleAll($event)" /></th>
+          <th class="px-4 py-2 border">Module ID</th>
+          <th class="px-4 py-2 border">Module Name</th>
+          <th class="px-4 py-2 border">Report Name</th>
+          <th class="px-4 py-2 border">View</th>
+          <th class="px-4 py-2 border">Print</th>
+          <th class="px-4 py-2 border">Export</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let module of paginatedModules" class="hover:bg-gray-50 transition">
+          <td class="px-4 py-2 border"><input type="checkbox" [(ngModel)]="module.selected" /></td>
+          <td class="px-4 py-2 border">{{ module.Moduleid }}</td>
+          <td class="px-4 py-2 border">{{ module["MODLE NAME "] }}</td>
+          <td class="px-4 py-2 border">{{ module["REPORT NAME"] }}</td>
+          <td class="px-4 py-2 border"><input type="checkbox" [(ngModel)]="module.viewChecked" /></td>
+          <td class="px-4 py-2 border"><input type="checkbox" [(ngModel)]="module.printChecked" /></td>
+          <td class="px-4 py-2 border"><input type="checkbox" [(ngModel)]="module.exportChecked" /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="flex justify-between items-center mt-6">
+    <button (click)="prevPage()" [disabled]="currentPage === 1"
+      class="px-5 py-2 bg-teal-700 text-white rounded-lg shadow-md transition disabled:opacity-50">
+      ← Previous
+    </button>
+
+    <span class="text-sm text-gray-700 font-semibold">Page {{ currentPage }} of {{ totalPages }}</span>
+
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+      class="px-5 py-2 bg-teal-700 text-white rounded-lg shadow-md transition disabled:opacity-50">
+      Next →
+    </button>
+  </div>
+</div>

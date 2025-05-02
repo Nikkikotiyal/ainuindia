@@ -1,0 +1,66 @@
+<div class="flex flex-col md:flex-row h-screen">
+  <!-- Left Panel (Form Area) -->
+  <div class="w-full md:w-1/2 bg-teal-700 flex justify-center items-center p-4">
+    <form [formGroup]="loginForm" class="bg-white p-6 md:p-8 rounded-2xl shadow-md w-full max-w-md space-y-4">
+      <!-- Back Arrow & Social Login -->
+      <div class="pb-4 border-b border-gray-200 text-center">
+        <h2 class="font-semibold text-gray-600 text-md">Sign in with</h2>
+        <div class="flex justify-center gap-4 my-4">
+          <button type="button" class="bg-white text-sm px-4 py-2 border rounded shadow flex items-center gap-2">
+            <img src="https://img.icons8.com/color/24/000000/facebook.png" />
+            FACEBOOK
+          </button>
+          <button type="button" class="bg-white text-sm px-4 py-2 border rounded shadow flex items-center gap-2">
+            <img src="https://img.icons8.com/color/24/000000/google-logo.png" />
+            GOOGLE
+          </button>
+        </div>
+        <p class="text-sm text-gray-400 font-medium">Or sign in with credentials</p>
+      </div>
+
+      <!-- Credential Inputs -->
+      <h2 class="text-center text-xl font-semibold text-gray-800 mt-4">SIGN IN</h2>
+
+      <input
+        type="email"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+        formControlName="emailOrUsername"
+        placeholder="Your Email"
+        [ngClass]="{ 'is-invalid': submitted && f['emailOrUsername'].errors }"
+        autocomplete="off"
+      />
+      <div *ngIf="f['emailOrUsername']?.touched && f['emailOrUsername'].errors" class="text-red-600 text-sm">
+        <div *ngIf="f['emailOrUsername'].errors['required']">Email is required</div>
+      </div>
+
+      <input
+        type="password"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+        formControlName="password"
+        placeholder="Your Password"
+        [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+      />
+      <div *ngIf="f['password']?.touched && f['password'].errors" class="text-red-600 text-sm">
+        <div *ngIf="f['password'].errors['required']">Password is required</div>
+      </div>
+
+      <button
+        type="submit"
+        (click)="onLogin()"
+        class="w-full bg-teal-700 text-white py-2 rounded-md hover:bg-teal-800 transition-colors"
+      >
+        Login
+      </button>
+
+      <div *ngIf="loginError" class="text-red-600 text-sm text-center mt-2">{{ loginError }}</div>
+
+      <p class="text-right text-sm text-gray-500 mt-2 cursor-pointer hover:underline">Forgot Password?</p>
+    </form>
+  </div>
+
+  <!-- Right Panel (Background Image) -->
+  <div
+    class="hidden md:block md:w-1/2 bg-cover bg-center"
+    style="background-image: url('assets/c1e4f92fd014f025cf45d378b573977d.jpg');"
+  ></div>
+</div>

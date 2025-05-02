@@ -1,0 +1,284 @@
+<div>
+  <div class="flex h-screen">
+    <header
+      class="bg-gray-900 text-white flex justify-between items-center px-2 py-2 fixed w-full top-0 z-50"
+    >
+      <div class="flex items-center space-x-4">
+        <img
+          src="https://ainuindia.org/img/ainu-rebranding-new-logo.svg"
+          alt="AINU Logo"
+          class="ainuLogo"
+        />
+        <button (click)="toggleSidebar()" class="text-2xl">☰</button>
+      </div>
+    </header>
+
+    <div>
+      <aside
+        class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white pt-16 transform transition-transform duration-300 z-40"
+        [ngClass]="{
+          '-translate-x-full': !isSidebarOpen,
+          'translate-x-0': isSidebarOpen
+        }"
+      >
+        <nav class="space-y-2">
+          <a
+            class="block px-6 py-3 hover:bg-gray-700"
+            (click)="resetDashboard()"
+            >Dashboard</a
+          >
+          <a (click)="openUserList()" class="block px-6 py-3 hover:bg-gray-700">
+            User
+          </a>
+          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/services"
+            >Document</a
+          >
+          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/contact"
+            >Bills</a
+          >
+          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/contact"
+            >Summary</a
+          >
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main
+        class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-5"
+        [ngClass]="{
+          'ml-64': isSidebarOpen && !showUserList,
+          'ml-0': !isSidebarOpen || showUserList
+        }"
+      >
+        <div class="flex-1 flex flex-col" *ngIf="!showUserList">
+          <!-- Dashboard Cards -->
+          <div>
+            <div
+              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            >
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold text-sm md:text-base lg:text-lg"
+              >
+                <i class="fas fa-hospital fa-2x text-teal-600"></i>
+                <div>ADT</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-file-invoice-dollar fa-2x text-teal-600"></i>
+                <div>A/R</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-boxes-stacked fa-2x text-teal-600"></i>
+                <div>Asset Management</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fas fa-file-invoice-dollar fa-2x text-teal-600"></i>
+                <div>Billing</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-notes-medical fa-2x text-teal-600"></i>
+                <div>D/C Summary</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-procedures fa-2x text-teal-600"></i>
+                <div>Day Care</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fas fa-user-md fa-2x text-teal-600"></i>
+                <div>Diagnostics Admin</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-x-ray fa-2x text-teal-600"></i>
+                <div>Diagnostics</div>
+              </div>
+            </div>
+
+            <div
+              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            >
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fas fa-utensils fa-2x text-teal-600"></i>
+                <div>Diet</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-ambulance text-teal-600"></i>
+                <div>Emergency</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-concierge-bell text-teal-600"></i>
+                <div>Front Office</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-file-alt text-teal-600"></i>
+                <div>Incident Report</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-warehouse text-teal-600"></i>
+
+                <div>Inventory</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-kitchen-set text-teal-600"></i>
+
+                <div>Kitchen</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-vials text-teal-600"></i>
+                <div>Lab Medicine Admin</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-flask text-teal-600"></i>
+                <div>Lab Medicine</div>
+              </div>
+            </div>
+            <div
+              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            >
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-cogs fa-flask text-teal-600"></i>
+                <div>Masters</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              >
+                <i class="fa-solid fa-chart-bar text-teal-600"></i>
+                <div>MIS Report</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-folder text-teal-600"></i>
+                <div>MRD</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-user-nurse text-teal-600"></i>
+                <div>Nursing</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-procedures text-teal-600"></i>
+                <div>Operation Theatre</div>
+              </div>
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-umbrella-beach text-teal-600"></i>
+                <div>Package And Plans</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-user-md text-teal-600"></i>
+                <div>Physician</div>
+              </div>
+
+              <div
+                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              >
+                <i class="fa-solid fa-vial text-teal-600"></i>
+                <div>Sample Collection</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- User Full-screen table -->
+    <div *ngIf="showUserList" class="fixed inset-x-0 top-[4rem] bg-white shadow-lg p-6 flex flex-col h-[calc(100vh-4rem)] w-screen z-50">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">User List</h2>
+        <button
+          (click)="openAddUserDialog()"
+          class="bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 transition"
+        >
+          ➕ Add User
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-grow">
+        <table class="w-full border-collapse border border-gray-300 text-sm">
+          <thead class="sticky top-0 bg-gray-200 z-10">
+            <tr class="text-left">
+              <th class="px-4 py-2 border font-semibold">Id</th>
+              <th class="px-4 py-2 border font-semibold">Name</th>
+              <th class="px-4 py-2 border font-semibold">Email</th>
+              <th class="px-4 py-2 border font-semibold">MobileNo</th>
+              <th class="px-4 py-2 border font-semibold">Designation</th>
+              <th class="px-4 py-2 border font-semibold">Status</th>
+              <th class="px-4 py-2 border font-semibold text-center">Module</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users" class="hover:bg-gray-50 transition">
+              <td class="px-4 py-2 border">{{ user._id }}</td>
+              <td class="px-4 py-2 border">{{ user.UserName }}</td>
+              <td class="px-4 py-2 border">{{ user.Email }}</td>
+              <td class="px-4 py-2 border">{{ user.MobileNo }}</td>
+              <td class="px-4 py-2 border">{{ user.Designation }}</td>
+              <td class="px-4 py-2 border">{{ user.Status }}</td>
+              <td class="px-4 py-2 border text-center">
+                <button
+                  (click)="openModule(user)"
+                  class="bg-teal-700 text-white px-3 py-1 rounded hover:bg-teal-800 transition"
+                >
+                  Module
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="bg-gray-900 text-white text-center p-3 fixed bottom-0 w-full">
+    <p>&copy; 2025 AINU. All Rights Reserved.</p>
+  </footer>
+</div>
