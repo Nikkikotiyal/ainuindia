@@ -1,0 +1,44 @@
+<div class="p-6 bg-white rounded-lg shadow-lg max-w-sm mx-auto">
+  <h2 class="text-lg font-bold text-teal-700 text-center">Select Your Location</h2>
+
+  <div class="mt-4 space-y-3 text-sm">
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Banjara Hills']" class="accent-teal-600">
+      <span class="font-semibold">Banjara Hills</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Dilsukhnagar']" class="accent-teal-600">
+      <span class="font-semibold">Dilsukhnagar</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['HITECH city']" class="accent-teal-600">
+      <span class="font-semibold">HITECH city</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Visakhapatnam']" class="accent-teal-600">
+      <span class="font-semibold">Visakhapatnam</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Siliguri']" class="accent-teal-600">
+      <span class="font-semibold">Siliguri</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Secunderabad']" class="accent-teal-600">
+      <span class="font-semibold">Secunderabad</span>
+    </label>
+
+    <label class="flex items-center space-x-3 bg-gray-100 p-2 rounded-md">
+      <input type="checkbox" [(ngModel)]="selectedLocations['Chennai']" class="accent-teal-600">
+      <span class="font-semibold">Chennai</span>
+    </label>
+  </div>
+
+  <button (click)="confirmLocation()" class="mt-5 bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition w-full">
+    Confirm Selection
+  </button>
+</div>

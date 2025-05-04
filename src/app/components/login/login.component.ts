@@ -11,6 +11,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../api.service';
+import { LocationPopupComponentComponent } from '../location-popup-component/location-popup-component.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   standalone: true,
@@ -26,8 +28,10 @@ export class LoginComponent {
     email: new FormControl(''),
     password: new FormControl(''),
   });
+  userLocation: any;
 
   constructor(
+    private dialog: MatDialog,
     private fb: FormBuilder,
     private apiService: ApiService,
     private router: Router
@@ -73,6 +77,17 @@ export class LoginComponent {
       next: (response) => {
         console.log('✅ Login Successful:', response);
         this.router.navigate(['/dashboard']);
+        const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
+          width: '400px',
+        });
+
+        // ✅ Ensure `dialogRef` is correctly used
+        dialogRef.afterClosed().subscribe(selectedLocation => {
+          if (selectedLocation) {
+            this.userLocation = selectedLocation;
+            console.log('✅ Selected Location:', this.userLocation);
+          }
+        });
       },
       error: (error) => {
         console.error('❌ Login Failed:', error);

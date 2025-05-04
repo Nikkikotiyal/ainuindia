@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ApiService } from '../../api.service';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './add-user.component.scss',
 })
 export class AddUserComponent {
+  @Output() userAdded = new EventEmitter<void>();
   dropdownOpen: boolean = false;
   searchText: string = '';
   allLocations: string[] = ['Banjara Hills', 'Dilsukhnagar', 'HITECH city', 'Visakhapatnam', 'Siliguri', 'Secunderabad','Chennai'];
@@ -61,15 +62,19 @@ export class AddUserComponent {
       )
 
       .subscribe({
-        next: (res) => {
-          console.log('User added successfully:', res);
+        next: (res:any) => {
+          console.log('✅ User added successfully:', res);
+          this.userAdded.emit(res);
+          console.log(res)// ✅ Notify DashboardComponent
           this.dialogRef.close(true);
         },
         error: (err) => {
-          console.error('Error creating user:', err);
-        },
+          console.error('❌ Error creating user:', err);
+        }
       });
   }
+
+
   filterLocations() {
     this.filteredLocations = this.allLocations.filter(loc =>
       loc.toLowerCase().includes(this.searchText.toLowerCase())
@@ -91,5 +96,8 @@ export class AddUserComponent {
   removeLocation(location: string) {
     this.selectedLocations = this.selectedLocations.filter(l => l !== location);
   }
+
+
+
 }
 

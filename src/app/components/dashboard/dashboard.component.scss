@@ -22,3 +22,21 @@ main {
   padding-bottom: 5rem; /* Ensure footer space */
   overflow-y: auto;
 }
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.email {
+  position: absolute;
+  padding: 5px;
+  margin-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  // font-size: 16px;
+}
