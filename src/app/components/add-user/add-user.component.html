@@ -1,86 +1,108 @@
-<div class="dialog-container p-4 bg-white rounded-lg shadow-md">
+<!-- <div class="dialog-container p-4 bg-white rounded-lg shadow-md">
   <h2 class="text-lg font-bold mb-3">Add User</h2>
-  <button
-    type="submit"
-    (click)="addUserSuccesfully()"
-    class="bg-teal-700 text-white w-full py-2 rounded-lg hover:bg-teal-800 transition"
-  >
-    Add
-  </button>
-  <form>
-    <label class="block mb-1">Name:</label>
-    <input
-      type="text"
-      class="w-full p-2 border rounded mb-3"
-      placeholder="Enter name"
-      [(ngModel)]="formData.UserName"
-      name="UserName"
-    />
 
-    <label class="block mb-1">Email:</label>
-    <input
-      type="email"
-      class="w-full p-2 border rounded mb-3"
-      placeholder="Enter email"
-      [(ngModel)]="formData.Email"
-      name="Email"
-    />
+  <form class="grid grid-cols-2 gap-4 p-6 bg-white rounded-lg shadow-lg max-w-lg mx-auto">
 
-    <label class="block mb-1">MobileNo:</label>
-    <input
-      type="number"
-      class="w-full p-2 border rounded mb-3"
-      placeholder="Enter mobile no"
-      [(ngModel)]="formData.MobileNo"
-      name="MobileNo"
-    />
+    <div>
+      <label class="block mb-1">Name:</label>
+      <input type="text" class="w-full p-2 border rounded" placeholder="Enter name" [(ngModel)]="formData.UserName" name="UserName"/>
 
-    <label class="block mb-1">Designation:</label>
-    <input
-      type="text"
-      class="w-full p-2 border rounded mb-3"
-      placeholder="Enter designation"
-      [(ngModel)]="formData.Designation"
-      name="Designation"
-    />
+      <label class="block mb-1 mt-3">Email:</label>
+      <input type="email" class="w-full p-2 border rounded" placeholder="Enter email" [(ngModel)]="formData.Email" name="Email"/>
 
-    <label class="block mb-1">Status:</label>
-    <select
-      class="w-full p-2 border rounded mb-3"
-      [(ngModel)]="formData.Status"
-      name="Status"
-    >
-      <option value="A">Active</option>
-      <option value="I">Inactive</option>
-    </select>
-    <div class="dropdown-container">
-      <div class="selected-items">
-        <span *ngFor="let loc of selectedLocations" class="selected-tag">
-          {{ loc }}
-          <button class="remove-btn" (click)="removeLocation(loc)">×</button>
-        </span>
-      </div>
+      <label class="block mb-1 mt-3">Mobile No:</label>
+      <input type="number" class="w-full p-2 border rounded" placeholder="Enter mobile no" [(ngModel)]="formData.MobileNo" name="MobileNo"/>
+    </div>
 
-      <input
-        type="text"
-        placeholder="Select locations..."
-        [value]="selectedLocations.join(', ')"
-        readonly
-        class="search-box"
-        (focus)="dropdownOpen = true"
-      />
-      <div *ngIf="dropdownOpen" class="dropdown">
-        <div class="dropdown-list">
-          <label *ngFor="let location of filteredLocations">
-            <input
-              type="checkbox"
-              [checked]="selectedLocations.includes(location)"
-              (change)="toggleLocation(location)"
-            />
-            {{ location }}
-          </label>
+    <div>
+      <label class="block mb-1">Designation:</label>
+      <input type="text" class="w-full p-2 border rounded" placeholder="Enter designation" [(ngModel)]="formData.Designation" name="Designation"/>
+
+      <label class="block mb-1 mt-3">Status:</label>
+      <select class="w-full p-2 border rounded" [(ngModel)]="formData.Status" name="Status">
+        <option value="A">Active</option>
+        <option value="I">Inactive</option>
+      </select>
+
+
+      <label class="block mb-1 mt-3">Location:</label>
+      <div class="relative">
+        <input type="text" placeholder="Select locations..." [value]="selectedLocations.join(', ')" readonly class="w-full p-2 border rounded cursor-pointer" (focus)="dropdownOpen = true"/>
+
+        <div *ngIf="dropdownOpen" class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10">
+          <div class="p-2 text-sm">
+            <label *ngFor="let location of filteredLocations" class="block p-2 hover:bg-gray-100 cursor-pointer">
+              <input type="checkbox" [checked]="selectedLocations.includes(location)" (change)="toggleLocation(location)"/> {{ location }}
+            </label>
+          </div>
         </div>
       </div>
     </div>
   </form>
-</div>
+  <button
+  type="submit"
+  (click)="addUserSuccesfully()"
+  class="bg-teal-700 text-white w-full py-2 rounded-lg hover:bg-teal-800 transition"
+>
+  Add
+</button>
+
+</div> -->
+
+
+<form class="grid grid-cols-2 gap-4 p-4  bg-white rounded-lg shadow-lg max-w-lg mx-auto">
+  <!-- Header with "Add User" Icon -->
+  <div class="col-span-2 flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold text-teal-700">Add User</h2>
+    <span class="text-teal-600 text-2xl">
+      <i class="fas fa-user-plus"></i> <!-- FontAwesome Add User Icon -->
+    </span>
+  </div>
+
+  <!-- Left Column -->
+  <div>
+    <label class="block mb-1">Name:</label>
+    <input type="text" class="w-full p-2 border rounded" placeholder="Enter name" [(ngModel)]="formData.UserName" name="UserName"/>
+
+    <label class="block mb-1 mt-3">Email:</label>
+    <input type="email" class="w-full p-2 border rounded" placeholder="Enter email" [(ngModel)]="formData.Email" name="Email"/>
+
+    <label class="block mb-1 mt-3">Mobile No:</label>
+    <input type="number" class="w-full p-2 border rounded" placeholder="Enter mobile no" [(ngModel)]="formData.MobileNo" name="MobileNo"/>
+  </div>
+
+  <!-- Right Column -->
+  <div>
+    <label class="block mb-1">Designation:</label>
+    <input type="text" class="w-full p-2 border rounded" placeholder="Enter designation" [(ngModel)]="formData.Designation" name="Designation"/>
+
+    <label class="block mb-1 mt-3">Status:</label>
+    <select class="w-full p-2 border rounded" [(ngModel)]="formData.Status" name="Status">
+      <option value="A">Active</option>
+      <option value="I">Inactive</option>
+    </select>
+
+    <!-- Location Dropdown -->
+    <label class="block mb-1 mt-3">Location:</label>
+    <div class="relative">
+      <input type="text" placeholder="Select locations..." [value]="selectedLocations.join(', ')"
+             readonly class="w-full p-2 border rounded cursor-pointer" (focus)="dropdownOpen = true"/>
+
+      <div *ngIf="dropdownOpen" class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10">
+        <div class="p-2 text-sm">
+          <label *ngFor="let location of filteredLocations" class="block p-2 hover:bg-gray-100 cursor-pointer">
+            <input type="checkbox" [checked]="selectedLocations.includes(location)"
+                   (change)="toggleLocation(location)"/> {{ location }}
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  <div class="col-span-2 mt-4 flex justify-center">
+    <button class="bg-teal-600 text-white px-5 py-2 rounded hover:bg-teal-700 transition flex items-center"  (click)="addUserSuccesfully()">
+      <i class="fas fa-user-plus mr-2"></i> Add User
+    </button>
+  </div>
+</form>

@@ -35,7 +35,11 @@ export class DashboardComponent implements AfterViewInit {
   superAdminEmail: string = '';
   activePage = 'dashboard';
   user: any = {};
-  chosenLocation:  any = {};
+  chosenLocation: any = {};
+  userEmail: string = '';
+  searchTerm: string = '';
+  sortColumn: string = '';
+sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private apiService: ApiService,
@@ -46,25 +50,31 @@ export class DashboardComponent implements AfterViewInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
+      this.userEmail = loggedInUser.Email || '';
+      console.log('logged user', this.userEmail);
+    }
     this.selectedUser = this.data.length > 0 ? this.data[0] : null;
     this.apiService.getUsers().subscribe(
       (data: any) => {
-
         this.users = data;
-        const superAdmin = data.find((user: { Role: string; }) => user.Role === 'SuperAdmin');
+        console.log('userdata', this.users);
+        this.users = data;
+        this.userEmail = this.users[0].Email;
+        const superAdmin = data.find(
+          (user: { Role: string }) => user.Role === 'SuperAdmin'
+        );
         this.user = superAdmin ? superAdmin.Email : 'No SuperAdmin Found';
-        console.log('Extracted SuperAdmin Email:', this.user); // 🔍 Debugging
-        this.chosenLocation = superAdmin?.Location || 'Location Not Selected';
+        this.chosenLocation = superAdmin?.Location ?? 'Default Location';
+        console.log(superAdmin?.Location);
         this.updatePagination();
-
       },
       (error) => {
         console.error('Error fetching users:', error);
       }
     );
-
-
 
     this.apiService.getModules().subscribe(
       (data: any) => {
@@ -77,6 +87,12 @@ export class DashboardComponent implements AfterViewInit {
       }
     );
   }
+
+  statusMap: any = {
+    'A': 'Active',
+    'I': 'Inactive',
+    'S': 'Suspended'
+  };
 
   ngAfterViewInit() {}
 
@@ -109,6 +125,7 @@ export class DashboardComponent implements AfterViewInit {
 
         this.apiService.getUsers().subscribe((data: any) => {
           this.users = data; // ✅ Assign response to the `users` array
+          this.users = [...this.users];
           console.log('Updated Users:', this.users);
         });
       }
@@ -116,7 +133,6 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   openModuleList(user: any) {
-
     this.showModuleList = true;
     this.showUserList = false;
     this.isSidebarOpen = false;
@@ -160,5 +176,36 @@ export class DashboardComponent implements AfterViewInit {
     this.showUserList = false;
     this.isSidebarOpen = false;
     this.cdr.detectChanges();
+  }
+
+  filterUsers() {
+    const term = this.searchTerm.toLowerCase().trim();
+    this.users = this.users.filter(user =>
+      user.UserName.toLowerCase().includes(term) ||
+      user.Email.toLowerCase().includes(term)
+    );
+  }
+  clearSearch() {
+    this.searchTerm = '';
+    this.users = [...this.users];
+  }
+
+  sortData(column: string) {
+    if (this.sortColumn === column) {
+      // Toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.users.sort((a, b) => {
+      const valA = a[column]?.toString().toLowerCase() || '';
+      const valB = b[column]?.toString().toLowerCase() || '';
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
   }
 }

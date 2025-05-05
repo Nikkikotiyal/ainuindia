@@ -21,7 +21,12 @@ export class ApiService {
         }
       )
       .pipe(
-        tap(() => console.log('✅ Request sent successfully')), // Confirm request execution
+        tap((loggedInUser) => {
+          console.log('✅ Request sent successfully');
+          // Store user data in localStorage after successful login
+          localStorage.setItem('user', JSON.stringify(loggedInUser));
+        }),
+
         catchError((error) => {
           console.error('❌ Login request failed:', error);
           return throwError(() => new Error('Login failed'));
@@ -40,19 +45,19 @@ export class ApiService {
     Role: string,
     MobileNo: string,
     Status: string,
-    Location:string
+    Location: string
   ) {
     return this.http.post(
       `${this.baseUrl}/signup`,
       {
-        username: UserName,          // ✅ lowercase key
+        username: UserName, // ✅ lowercase key
         password: Password,
         designation: Designation,
         email: Email,
         role: Role,
-        mobileNo: MobileNo,          // ✅ lowercase key
+        mobileNo: MobileNo, // ✅ lowercase key
         status: Status,
-        location:Location
+        location: Location,
       },
       {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -60,8 +65,7 @@ export class ApiService {
     );
   }
 
-
-getModules() {
-  return this.http.get<any[]>(`${this.baseUrl}/getModule`);; // or /getModule
-}
+  getModules() {
+    return this.http.get<any[]>(`${this.baseUrl}/getModule`); // or /getModule
+  }
 }

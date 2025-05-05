@@ -97,7 +97,5 @@ export class AddUserComponent {
     this.selectedLocations = this.selectedLocations.filter(l => l !== location);
   }
 
-
-
 }
 

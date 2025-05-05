@@ -8,34 +8,37 @@ import { MatDialogRef } from '@angular/material/dialog';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './location-popup-component.component.html',
-  styleUrls: ['./location-popup-component.component.scss'] // ✅ Fix typo (plural)
+  styleUrls: ['./location-popup-component.component.scss'], // ✅ Fix typo (plural)
 })
 export class LocationPopupComponentComponent {
-  constructor(private dialogRef: MatDialogRef<LocationPopupComponentComponent>) {}
+  constructor(
+    private dialogRef: MatDialogRef<LocationPopupComponentComponent>
+  ) {}
 
-  selectedLocations: Record<string, boolean> = {
-    Banjara_Hills: false,
-    Dilsukhnagar: false,
-    HITECH_city: false,
-    Visakhapatnam: false,
-    Siliguri: false,
-    Secunderabad: false,
-    Chennai: false,
-  };
+  isDropdownOpen: boolean = false;
+  selectedLocation: string = ''; // ✅ Ensure this variable updates properly
+  locations: string[] = [
+    'Banjara Hills',
+    'Dilsukhnagar',
+    'HITECH city',
+    'Visakhapatnam',
+    'Siliguri',
+    'Secunderabad',
+    'Chennai',
+  ];
 
-
-  chosenLocation: string = '';
-
-  confirmLocation() {
-    const selected = Object.keys(this.selectedLocations).filter(loc => this.selectedLocations[loc]);
-    const chosenLocation = selected.length ? selected[0] : 'No Location Selected';
-
-    console.log('✅ User Selected Location:', chosenLocation);
-
-    this.dialogRef.close(chosenLocation); // ✅ Pass selected location on close
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  closePopup() {
+  selectLocation(location: string) {
+    this.selectedLocation = location; // ✅ Properly updating selectedLocation
+    this.isDropdownOpen = false;
+  }
+
+  confirmLocation() {
+    this.isDropdownOpen = false; // ✅ Dropdown closes when clicking "OK"
+    console.log('✅ Selected Location:', this.selectedLocation);
     this.dialogRef.close();
   }
 }

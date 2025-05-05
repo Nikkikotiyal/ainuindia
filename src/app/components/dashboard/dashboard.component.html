@@ -10,12 +10,15 @@
           class="ainuLogo"
         />
         <button (click)="toggleSidebar()" class="text-2xl">☰</button>
-        <p *ngIf="user" class="email text-white text-sm">
-          <span class="font-semibold">{{ user }}</span>
+        <p *ngIf="userEmail" class="email text-white text-sm">
+          <span class="font-semibold">{{ userEmail }}</span>
         </p>
         <p *ngIf="chosenLocation" class="text-sm text-teal-600 font-semibold">
           Location: {{ chosenLocation }}
         </p>
+        <!-- <p *ngIf="user" class="name text-white text-sm">
+          <span class="font-semibold">{{ user }}</span>
+        </p> -->
       </div>
     </header>
 
@@ -247,49 +250,156 @@
         'ml-0': !isSidebarOpen || showUserList
       }"
     >
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">User List</h2>
+      <div class="card shadow-sm border-0 rounded-3 p-3">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold d-flex align-items-center gap-2">
+            <i class="bi bi-people-fill"></i>
+            All Users
+          </h2>
+          <div class="input-group mt-3 w-50">
+            <span class="input-group-text bg-light">
+              <i class="fas fa-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search by name or email..."
+              [(ngModel)]="searchTerm"
+              (input)="filterUsers()"
+            />
 
-        <button
-          (click)="openAddUserDialog()"
-          class="bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 transition"
-        >
-          ➕ Add User
-        </button>
-      </div>
+            <button
+              *ngIf="searchTerm"
+              class="btn btn-outline-secondary"
+              (click)="clearSearch()"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <button
+            (click)="openAddUserDialog()"
+            class="bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 transition"
+          >
+            ➕ Add User
+          </button>
+        </div>
 
-      <div class="overflow-y-auto flex-grow">
-        <table class="w-full border-collapse border border-gray-300 text-sm">
-          <thead class="sticky top-0 bg-gray-200 z-10">
-            <tr class="text-left">
-              <th class="px-4 py-2 border font-semibold">Id</th>
-              <th class="px-4 py-2 border font-semibold">Name</th>
-              <th class="px-4 py-2 border font-semibold">Email</th>
-              <th class="px-4 py-2 border font-semibold">MobileNo</th>
-              <th class="px-4 py-2 border font-semibold">Designation</th>
-              <th class="px-4 py-2 border font-semibold">Status</th>
-              <th class="px-4 py-2 border font-semibold text-center">Module</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of users" class="hover:bg-gray-50 transition">
-              <td class="px-4 py-2 border">{{ user._id }}</td>
-              <td class="px-4 py-2 border">{{ user.UserName }}</td>
-              <td class="px-4 py-2 border">{{ user.Email }}</td>
-              <td class="px-4 py-2 border">{{ user.MobileNo }}</td>
-              <td class="px-4 py-2 border">{{ user.Designation }}</td>
-              <td class="px-4 py-2 border">{{ user.Status }}</td>
-              <td class="px-4 py-2 border text-center">
-                <button
-                  (click)="openModuleList(user)"
-                  class="bg-teal-700 text-white px-3 py-1 rounded hover:bg-teal-800 transition"
-                >
+        <div class="overflow-y-auto flex-grow">
+          <table class="w-full border-collapse border border-gray-300 text-sm">
+            <thead class="sticky top-0 bg-gray-200 z-10" >
+              <tr class="px-4 py-2 border text-center">
+                <!-- <th class="px-4 py-2 border font-semibold">Id</th> -->
+                <th (click)="sortData('UserName')" class="px-4 py-2 text-left">
+                  Name
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === 'UserName' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === 'UserName' && sortDirection === 'desc',
+                      'fa-sort': sortColumn !== 'UserName'
+                    }"
+                  ></i>
+                </th>
+
+                <!-- <th class="px-4 py-2 border font-semibold">Name</th> -->
+                <th (click)="sortData('Email')"  class="px-4 py-2 text-left">
+                  Email
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === 'Email' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === 'Email' && sortDirection === 'desc',
+                      'fa-sort': sortColumn !== 'Email'
+                    }"
+                  ></i>
+                </th>
+
+                <th (click)="sortData('MobileNo')"  class="px-4 py-2 text-left">
+                  MobileNo
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === 'MobileNo' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === 'MobileNo' && sortDirection === 'desc',
+                      'fa-sort': sortColumn !== 'MobileNo'
+                    }"
+                  ></i>
+                </th>
+
+                <th (click)="sortData('Designation')"  class="px-4 py-2 text-left">
+                  Designation
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === 'Designation' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === 'Designation' &&
+                        sortDirection === 'desc',
+                      'fa-sort': sortColumn !== 'Designation'
+                    }"
+                  ></i>
+                </th>
+
+                <th (click)="sortData('Status')"  class="px-4 py-2 text-left">
+                  Status
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === 'Status' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === 'Status' && sortDirection === 'desc',
+                      'fa-sort': sortColumn !== 'Status'
+                    }"
+                  ></i>
+                </th>
+                <th class="px-4 py-2 border font-semibold text-center"  class="px-4 py-2 text-left">
                   Module
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let user of users"
+                class="hover:bg-gray-50 transition"
+              >
+                <!-- <td class="px-4 py-2 border">{{ user._id }}</td> -->
+                <td class="px-4 py-2 border text-left">{{ user.UserName }}</td>
+                <td class="px-4 py-2 border text-left">{{ user.Email }}</td>
+                <td class="px-4 py-2 border text-left">{{ user.MobileNo }}</td>
+                <td class="px-4 py-2 border text-left">{{ user.Designation }}</td>
+                <td class="px-4 py-2 border text-left">
+                  <span
+                    class="badge px-3 py-2 text-capitalize text-center fw-semibold rounded-pill"
+                    [ngClass]="{
+                      'bg-success text-white': user.Status === 'A',
+                      'bg-secondary text-white': user.Status === 'I',
+                      'bg-danger text-white': user.Status === 'S'
+                    }"
+                  >
+                    {{ statusMap[user.Status] }}
+                  </span>
+                </td>
+                <!-- <td class="px-4 py-2 border">{{ user.Status }}</td> -->
+                <td class="px-4 py-2 border text-center">
+                  <button
+                    (click)="openModuleList(user)"
+                    class="bg-teal-700 text-white px-3 py-1 rounded hover:bg-teal-800 transition"
+                  >
+                    Module
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -302,7 +412,7 @@
         'ml-0': !isSidebarOpen || showModuleList
       }"
     >
-      <div
+      <!-- <div
         *ngIf="selectedUser"
         class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-300"
       >
@@ -327,7 +437,7 @@
             {{ selectedUser.Designation }}
           </div>
         </div>
-      </div>
+      </div> -->
 
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">User Module List</h2>
