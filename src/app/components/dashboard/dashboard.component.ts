@@ -23,13 +23,14 @@ export class DashboardComponent implements AfterViewInit {
   data: any[] = [];
   isSidebarOpen = false;
   modules: any[] = [];
+  checkedModules: any[] = [];
   users: any[] = []; // ✅ Declare the 'users' property
   // selectedRecord: any = null;
   selectedUser: any = null;
-  paginatedModules: any[] = [];
-  currentPage = 1;
-  itemsPerPage = 10;
-  totalPages = 1;
+
+  // currentPage = 1;
+  // itemsPerPage = 10;
+  // totalPages = 1;
   showUserList = false;
   showModuleList = false;
   superAdminEmail: string = '';
@@ -39,7 +40,8 @@ export class DashboardComponent implements AfterViewInit {
   userEmail: string = '';
   searchTerm: string = '';
   sortColumn: string = '';
-sortDirection: 'asc' | 'desc' = 'asc';
+  sortDirection: 'asc' | 'desc' = 'asc';
+  // selectedModuleNames: string[] = [];
 
   constructor(
     private apiService: ApiService,
@@ -51,11 +53,14 @@ sortDirection: 'asc' | 'desc' = 'asc';
   ) {}
 
   ngOnInit(): void {
-    if (typeof window !== 'undefined') {
-      const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
-      this.userEmail = loggedInUser.Email || '';
-      console.log('logged user', this.userEmail);
+   if (typeof window !== 'undefined') {
+    const userDataStr = localStorage.getItem('user'); // check what key you stored it under
+    if (userDataStr) {
+      const parsed = JSON.parse(userDataStr);
+      this.userEmail = parsed?.user?.Email || 'No email';
     }
+  }
+
     this.selectedUser = this.data.length > 0 ? this.data[0] : null;
     this.apiService.getUsers().subscribe(
       (data: any) => {
@@ -69,7 +74,8 @@ sortDirection: 'asc' | 'desc' = 'asc';
         this.user = superAdmin ? superAdmin.Email : 'No SuperAdmin Found';
         this.chosenLocation = superAdmin?.Location ?? 'Default Location';
         console.log(superAdmin?.Location);
-        this.updatePagination();
+        // this.updatePagination();
+
       },
       (error) => {
         console.error('Error fetching users:', error);
@@ -80,18 +86,53 @@ sortDirection: 'asc' | 'desc' = 'asc';
       (data: any) => {
         console.log('Data from API:', data);
         this.modules = data;
-        this.updatePagination();
+        // this.updatePagination();
       },
       (error) => {
         console.error('Error fetching users:', error);
       }
     );
+
+  //   this.apiService.getUsers().subscribe((users: any) => {
+  //     console.log('User Data:', users);
+
+  //     // SuperAdmin user find karo
+  //     const superAdmin = users.find((user: { Role: string }) => user.Role === 'SuperAdmin');
+
+  //     if (superAdmin) {
+  //         const userId = superAdmin.userId;
+  //         console.log('SuperAdmin UserID:', userId);
+
+  //         // Ab modules fetch karo
+  //         this.apiService.getModules().subscribe((modules: any) => {
+  //             console.log('Modules Data:', modules);
+
+  //             // Sirf SuperAdmin ka data filter karo
+  //             this.selectedModules = modules.filter((mod: any) => mod.userId === userId);
+  //         });
+  //     } else {
+  //         console.log('No SuperAdmin Found');
+  //     }
+  // });
+
+
+    // this.apiService.getCheckedModules().subscribe(
+    //   (data: any) => {
+    //     console.log('Data from API:', data);
+    //     this.checkedModules = data;
+    //     // this.updatePagination();
+    //   },
+    //   (error) => {
+    //     console.error('Error fetching users:', error);
+    //   }
+    // );
+
   }
 
   statusMap: any = {
-    'A': 'Active',
-    'I': 'Inactive',
-    'S': 'Suspended'
+    A: 'Active',
+    I: 'Inactive',
+    S: 'Suspended',
   };
 
   ngAfterViewInit() {}
@@ -141,31 +182,31 @@ sortDirection: 'asc' | 'desc' = 'asc';
     this.cdRef.detectChanges();
   }
 
-  updatePagination() {
-    this.totalPages = Math.ceil(this.modules.length / this.itemsPerPage);
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.users = this.users.slice(start, end);
-    this.paginatedModules = this.modules.slice(start, end);
-  }
+  // updatePagination() {
+  // this.totalPages = Math.ceil(this.modules.length / this.itemsPerPage);
+  // const start = (this.currentPage - 1) * this.itemsPerPage;
+  // const end = start + this.itemsPerPage;
+  // this.users = this.users.slice(start, end);
+  // this.paginatedModules = this.modules.slice(start, end);
+  // }
 
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePagination();
-    }
-  }
+  // nextPage() {
+  //   if (this.currentPage < this.totalPages) {
+  //     this.currentPage++;
+  //     this.updatePagination();
+  //   }
+  // }
 
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePagination();
-    }
-  }
+  // prevPage() {
+  //   if (this.currentPage > 1) {
+  //     this.currentPage--;
+  //     this.updatePagination();
+  //   }
+  // }
 
   toggleAll(event: any) {
     const checked = event.target.checked;
-    this.paginatedModules.forEach((mod) => (mod.selected = checked));
+    this.modules.forEach((mod) => (mod.selected = checked));
   }
 
   toggleSidebar() {
@@ -180,9 +221,10 @@ sortDirection: 'asc' | 'desc' = 'asc';
 
   filterUsers() {
     const term = this.searchTerm.toLowerCase().trim();
-    this.users = this.users.filter(user =>
-      user.UserName.toLowerCase().includes(term) ||
-      user.Email.toLowerCase().includes(term)
+    this.users = this.users.filter(
+      (user) =>
+        user.UserName.toLowerCase().includes(term) ||
+        user.Email.toLowerCase().includes(term)
     );
   }
   clearSearch() {
@@ -208,4 +250,38 @@ sortDirection: 'asc' | 'desc' = 'asc';
       return 0;
     });
   }
+
+
+ submitCheckedData() {
+  const selectedModules = this.modules.filter(m => m.selected);
+
+  if (selectedModules.length === 0) {
+    alert('Please select at least one module.');
+    return;
+  }
+
+  const payload = {
+    userId: this.selectedUser._id,
+    modules: selectedModules
+  };
+
+  this.apiService.saveModules(payload).subscribe({
+    next: res => {
+      console.log('✅ Modules saved successfully!');
+      // Keep the selectedUser intact — don’t overwrite it
+      // this.selectedUser = this.selectedUser._id ❌ (Remove this)
+    },
+    error: err => {
+      console.log('❌ Failed to save modules');
+      console.error(err);
+    }
+  });
+}
+
+  // isModuleActive(name: string): boolean {
+  //   return this.selectedModuleNames?.includes(name) || false;
+  // }
+
+
+
 }

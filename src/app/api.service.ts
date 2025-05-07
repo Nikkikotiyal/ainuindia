@@ -68,4 +68,15 @@ export class ApiService {
   getModules() {
     return this.http.get<any[]>(`${this.baseUrl}/getModule`); // or /getModule
   }
+
+  // getCheckedModules(){
+  //   return this.http.get<any[]>(`${this.baseUrl}/getCheckedModule`); // or /getModule
+
+  // }
+
+  saveModules(payload: { userId: string; modules: any[] }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/save-modules`, payload, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    });
+  }
 }

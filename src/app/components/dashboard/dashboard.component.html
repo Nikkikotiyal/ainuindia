@@ -11,7 +11,7 @@
         />
         <button (click)="toggleSidebar()" class="text-2xl">☰</button>
         <p *ngIf="userEmail" class="email text-white text-sm">
-          <span class="font-semibold">{{ userEmail }}</span>
+          <span class="font-semibold">{{ userEmail  }}</span>
         </p>
         <p *ngIf="chosenLocation" class="text-sm text-teal-600 font-semibold">
           Location: {{ chosenLocation }}
@@ -286,9 +286,24 @@
 
         <div class="overflow-y-auto flex-grow">
           <table class="w-full border-collapse border border-gray-300 text-sm">
-            <thead class="sticky top-0 bg-gray-200 z-10" >
+            <thead class="sticky top-0 bg-gray-200 z-10">
               <tr class="px-4 py-2 border text-center">
-                <!-- <th class="px-4 py-2 border font-semibold">Id</th> -->
+                <th
+                  (click)="sortData('_id')"
+                  class="px-4 py-2 border font-semibold"
+                >
+                  Id
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-sort-up':
+                        sortColumn === '_id' && sortDirection === 'asc',
+                      'fa-sort-down':
+                        sortColumn === '_id' && sortDirection === 'desc',
+                      'fa-sort': sortColumn !== '_id'
+                    }"
+                  ></i>
+                </th>
                 <th (click)="sortData('UserName')" class="px-4 py-2 text-left">
                   Name
                   <i
@@ -304,7 +319,7 @@
                 </th>
 
                 <!-- <th class="px-4 py-2 border font-semibold">Name</th> -->
-                <th (click)="sortData('Email')"  class="px-4 py-2 text-left">
+                <th (click)="sortData('Email')" class="px-4 py-2 text-left">
                   Email
                   <i
                     class="fas"
@@ -318,7 +333,7 @@
                   ></i>
                 </th>
 
-                <th (click)="sortData('MobileNo')"  class="px-4 py-2 text-left">
+                <th (click)="sortData('MobileNo')" class="px-4 py-2 text-left">
                   MobileNo
                   <i
                     class="fas"
@@ -332,7 +347,10 @@
                   ></i>
                 </th>
 
-                <th (click)="sortData('Designation')"  class="px-4 py-2 text-left">
+                <th
+                  (click)="sortData('Designation')"
+                  class="px-4 py-2 text-left"
+                >
                   Designation
                   <i
                     class="fas"
@@ -347,7 +365,7 @@
                   ></i>
                 </th>
 
-                <th (click)="sortData('Status')"  class="px-4 py-2 text-left">
+                <th (click)="sortData('Status')" class="px-4 py-2 text-left">
                   Status
                   <i
                     class="fas"
@@ -360,7 +378,10 @@
                     }"
                   ></i>
                 </th>
-                <th class="px-4 py-2 border font-semibold text-center"  class="px-4 py-2 text-left">
+                <th
+                  class="px-4 py-2 border font-semibold text-center"
+                  class="px-4 py-2 text-left"
+                >
                   Module
                 </th>
               </tr>
@@ -370,11 +391,13 @@
                 *ngFor="let user of users"
                 class="hover:bg-gray-50 transition"
               >
-                <!-- <td class="px-4 py-2 border">{{ user._id }}</td> -->
+                <td class="px-4 py-2 border">{{ user._id }}</td>
                 <td class="px-4 py-2 border text-left">{{ user.UserName }}</td>
                 <td class="px-4 py-2 border text-left">{{ user.Email }}</td>
                 <td class="px-4 py-2 border text-left">{{ user.MobileNo }}</td>
-                <td class="px-4 py-2 border text-left">{{ user.Designation }}</td>
+                <td class="px-4 py-2 border text-left">
+                  {{ user.Designation }}
+                </td>
                 <td class="px-4 py-2 border text-left">
                   <span
                     class="badge px-3 py-2 text-capitalize text-center fw-semibold rounded-pill"
@@ -414,30 +437,42 @@
     >
       <!-- <div
         *ngIf="selectedUser"
-        class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-300"
-      >
+        class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6 border border-gray-200 space-y-4"
+         >
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-bold text-teal-700">
+          <h2
+            class="text-2xl font-semibold text-teal-700 flex items-center gap-2"
+          >
+            <i class="fas fa-user-circle text-teal-600"></i>
             {{ selectedUser.UserName }}
           </h2>
-          <span class="text-sm px-3 py-1 rounded bg-green-100 text-green-600">{{
-            selectedUser.Status
-          }}</span>
+          <span
+            class="text-sm px-3 py-1 rounded-full font-medium"
+            [ngClass]="{
+              'bg-green-100 text-green-700': selectedUser.Status === 'A',
+              'bg-yellow-100 text-yellow-700': selectedUser.Status === 'I',
+              'bg-red-100 text-red-700': selectedUser.Status === 'S'
+            }"
+          >
+            {{ statusMap[selectedUser.Status] }}
+          </span>
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-4">
-          <div class="text-sm text-gray-600 font-semibold">Email</div>
-          <div class="text-sm text-gray-900">{{ selectedUser.Email }}</div>
-
-          <div class="text-sm text-gray-600 font-semibold">Mobile No.</div>
-          <div class="text-sm text-gray-900">{{ selectedUser.MobileNo }}</div>
-
-          <div class="text-sm text-gray-600 font-semibold">Designation</div>
-          <div class="text-sm text-gray-900">
-            {{ selectedUser.Designation }}
+        <div class="space-y-2 text-sm text-gray-700">
+          <div>
+            <span class="font-medium text-gray-500">Email:</span>
+            <span class="ml-1">{{ selectedUser.Email }}</span>
+          </div>
+          <div>
+            <span class="font-medium text-gray-500">Mobile No.:</span>
+            <span class="ml-1">{{ selectedUser.MobileNo }}</span>
+          </div>
+          <div>
+            <span class="font-medium text-gray-500">Designation:</span>
+            <span class="ml-1">{{ selectedUser.Designation }}</span>
           </div>
         </div>
-      </div> -->
+      </div>
 
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">User Module List</h2>
@@ -481,10 +516,112 @@
             </tr>
           </tbody>
         </table>
+      </div> -->
+
+      <!-- <div class="flex flex-col md:flex-row gap-6"> -->
+      <!-- Left Side (selectedUser Info) -->
+      <!-- User Info Row (Above the table) -->
+      <div
+        *ngIf="selectedUser"
+        class="w-full bg-gray-100 px-4 py-2 rounded-md mb-4 flex flex-wrap items-center text-sm gap-4 border border-gray-300"
+      >
+        <span class="font-semibold text-teal-700 flex items-center gap-1">
+          <i class="fas fa-user-circle text-teal-600"></i>
+          {{ selectedUser.UserName }}
+        </span>
+        <span><strong>Id:</strong> {{ selectedUser._id }}</span>
+
+        <span
+          class="px-2 py-1 rounded-full font-medium text-xs"
+          [ngClass]="{
+            'bg-green-100 text-green-700': selectedUser.Status === 'A',
+            'bg-yellow-100 text-yellow-700': selectedUser.Status === 'I',
+            'bg-red-100 text-red-700': selectedUser.Status === 'S'
+          }"
+        >
+          {{ statusMap[selectedUser.Status] }}
+        </span>
+        <span><strong>Email:</strong> {{ selectedUser.Email }}</span>
+        <span><strong>Mobile:</strong> {{ selectedUser.MobileNo }}</span>
+        <span
+          ><strong>Designation:</strong> {{ selectedUser.Designation }}</span
+        >
       </div>
 
+      <!-- Right Side (User Module List) -->
+      <div
+        class="flex flex-col bg-white rounded-xl shadow-md p-6 border border-gray-200 h-full"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">
+            <i class="fas fa-table mr-2 text-gray-600"></i>User Module List
+          </h2>
+        </div>
+
+        <!-- Table header -->
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-sm">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="px-4 py-2 border w-[40px]">
+                  <input type="checkbox" (change)="toggleAll($event)" />
+                </th>
+                <th class="px-4 py-2 border w-[100px]">Module ID</th>
+                <th class="px-4 py-2 border w-[150px]">Module Name</th>
+                <th class="px-4 py-2 border w-[150px]">Report Name</th>
+                <!-- <th class="px-4 py-2 border w-[80px]">View</th>
+                  <th class="px-4 py-2 border w-[80px]">Print</th>
+                  <th class="px-4 py-2 border w-[80px]">Export</th> -->
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        <!-- Scrollable table body -->
+        <div class="overflow-y-scroll max-h-[400px] overflow-x-auto">
+          <table class="w-full border-collapse text-sm table-fixed">
+            <tbody>
+              <tr
+                *ngFor="let module of modules"
+                class="hover:bg-gray-50 transition"
+              >
+                <td class="px-4 py-2 border w-[40px]">
+                  <input type="checkbox" [(ngModel)]="module.selected" />
+                </td>
+                <td class="px-4 py-2 border w-[100px]">
+                  {{ module.Moduleid }}
+                </td>
+                <td class="px-4 py-2 border w-[150px]">
+                  {{ module["MODLE NAME "] }}
+                </td>
+                <td class="px-4 py-2 border w-[150px]">
+                  {{ module["REPORT NAME"] }}
+                </td>
+                <!-- <td class="px-4 py-2 border w-[80px]">
+                    <input type="checkbox" [(ngModel)]="module.viewChecked" />
+                  </td>
+                  <td class="px-4 py-2 border w-[80px]">
+                    <input type="checkbox" [(ngModel)]="module.printChecked" />
+                  </td>
+                  <td class="px-4 py-2 border w-[80px]">
+                    <input type="checkbox" [(ngModel)]="module.exportChecked" />
+                  </td> -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button
+            (click)="submitCheckedData()"
+            class="bg-teal-700 text-white text-sm px-3 py-1 mb-5 rounded-md hover:bg-teal-800 transition"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+      <!-- </div> -->
       <!-- Pagination Controls -->
-      <div class="flex justify-between items-center mt-6">
+      <!-- <div class="flex justify-between items-center mt-6">
         <button
           (click)="prevPage()"
           [disabled]="currentPage === 1"
@@ -504,7 +641,7 @@
         >
           Next →
         </button>
-      </div>
+      </div> -->
     </div>
   </div>
 

@@ -75,7 +75,10 @@ export class LoginComponent {
     console.log('📌 Attempting login with:', emailOrUsername, password);
     this.apiService.login(emailOrUsername, password).subscribe({
       next: (response) => {
+
         console.log('✅ Login Successful:', response);
+        localStorage.setItem('userData', JSON.stringify(response));
+        localStorage.getItem('userEmail')
         this.router.navigate(['/dashboard']);
         const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
           width: '400px',
