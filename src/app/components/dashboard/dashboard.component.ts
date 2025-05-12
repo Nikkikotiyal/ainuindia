@@ -6,17 +6,22 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { AddUserComponent } from '../add-user/add-user.component';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../api.service';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, MatSnackBarModule],
   styleUrls: ['./dashboard.component.scss'], // Uncomment if needed
 })
 export class DashboardComponent implements AfterViewInit {
@@ -41,25 +46,44 @@ export class DashboardComponent implements AfterViewInit {
   searchTerm: string = '';
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  public loggedIn: boolean = false;
+  formData: any = {};
+  buttonLabel: string = 'Edit';
   // selectedModuleNames: string[] = [];
 
   constructor(
+    private snackBar: MatSnackBar,
     private apiService: ApiService,
     private router: Router,
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
+    // @Inject(PLATFORM_ID) private platformId: Object,
+    // @Inject(MAT_DIALOG_DATA) public userData: any
   ) {}
 
   ngOnInit(): void {
-   if (typeof window !== 'undefined') {
-    const userDataStr = localStorage.getItem('user'); // check what key you stored it under
-    if (userDataStr) {
-      const parsed = JSON.parse(userDataStr);
-      this.userEmail = parsed?.user?.Email || 'No email';
+
+    // console.log('Received User Data:', this.userData); // ✅ Debugging log
+
+    // this.formData = {
+    //   UserName: this.userData?.UserName || '',
+    //   Email: this.userData?.Email || '',
+    //   MobileNo: this.userData?.MobileNo || '',
+    //   Designation: this.userData?.Designation || '',
+    //   Status: this.userData?.Status || '',
+    //   selectedLocations: this.userData?.selectedLocations || [],
+    // };
+
+    // this.loggedIn = this.auth.isLoggedIn();  // token check
+
+    if (typeof window !== 'undefined') {
+      const userDataStr = localStorage.getItem('user');
+      if (userDataStr) {
+        const parsed = JSON.parse(userDataStr);
+        this.userEmail = parsed?.user?.Email || 'No email';
+      }
     }
-  }
 
     this.selectedUser = this.data.length > 0 ? this.data[0] : null;
     this.apiService.getUsers().subscribe(
@@ -75,7 +99,6 @@ export class DashboardComponent implements AfterViewInit {
         this.chosenLocation = superAdmin?.Location ?? 'Default Location';
         console.log(superAdmin?.Location);
         // this.updatePagination();
-
       },
       (error) => {
         console.error('Error fetching users:', error);
@@ -93,41 +116,9 @@ export class DashboardComponent implements AfterViewInit {
       }
     );
 
-  //   this.apiService.getUsers().subscribe((users: any) => {
-  //     console.log('User Data:', users);
-
-  //     // SuperAdmin user find karo
-  //     const superAdmin = users.find((user: { Role: string }) => user.Role === 'SuperAdmin');
-
-  //     if (superAdmin) {
-  //         const userId = superAdmin.userId;
-  //         console.log('SuperAdmin UserID:', userId);
-
-  //         // Ab modules fetch karo
-  //         this.apiService.getModules().subscribe((modules: any) => {
-  //             console.log('Modules Data:', modules);
-
-  //             // Sirf SuperAdmin ka data filter karo
-  //             this.selectedModules = modules.filter((mod: any) => mod.userId === userId);
-  //         });
-  //     } else {
-  //         console.log('No SuperAdmin Found');
-  //     }
-  // });
-
-
-    // this.apiService.getCheckedModules().subscribe(
-    //   (data: any) => {
-    //     console.log('Data from API:', data);
-    //     this.checkedModules = data;
-    //     // this.updatePagination();
-    //   },
-    //   (error) => {
-    //     console.error('Error fetching users:', error);
-    //   }
-    // );
 
   }
+
 
   statusMap: any = {
     A: 'Active',
@@ -136,13 +127,15 @@ export class DashboardComponent implements AfterViewInit {
   };
 
   ngAfterViewInit() {}
-
   logout() {
-    // Add any logout logic (e.g., clearing localStorage/sessionStorage)
-    localStorage.clear();
-    console.log('click');
-    // Navigate to the login page
+    localStorage.removeItem('token'); // Remove stored authentication token
+    sessionStorage.clear(); // Clear all session data if needed
+
     this.router.navigate(['']);
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
   }
 
   openUserList() {
@@ -178,8 +171,34 @@ export class DashboardComponent implements AfterViewInit {
     this.showUserList = false;
     this.isSidebarOpen = false;
     this.selectedUser = user;
-    console.log('Selected User:', this.selectedUser);
-    this.cdRef.detectChanges();
+
+    // Step 1: First, fetch ALL modules
+    this.apiService.getUserModulesByUserID(user._id).subscribe(
+      (data: any) => {
+        const selectedModuleIds =
+          data?.modules?.map((m: { Moduleid: any }) => m.Moduleid) || [];
+
+        this.modules.forEach((module) => {
+          module.selected = selectedModuleIds.includes(module.Moduleid);
+        });
+
+        this.cdRef.detectChanges();
+      },
+      (error) => {
+        if (error.status === 404) {
+          // No selected modules — just mark all as unselected
+          this.modules.forEach((module) => {
+            module.selected = false;
+          });
+          console.warn(
+            'No modules found for this user — showing all unchecked.'
+          );
+          this.cdRef.detectChanges(); // Update the view
+        } else {
+          console.error('Error fetching user modules:', error);
+        }
+      }
+    );
   }
 
   // updatePagination() {
@@ -251,37 +270,108 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
+  submitCheckedData() {
+    const selectedModules = this.modules.filter((m) => m.selected);
 
- submitCheckedData() {
-  const selectedModules = this.modules.filter(m => m.selected);
+    if (selectedModules.length === 0) {
+      alert('Please select at least one module.');
+      return;
+    }
 
-  if (selectedModules.length === 0) {
-    alert('Please select at least one module.');
-    return;
+    const payload = {
+      userId: this.selectedUser._id,
+      modules: selectedModules,
+    };
+
+    this.apiService.saveModules(payload).subscribe({
+      next: (res) => {
+        this.showUserList = true;
+        this.showModuleList = false;
+        console.log('✅ Modules saved successfully!');
+        const snackRef = this.snackBar.open(
+          'Modules saved successfully!',
+          'Close',
+          {
+            duration: 4000,
+            verticalPosition: 'top',
+            horizontalPosition: 'right',
+            panelClass: ['success-snackbar'],
+          }
+        );
+
+        // ✅ Apply styles correctly
+        setTimeout(() => {
+          const overlayContainer = document.querySelector(
+            '.cdk-overlay-container'
+          ) as HTMLElement;
+          if (overlayContainer) {
+            const snackElement = overlayContainer.querySelector(
+              '.mat-mdc-snack-bar-container'
+            ) as HTMLElement;
+            if (snackElement) {
+              console.log('✅ Snackbar element found inside OverlayContainer!');
+              snackElement.style.setProperty(
+                'background',
+                'green',
+                'important'
+              );
+              snackElement.style.setProperty('color', 'white', 'important');
+            } else {
+              console.error('❌ Snackbar element NOT found inside overlay!');
+            }
+          } else {
+            console.error('❌ Overlay container NOT found!');
+          }
+        }, 500);
+      },
+      error: (err) => {
+        console.error('❌ Failed to save modules', err);
+
+        // 🔴 Show ERROR message in snackbar
+        this.snackBar.open('❌ Error saving modules!', 'Close', {
+          duration: 4000,
+          verticalPosition: 'top',
+          horizontalPosition: 'right',
+          panelClass: ['error-snackbar'],
+        });
+      },
+    });
   }
 
-  const payload = {
-    userId: this.selectedUser._id,
-    modules: selectedModules
-  };
-
-  this.apiService.saveModules(payload).subscribe({
-    next: res => {
-      console.log('✅ Modules saved successfully!');
-      // Keep the selectedUser intact — don’t overwrite it
-      // this.selectedUser = this.selectedUser._id ❌ (Remove this)
-    },
-    error: err => {
-      console.log('❌ Failed to save modules');
-      console.error(err);
-    }
-  });
-}
-
+  BackToView() {
+    this.showUserList = true;
+    this.showModuleList = false;
+  }
   // isModuleActive(name: string): boolean {
   //   return this.selectedModuleNames?.includes(name) || false;
   // }
+  editUserModuleList(user: any) {
+    console.log('🛠 Debugging Selected User:', user);
+    console.log('🔄 Available Keys in User:', Object.keys(user || {}));
+    // console.log('📢 Extracted User ID:', user?._id || user?.userId);
+
+    // if (!user?._id) {
+    //   console.error("❌ No valid user ID found! Check user object structure.");
+    //   return;
+    // }
+
+    const dialogRef = this.dialog.open(AddUserComponent, {
+      width: '600px',
+      disableClose: false,
+      data: {  userData: user },
+    });
+
+    console.log('📢 User ID Sent to Dialog:', user._id);
+  }
 
 
 
+
+
+  refreshUserList() {
+    this.apiService.getUsers().subscribe((data: any) => {
+      this.users = [...data];
+      console.log('Updated Users:', this.users);
+    });
+  }
 }

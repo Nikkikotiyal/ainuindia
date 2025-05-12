@@ -1,3 +1,9 @@
+interface LoginResponse {
+  success: boolean;
+  token: string;
+  userData?: any;
+}
+
 import { Component } from '@angular/core';
 import {
   FormBuilder,
@@ -37,6 +43,7 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+
   // emailRegex = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
   // passwordRegex =
   //   '^(?=.{8,})((?=.*[^a-zA-Zs])(?=.*[a-z])(?=.*[A-Z])| (?=.*[^a-zA-Z0-9s])(?=.*d)(?=.*[a-zA-Z])).*$';
@@ -74,27 +81,26 @@ export class LoginComponent {
 
     console.log('📌 Attempting login with:', emailOrUsername, password);
     this.apiService.login(emailOrUsername, password).subscribe({
-      next: (response) => {
-
-        console.log('✅ Login Successful:', response);
-        localStorage.setItem('userData', JSON.stringify(response));
-        localStorage.getItem('userEmail')
+      next: (response: any) => {
+        // localStorage.setItem('token', response.token);
+        // localStorage.setItem('token', response.token);
+        localStorage.setItem('userData', JSON.stringify(response.userData || {}));
+        localStorage.setItem('token', 'yourAuthToken');
         this.router.navigate(['/dashboard']);
+
         const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
           width: '400px',
         });
 
-        // ✅ Ensure `dialogRef` is correctly used
         dialogRef.afterClosed().subscribe(selectedLocation => {
           if (selectedLocation) {
             this.userLocation = selectedLocation;
-            console.log('✅ Selected Location:', this.userLocation);
           }
         });
       },
       error: (error) => {
         console.error('❌ Login Failed:', error);
-        this.loginError = error?.error?.error || 'Invaild user Id or password. Please try again.';
+        this.loginError = error?.error?.message || 'Invalid credentials. Try again.';
       },
     });
 

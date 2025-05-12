@@ -103,5 +103,18 @@ $my-angular-app-theme: mat.define-light-theme((
 //   background-color: #0b0b2e; // Or use Tailwind class: bg-[#0b0b2e]
 // }
 
+// ::ng-deep .mat-mdc-snack-bar-container {
+//   background: green !important;
+//   color: white !important;
+//   border: none !important;
+//   font-weight: bold !important;
+// }
+
+.success-snackbar {
+  background-color: green !important;
+  color: white !important;
+  font-weight: bold;
+}
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

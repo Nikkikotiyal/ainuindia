@@ -40,3 +40,28 @@ main {
   transform: translateY(-50%);
   // font-size: 16px;
 }
+// .snackbar-success{
+//   background-color: green !important;
+//   color: white;
+// }
+
+
+// .error-snackbar {
+//   background-color: #f44336 !important;  /* Red */
+//   color: white !important;
+//   font-weight: bold;
+// }
+// ::ng-deep .mat-mdc-snack-bar-container.success-snackbar {
+//   background-color: green !important;
+//   color: white !important;
+// }
+.fade-button {
+  background-color: rgb(70, 67, 67);
+  color: white;
+  // padding: 8px 16px;
+  border: none;
+  // border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+

@@ -79,4 +79,20 @@ export class ApiService {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
   }
+
+  getUserModulesByUserID(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/getUserModules/${userId}`);
+  }
+
+ // ✅ File: api.service.ts
+
+ getUserById(userId: string): Observable<any> {
+  console.log('📢 API Call Triggered for userId:', userId);
+  return this.http.get(`${this.baseUrl}/getUserById/${userId}`);
+}
+
+  updateUser(userId: string, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/updateUserById/${userId}`, data);
+  }
+
 }

@@ -11,6 +11,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
     provideRouter(routes),
-    ReactiveFormsModule, provideAnimationsAsync(), provideAnimationsAsync(),  // Add this instead of provideReactiveForms
+    ReactiveFormsModule, provideAnimationsAsync(), provideAnimationsAsync(), provideAnimationsAsync(),  // Add this instead of provideReactiveForms
   ],
 };
