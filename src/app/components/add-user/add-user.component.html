@@ -81,7 +81,9 @@
           >
             <input
               type="checkbox"
-              [checked]="selectedLocations.includes(location)"
+              [checked]="
+                userForm.get('Location')?.value?.includes(location) || false
+              "
               (change)="toggleLocation(location)"
             />
             {{ location }}
@@ -102,10 +104,10 @@
 
     <button
       *ngIf="isEditing"
-      class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition flex items-center"
+      class="bg-teal-600 text-white px-5 py-2 rounded hover:bg-teal-700 transition flex items-center"
       (click)="editUserSuccesfully()"
     >
-      <i class="fas fa-edit mr-2"></i> Edit User
+      <i class="fas fa-edit mr-2"></i> Update User
     </button>
   </div>
 

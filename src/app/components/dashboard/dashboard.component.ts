@@ -57,13 +57,12 @@ export class DashboardComponent implements AfterViewInit {
     private router: Router,
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
-    private cdr: ChangeDetectorRef,
-    // @Inject(PLATFORM_ID) private platformId: Object,
-    // @Inject(MAT_DIALOG_DATA) public userData: any
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) // @Inject(PLATFORM_ID) private platformId: Object,
+  // @Inject(MAT_DIALOG_DATA) public userData: any
+  {}
 
   ngOnInit(): void {
-
     // console.log('Received User Data:', this.userData); // ✅ Debugging log
 
     // this.formData = {
@@ -115,10 +114,7 @@ export class DashboardComponent implements AfterViewInit {
         console.error('Error fetching users:', error);
       }
     );
-
-
   }
-
 
   statusMap: any = {
     A: 'Active',
@@ -358,15 +354,22 @@ export class DashboardComponent implements AfterViewInit {
     const dialogRef = this.dialog.open(AddUserComponent, {
       width: '600px',
       disableClose: false,
-      data: {  userData: user },
+      data: { userData: user },
     });
 
     console.log('📢 User ID Sent to Dialog:', user._id);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        console.log('Dialog closed with:', result);
+
+        this.apiService.getUsers().subscribe((data: any) => {
+          this.users = data; // ✅ Assign response to the `users` array
+          this.users = [...this.users];
+          console.log('Updated Users:', this.users);
+        });
+      }
+    });
   }
-
-
-
-
 
   refreshUserList() {
     this.apiService.getUsers().subscribe((data: any) => {
