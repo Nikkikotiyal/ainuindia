@@ -2,13 +2,19 @@
   [formGroup]="userForm"
   class="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg shadow-lg max-w-lg mx-auto"
 >
-  <div class="col-span-2 flex items-center justify-between mb-3">
+  <div class="col-span-2 flex items-center justify-between mb-3" *ngIf="!isEditing">
     <h2 class="text-lg font-bold text-teal-700">Add User</h2>
     <span class="text-teal-600 text-2xl">
       <i class="fas fa-user-plus"></i>
     </span>
   </div>
 
+   <div class="col-span-2 flex items-center justify-between mb-3" *ngIf="isEditing">
+    <h2 class="text-lg font-bold text-teal-700"> User Info</h2>
+    <span class="text-teal-600 text-2xl">
+      <i class="fas fa-user-plus"></i>
+    </span>
+  </div>
   <div>
     <label class="block mb-1">Name:</label>
     <input

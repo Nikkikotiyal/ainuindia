@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  HostListener,
   Inject,
   Output,
   ViewEncapsulation,
@@ -165,7 +166,13 @@ export class AddUserComponent {
     }
     this.userForm.patchValue({ Location: this.selectedLocations.join(', ') });
   }
-
+  @HostListener('document:click', ['$event'])
+  closeDropdown(event: Event) {
+    const targetElement = event.target as HTMLElement;
+    if (!targetElement.closest('.relative')) {
+      this.dropdownOpen = false;
+    }
+  }
   removeLocation(location: string) {
     this.selectedLocations = this.selectedLocations.filter(
       (l) => l !== location

@@ -43,21 +43,15 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-
   // emailRegex = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
   // passwordRegex =
   //   '^(?=.{8,})((?=.*[^a-zA-Zs])(?=.*[a-z])(?=.*[A-Z])| (?=.*[^a-zA-Z0-9s])(?=.*d)(?=.*[a-zA-Z])).*$';
 
   ngOnInit(): void {
+    // this.userLocation = localStorage.getItem('userLocation') || 'Default Location';
     this.loginForm = this.fb.group({
-      emailOrUsername: [
-        '',
-        [Validators.required],
-      ],
-      password: [
-        '',
-        [Validators.required],
-      ],
+      emailOrUsername: ['', [Validators.required]],
+      password: ['', [Validators.required]],
       rememberMe: [false],
     });
   }
@@ -82,29 +76,40 @@ export class LoginComponent {
     console.log('📌 Attempting login with:', emailOrUsername, password);
     this.apiService.login(emailOrUsername, password).subscribe({
       next: (response: any) => {
-        // localStorage.setItem('token', response.token);
-        // localStorage.setItem('token', response.token);
-        localStorage.setItem('userData', JSON.stringify(response.userData || {}));
-        localStorage.setItem('token', 'yourAuthToken');
+        const userLocation = Array.isArray(response?.user?.Location)
+          ? response.user.Location
+          : response.user?.Location?.split(',').map((loc: string) =>
+              loc.trim()
+            ) || ['Default Location'];
+
+        console.log('📌 Final Converted Locations Array:', userLocation);
+        console.log('📌 Extracted User Location:', userLocation);
+        // localStorage.setItem(
+        //   'userData',
+        //   JSON.stringify(response.userData || {})
+        // );
+        // localStorage.setItem('token', 'yourAuthToken');
         this.router.navigate(['/dashboard']);
 
         const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
           width: '400px',
+          data: { defaultLocation: userLocation },
         });
 
-        dialogRef.afterClosed().subscribe(selectedLocation => {
+        dialogRef.afterClosed().subscribe((selectedLocation) => {
           if (selectedLocation) {
+            localStorage.setItem('userLocation', selectedLocation);
             this.userLocation = selectedLocation;
           }
         });
       },
       error: (error) => {
         console.error('❌ Login Failed:', error);
-        this.loginError = error?.error?.message || 'Invalid credentials. Try again.';
+        this.loginError =
+          error?.error?.message || 'Invalid credentials. Try again.';
       },
     });
 
     console.log('🚀 Login request sent to API.');
   }
-
 }

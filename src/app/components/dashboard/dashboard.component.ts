@@ -57,30 +57,17 @@ export class DashboardComponent implements AfterViewInit {
     private router: Router,
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
-    private cdr: ChangeDetectorRef
-  ) // @Inject(PLATFORM_ID) private platformId: Object,
-  // @Inject(MAT_DIALOG_DATA) public userData: any
-  {}
+    private cdr: ChangeDetectorRef // @Inject(PLATFORM_ID) private platformId: Object, // @Inject(MAT_DIALOG_DATA) public userData: any
+  ) {}
 
   ngOnInit(): void {
-    // console.log('Received User Data:', this.userData); // ✅ Debugging log
-
-    // this.formData = {
-    //   UserName: this.userData?.UserName || '',
-    //   Email: this.userData?.Email || '',
-    //   MobileNo: this.userData?.MobileNo || '',
-    //   Designation: this.userData?.Designation || '',
-    //   Status: this.userData?.Status || '',
-    //   selectedLocations: this.userData?.selectedLocations || [],
-    // };
-
-    // this.loggedIn = this.auth.isLoggedIn();  // token check
-
+    const storedLocation = localStorage.getItem('userLocation');
     if (typeof window !== 'undefined') {
       const userDataStr = localStorage.getItem('user');
       if (userDataStr) {
         const parsed = JSON.parse(userDataStr);
         this.userEmail = parsed?.user?.Email || 'No email';
+        this.chosenLocation = parsed?.user?.Location || 'No location';
       }
     }
 
@@ -90,14 +77,14 @@ export class DashboardComponent implements AfterViewInit {
         this.users = data;
         console.log('userdata', this.users);
         this.users = data;
-        this.userEmail = this.users[0].Email;
-        const superAdmin = data.find(
-          (user: { Role: string }) => user.Role === 'SuperAdmin'
+        const User = data.find(
+          (user: { Role: string }) => user.Role === 'User'
         );
-        this.user = superAdmin ? superAdmin.Email : 'No SuperAdmin Found';
-        this.chosenLocation = superAdmin?.Location ?? 'Default Location';
-        console.log(superAdmin?.Location);
-        // this.updatePagination();
+        this.user = User ? User.Email : 'No user Found';
+        this.chosenLocation = storedLocation
+          ? storedLocation
+          : User?.Location || 'Default Location';
+        // console.log(User?.Location);
       },
       (error) => {
         console.error('Error fetching users:', error);
@@ -108,7 +95,6 @@ export class DashboardComponent implements AfterViewInit {
       (data: any) => {
         console.log('Data from API:', data);
         this.modules = data;
-        // this.updatePagination();
       },
       (error) => {
         console.error('Error fetching users:', error);

@@ -37,6 +37,11 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/get-users`);
   }
 
+getUsersByLocation(location: string) {
+  return this.http.get(`${this.baseUrl}/getUsers/${encodeURIComponent(location)}`);
+}
+
+
   signupUsers(
     UserName: string,
     Password: string,

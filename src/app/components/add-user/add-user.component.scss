@@ -1,4 +1,3 @@
-
 // .dialog-container {
 //   background-color: #fff;
 //   border-radius: 8px;
@@ -42,7 +41,6 @@
 //     transition: opacity 0.5s ease-in-out;
 // }
 
-
 .error-box {
   color: red;
   font-weight: bold;
@@ -52,4 +50,17 @@
   margin-top: 10px;
 }
 
+// ::ng-deep .success-snackbar {
+//   border-radius: 5px;
+//   --mdc-snackbar-container-color: #3d720f;
+//   --mdc-snackbar-supporting-text-color: #f8faf7;
+// }
 
+::ng-deep .success-snackbar {
+  background-color: #28a745 !important; /* ✅ Green color */
+  color: white !important; /* ✅ White text for contrast */
+}
+.mat-snack-bar-container.success-snackbar {
+  background-color: #28a745 !important;
+  color: white !important;
+}

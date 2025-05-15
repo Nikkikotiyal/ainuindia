@@ -110,11 +110,12 @@ $my-angular-app-theme: mat.define-light-theme((
 //   font-weight: bold !important;
 // }
 
-.success-snackbar {
-  background-color: green !important;
-  color: white !important;
-  font-weight: bold;
+.mat-snack-bar-container.success-snackbar {
+  background-color: #28a745 !important; /* ✅ Force Green Background */
+  color: white !important; /* ✅ White text for visibility */
+  font-weight: bold !important;
 }
+
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
