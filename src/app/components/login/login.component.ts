@@ -76,19 +76,19 @@ export class LoginComponent {
     console.log('📌 Attempting login with:', emailOrUsername, password);
     this.apiService.login(emailOrUsername, password).subscribe({
       next: (response: any) => {
+        if (response.token && response.user) {
+          console.log('🔐 Token:', response.token); // ✅ Debug token storage
+          localStorage.setItem('userToken', response.token);
+          localStorage.setItem('userData', JSON.stringify(response.user));
+          // this.router.navigate(['/dashboard']);
+        } else {
+          console.error('❌ Token missing in API response.');
+        }
         const userLocation = Array.isArray(response?.user?.Location)
           ? response.user.Location
           : response.user?.Location?.split(',').map((loc: string) =>
               loc.trim()
             ) || ['Default Location'];
-
-        console.log('📌 Final Converted Locations Array:', userLocation);
-        console.log('📌 Extracted User Location:', userLocation);
-        // localStorage.setItem(
-        //   'userData',
-        //   JSON.stringify(response.userData || {})
-        // );
-        // localStorage.setItem('token', 'yourAuthToken');
         this.router.navigate(['/dashboard']);
 
         const dialogRef = this.dialog.open(LocationPopupComponentComponent, {

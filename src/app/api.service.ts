@@ -6,7 +6,8 @@ import { catchError, Observable, tap, throwError } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:3000/api';
+  // private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = 'http://69.62.80.20:3000/api';
 
   constructor(private http: HttpClient) {}
   login(emailOrUsername: string, password: string) {
@@ -21,10 +22,9 @@ export class ApiService {
         }
       )
       .pipe(
-        tap((loggedInUser) => {
+        tap((response) => {
           console.log('✅ Request sent successfully');
-          // Store user data in localStorage after successful login
-          localStorage.setItem('user', JSON.stringify(loggedInUser));
+          localStorage.setItem('user', JSON.stringify(response));
         }),
 
         catchError((error) => {
@@ -37,10 +37,11 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/get-users`);
   }
 
-getUsersByLocation(location: string) {
-  return this.http.get(`${this.baseUrl}/getUsers/${encodeURIComponent(location)}`);
-}
-
+  getUsersByLocation(location: string) {
+    return this.http.get(
+      `${this.baseUrl}/getUsers/${encodeURIComponent(location)}`
+    );
+  }
 
   signupUsers(
     UserName: string,
@@ -89,15 +90,14 @@ getUsersByLocation(location: string) {
     return this.http.get<any>(`${this.baseUrl}/getUserModules/${userId}`);
   }
 
- // ✅ File: api.service.ts
+  // ✅ File: api.service.ts
 
- getUserById(userId: string): Observable<any> {
-  console.log('📢 API Call Triggered for userId:', userId);
-  return this.http.get(`${this.baseUrl}/getUserById/${userId}`);
-}
+  getUserById(userId: string): Observable<any> {
+    console.log('📢 API Call Triggered for userId:', userId);
+    return this.http.get(`${this.baseUrl}/getUserById/${userId}`);
+  }
 
   updateUser(userId: string, data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/updateUserById/${userId}`, data);
   }
-
 }

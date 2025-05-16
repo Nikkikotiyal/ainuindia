@@ -116,6 +116,10 @@ $my-angular-app-theme: mat.define-light-theme((
   font-weight: bold !important;
 }
 
+@font-face {
+  font-family: 'Roboto';
+  src: url('/assets/fonts/Roboto-Regular.ttf') format('truetype');
+}
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

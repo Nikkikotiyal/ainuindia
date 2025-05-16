@@ -110,10 +110,11 @@ export class DashboardComponent implements AfterViewInit {
 
   ngAfterViewInit() {}
   logout() {
-    localStorage.removeItem('token'); // Remove stored authentication token
-    sessionStorage.clear(); // Clear all session data if needed
-
-    this.router.navigate(['']);
+    localStorage.removeItem('token'); // ✅ Remove authentication token
+    localStorage.removeItem('userLocation'); // ✅ Remove stored location
+    localStorage.removeItem('userEmail'); // ✅ Remove stored email
+    localStorage.clear(); // ✅ Full localStorage cleanup (optional)
+    this.router.navigate(['']); // ✅ Redirect to login page
   }
 
   isLoggedIn(): boolean {
