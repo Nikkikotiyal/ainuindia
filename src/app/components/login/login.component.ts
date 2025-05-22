@@ -48,6 +48,27 @@ export class LoginComponent {
   //   '^(?=.{8,})((?=.*[^a-zA-Zs])(?=.*[a-z])(?=.*[A-Z])| (?=.*[^a-zA-Z0-9s])(?=.*d)(?=.*[a-zA-Z])).*$';
 
   ngOnInit(): void {
+    console.log('Background animation started!');
+    const images: string[] = [
+      'assets/c1e4f92fd014f025cf45d378b573977d.jpg',
+      'assets/backgroundimg.jpg',
+      'assets/b7b952774a146d6f83c9c2837e2c86b1.jpg',
+      // src/assets/backgroundimg.jpg
+    ];
+
+    let index = 0;
+
+    setInterval(() => {
+      const bgElement = document.querySelector('.sliding-bg') as HTMLElement;
+      if (bgElement) {
+        console.log('✅ Current Image Index:', index); // Debugging
+        console.log('🔄 Changing Background To:', images[index]); // Debugging
+        bgElement.style.backgroundImage = `url(${images[index]})`;
+        index = (index + 1) % images.length;
+      } else {
+        console.error('❌ Background element not found!');
+      }
+    }, 2000);
     // this.userLocation = localStorage.getItem('userLocation') || 'Default Location';
     this.loginForm = this.fb.group({
       emailOrUsername: ['', [Validators.required]],
@@ -80,28 +101,30 @@ export class LoginComponent {
           console.log('🔐 Token:', response.token); // ✅ Debug token storage
           localStorage.setItem('userToken', response.token);
           localStorage.setItem('userData', JSON.stringify(response.user));
-          // this.router.navigate(['/dashboard']);
+          this.router.navigate(["/verifyOtp"]);
         } else {
           console.error('❌ Token missing in API response.');
         }
-        const userLocation = Array.isArray(response?.user?.Location)
-          ? response.user.Location
-          : response.user?.Location?.split(',').map((loc: string) =>
-              loc.trim()
-            ) || ['Default Location'];
-        this.router.navigate(['/dashboard']);
 
-        const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
-          width: '400px',
-          data: { defaultLocation: userLocation },
-        });
+        // const userLocation = Array.isArray(response?.user?.Location)
+        //   ? response.user.Location
+        //   : response.user?.Location?.split(',').map((loc: string) =>
+        //       loc.trim()
+        //     ) || ['Default Location'];
 
-        dialogRef.afterClosed().subscribe((selectedLocation) => {
-          if (selectedLocation) {
-            localStorage.setItem('userLocation', selectedLocation);
-            this.userLocation = selectedLocation;
-          }
-        });
+        // this.router.navigate(['/dashboard']);
+
+        // const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
+        //   width: '400px',
+        //   data: { defaultLocation: userLocation },
+        // });
+
+        // dialogRef.afterClosed().subscribe((selectedLocation) => {
+        //   if (selectedLocation) {
+        //     localStorage.setItem('userLocation', selectedLocation);
+        //     this.userLocation = selectedLocation;
+        //   }
+        // });
       },
       error: (error) => {
         console.error('❌ Login Failed:', error);

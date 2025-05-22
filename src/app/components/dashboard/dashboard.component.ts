@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   Inject,
   ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
@@ -16,6 +17,8 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../api.service';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ChangePasswordComponent } from '../change-password/change-password.component';
+import { ProfileComponent } from '../profile/profile.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +28,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   styleUrls: ['./dashboard.component.scss'], // Uncomment if needed
 })
 export class DashboardComponent implements AfterViewInit {
+  isDashVisible: boolean = false;
   data: any[] = [];
   isSidebarOpen = false;
   modules: any[] = [];
@@ -32,7 +36,7 @@ export class DashboardComponent implements AfterViewInit {
   users: any[] = []; // ✅ Declare the 'users' property
   // selectedRecord: any = null;
   selectedUser: any = null;
-
+  darkModeEnabled = false;
   // currentPage = 1;
   // itemsPerPage = 10;
   // totalPages = 1;
@@ -49,7 +53,9 @@ export class DashboardComponent implements AfterViewInit {
   public loggedIn: boolean = false;
   formData: any = {};
   buttonLabel: string = 'Edit';
+  originalUsers: any[] = [];
   // selectedModuleNames: string[] = [];
+  isLoginInfo: boolean = false;
 
   constructor(
     private snackBar: MatSnackBar,
@@ -61,6 +67,13 @@ export class DashboardComponent implements AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.fetchUsers();
+    // const savedDarkMode = JSON.parse(localStorage.getItem("darkMode") || "false");
+    // if (savedDarkMode) {
+    //   document.body.classList.add("dark-mode");
+    //   this.darkModeEnabled = true;
+    // }
+
     const storedLocation = localStorage.getItem('userLocation');
     if (typeof window !== 'undefined') {
       const userDataStr = localStorage.getItem('user');
@@ -120,12 +133,20 @@ export class DashboardComponent implements AfterViewInit {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
+  showDashboard() {
+    this.isDashVisible = !this.isDashVisible; // ✅ Show div on click
+     this.showUserList = false;
 
-  openUserList() {
-    this.showUserList = true;
-    this.isSidebarOpen = false;
-    this.showModuleList = false;
   }
+
+ openUserList() {
+  this.showUserList = true;
+  this.isSidebarOpen = false;
+  this.showModuleList = false;
+  this.isSidebarOpen=true;
+  this.isDashVisible=false;
+  this.cdRef.detectChanges(); // ✅ Forces UI update
+}
   closeUserList() {
     this.showUserList = false;
   }
@@ -148,12 +169,18 @@ export class DashboardComponent implements AfterViewInit {
       }
     });
   }
+  // toggleDarkMode() {
+  //   this.darkModeEnabled = !this.darkModeEnabled;
+  //   document.body.classList.toggle("dark-mode", this.darkModeEnabled);
+  //   localStorage.setItem("darkMode", JSON.stringify(this.darkModeEnabled));
+  // }
 
   openModuleList(user: any) {
     this.showModuleList = true;
     this.showUserList = false;
-    this.isSidebarOpen = false;
+    this.isSidebarOpen = true;
     this.selectedUser = user;
+
 
     // Step 1: First, fetch ALL modules
     this.apiService.getUserModulesByUserID(user._id).subscribe(
@@ -217,23 +244,48 @@ export class DashboardComponent implements AfterViewInit {
 
   resetDashboard() {
     this.showUserList = false;
-    this.isSidebarOpen = false;
-    this.cdr.detectChanges();
+    this.isSidebarOpen = true;
+    this.isDashVisible = false;
+    this.showModuleList = false;
+
+    // this.isDashVisible=true;
+    // this.cdr.detectChanges();
   }
 
+  // filterUsers() {
+  //   const term = this.searchTerm.toLowerCase().trim();
+  //   this.users = this.users.filter(
+  //     (user) =>
+  //       user.UserName.toLowerCase().includes(term) ||
+  //       user.Email.toLowerCase().includes(term)
+  //   );
+  // }
   filterUsers() {
     const term = this.searchTerm.toLowerCase().trim();
-    this.users = this.users.filter(
+
+    if (!term) {
+      this.users = [...this.originalUsers]; // ✅ Reset full list when search is empty
+      return;
+    }
+
+    this.users = this.originalUsers.filter(
       (user) =>
         user.UserName.toLowerCase().includes(term) ||
         user.Email.toLowerCase().includes(term)
     );
   }
+
   clearSearch() {
     this.searchTerm = '';
-    this.users = [...this.users];
+    this.users = [...this.originalUsers]; // ✅ Restore full user list
   }
 
+  fetchUsers() {
+    this.apiService.getUsers().subscribe((data) => {
+      this.users = data; // Display filtered users
+      this.originalUsers = [...data]; // Store original list for reset
+    });
+  }
   sortData(column: string) {
     if (this.sortColumn === column) {
       // Toggle direction
@@ -363,5 +415,40 @@ export class DashboardComponent implements AfterViewInit {
       this.users = [...data];
       console.log('Updated Users:', this.users);
     });
+  }
+
+  loginInfo(event: Event) {
+    event.stopPropagation();
+    this.isLoginInfo = !this.isLoginInfo;
+    console.log('open userinfo');
+  }
+
+  viewProfile() {
+    const dialogRef = this.dialog.open(ProfileComponent, {
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe(() => {});
+  }
+
+  changePassword() {
+    const dialogRef = this.dialog.open(ChangePasswordComponent, {
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe(() => {});
+    console.log('Change password clicked!'); // ✅ Implement password change logic
+  }
+
+  @HostListener('document:click')
+  onClickOutside() {
+    this.isLoginInfo = false; // ✅ Close dropdown if clicked outside
+  }
+  viewUser(user: any) {
+    // View logic here
+  }
+
+  deleteUser(user: any) {
+    // Delete logic here
   }
 }

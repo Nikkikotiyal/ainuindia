@@ -41,7 +41,7 @@ export class AddUserComponent {
     'Secunderabad',
     'Chennai',
   ];
-
+  isPopupVisible = false;
   isEditing = false;
   selectedLocations: string[] = [];
   filteredLocations: string[] = [...this.allLocations];
@@ -59,7 +59,7 @@ export class AddUserComponent {
       UserName: [''],
       Designation: [''],
       Email: [''],
-      role: ['User'],
+      Role: [''],
       MobileNo: [''],
       Status: ['A'],
       Location: [''],
@@ -107,7 +107,7 @@ export class AddUserComponent {
         'defaultPassword123',
         this.userForm.value.Designation,
         this.userForm.value.Email,
-        this.userForm.value.role || 'User',
+        this.userForm.value.Role || 'User',
         this.userForm.value.MobileNo,
         this.userForm.value.Status || 'A',
         this.userForm.value.Location
@@ -122,6 +122,7 @@ export class AddUserComponent {
       });
   }
   editUserSuccesfully() {
+    // console.log("🛡️ Role before API request:", this.userForm.value.role);
     this.apiService
       .updateUser(this.data.userData._id, this.userForm.value)
 
@@ -178,5 +179,8 @@ export class AddUserComponent {
       (l) => l !== location
     );
     this.userForm.patchValue({ Location: this.selectedLocations.join(', ') });
+  }
+  closePopup() {
+    this.dialogRef.close();
   }
 }

@@ -1,16 +1,15 @@
-
 .ainuLogo {
   filter: brightness(0) invert(1);
   height: 7ch;
 }
-
 
 // footer {
 //   position: relative;
 //   bottom: 0;
 //   width: 100%;
 // }
-body, html {
+body,
+html {
   background-color: white !important;
   min-height: 100vh;
   display: flex;
@@ -45,7 +44,6 @@ main {
 //   color: white;
 // }
 
-
 // .error-snackbar {
 //   background-color: #f44336 !important;  /* Red */
 //   color: white !important;
@@ -63,4 +61,16 @@ main {
   // border-radius: 5px;
   cursor: pointer;
   transition: background 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+@media (max-width: 768px) {
+  .col-span-6 {
+    width: 100%; /* ✅ Ensures sections stack on small screens */
+  }
+}
+.table-container {
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar-open .table-container {
+  margin-left: 64px; /* ✅ Ensures space is allocated when sidebar opens */
 }

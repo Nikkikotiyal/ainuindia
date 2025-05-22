@@ -1,127 +1,170 @@
-<form
-  [formGroup]="userForm"
-  class="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg shadow-lg max-w-lg mx-auto"
->
-  <div class="col-span-2 flex items-center justify-between mb-3" *ngIf="!isEditing">
-    <h2 class="text-lg font-bold text-teal-700">Add User</h2>
-    <span class="text-teal-600 text-2xl">
-      <i class="fas fa-user-plus"></i>
-    </span>
-  </div>
+<form [formGroup]="userForm">
+  <div
+    *ngIf="!isPopupVisible"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overlay-container"
+  >
+    <div class="bg-white w-full max-w-4xl rounded-lg shadow-lg p-6">
+      <!-- Header Section -->
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="text-lg font-bold text-gray-700">
+          {{ isEditing ? "Update User" : "Add User" }}
+        </h2>
+        <button class="text-red-800 text-lg font-bold" (click)="closePopup()">
+          ✖
+        </button>
+      </div>
 
-   <div class="col-span-2 flex items-center justify-between mb-3" *ngIf="isEditing">
-    <h2 class="text-lg font-bold text-teal-700"> User Info</h2>
-    <span class="text-teal-600 text-2xl">
-      <i class="fas fa-user-plus"></i>
-    </span>
-  </div>
-  <div>
-    <label class="block mb-1">Name:</label>
-    <input
-      type="text"
-      class="w-full p-2 border rounded"
-      placeholder="Enter name"
-      formControlName="UserName"
-    />
-
-    <label class="block mb-1 mt-3">Email:</label>
-    <input
-      type="email"
-      class="w-full p-2 border rounded"
-      placeholder="Enter email"
-      formControlName="Email"
-      name="Email"
-    />
-    <div *ngIf="errorMessage" class="error-box">
-      {{ errorMessage }}
-    </div>
-    <label class="block mb-1 mt-3">Mobile No:</label>
-    <input
-      type="number"
-      class="w-full p-2 border rounded"
-      placeholder="Enter mobile no"
-      formControlName="MobileNo"
-      name="MobileNo"
-    />
-  </div>
-
-  <div>
-    <label class="block mb-1">Designation:</label>
-    <input
-      type="text"
-      class="w-full p-2 border rounded"
-      placeholder="Enter designation"
-      formControlName="Designation"
-      name="Designation"
-    />
-
-    <label class="block mb-1 mt-3">Status:</label>
-    <select
-      class="w-full p-2 border rounded"
-      formControlName="Status"
-      name="Status"
-    >
-      <option value="A">Active</option>
-      <option value="I">Inactive</option>
-    </select>
-
-    <label class="block mb-1 mt-3">Location:</label>
-    <div class="relative">
-      <input
-        type="text"
-        placeholder="Select locations..."
-        [value]="selectedLocations.join(', ')"
-        readonly
-        class="w-full p-2 border rounded cursor-pointer"
-        (focus)="dropdownOpen = true"
-      />
-
-      <div
-        *ngIf="dropdownOpen"
-        class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10"
-      >
-        <div class="p-2 text-sm">
-          <label
-            *ngFor="let location of filteredLocations"
-            class="block p-2 hover:bg-gray-100 cursor-pointer"
-          >
+      <!-- Content -->
+      <div class="py-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Name:</label
+            >
             <input
-              type="checkbox"
-              [checked]="
-                userForm.get('Location')?.value?.includes(location) || false
-              "
-              (change)="toggleLocation(location)"
+              type="text"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter name"
+              formControlName="UserName"
             />
-            {{ location }}
-          </label>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Designation:</label
+            >
+            <input
+              type="text"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter designation"
+              formControlName="Designation"
+              name="Designation"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Role:</label
+            >
+            <select
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              formControlName="Role"
+              name="role"
+            >
+              <option value="SuperAdmin">Admin</option>
+              <option value="User">User</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Mobile No:</label
+            >
+            <input
+              type="number"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter mobile no"
+              formControlName="MobileNo"
+              name="MobileNo"
+            />
+          </div>
+        </div>
+
+        <div class="col-span-2 mt-3">
+          <label class="block text-sm font-semibold text-gray-700"
+            >Email:</label
+          >
+          <input
+            type="email"
+            class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+            placeholder="Enter email"
+            formControlName="Email"
+            name="Email"
+          />
+        </div>
+
+        <div class="col-span-2 mt-3">
+          <label class="block text-sm font-semibold text-gray-700"
+            >Location:</label
+          >
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Select locations..."
+              [value]="selectedLocations.join(', ')"
+              readonly
+              class="w-full p-2 border rounded cursor-pointer"
+              (focus)="dropdownOpen = true"
+            />
+
+            <div
+              *ngIf="dropdownOpen"
+              class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10"
+            >
+              <div class="p-2 text-sm">
+                <label
+                  *ngFor="let location of filteredLocations"
+                  class="block p-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="
+                      userForm.get('Location')?.value?.includes(location) ||
+                      false
+                    "
+                    (change)="toggleLocation(location)"
+                  />
+                  {{ location }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-2 mt-3">
+          <label class="block text-sm font-semibold text-gray-700"
+            >Status:</label
+          >
+          <select
+            class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+            formControlName="Status"
+            name="Status"
+          >
+            <option value="A">Active</option>
+            <option value="S">Suspended</option>
+            <option value="I">Inactive</option>
+          </select>
+        </div>
+
+        <div *ngIf="showToaster" class="custom-toaster text-sm">
+          🎉 User added successfully!
+        </div>
+
+        <div *ngIf="errorMessage" class="error-box text-sm">
+          {{ errorMessage }}
+        </div>
+        <div class="text-gray-700 p-2 rounded-md text-sm text-left">
+          🔑 Default Password for Users: <strong>defaultPassword123</strong>
         </div>
       </div>
+
+      <!-- Action Buttons -->
+
+      <div class="flex justify-center space-x-6 mt-4">
+        <button
+          *ngIf="!isEditing"
+          class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
+          (click)="addUserSuccesfully()"
+        >
+          <i class="fas fa-user-plus mr-2"></i> Add User
+        </button>
+
+        <button
+          *ngIf="isEditing"
+          class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
+          (click)="editUserSuccesfully()"
+        >
+          <i class="fas fa-edit mr-2"></i> Update User
+        </button>
+      </div>
     </div>
-  </div>
-
-  <div class="col-span-2 mt-4 flex justify-center">
-    <button
-      *ngIf="!isEditing"
-      class="bg-teal-600 text-white px-5 py-2 rounded hover:bg-teal-700 transition flex items-center"
-      (click)="addUserSuccesfully()"
-    >
-      <i class="fas fa-user-plus mr-2"></i> Add User
-    </button>
-
-    <button
-      *ngIf="isEditing"
-      class="bg-teal-600 text-white px-5 py-2 rounded hover:bg-teal-700 transition flex items-center"
-      (click)="editUserSuccesfully()"
-    >
-      <i class="fas fa-edit mr-2"></i> Update User
-    </button>
-  </div>
-
-  <div *ngIf="showToaster" class="custom-toaster">
-    🎉 User added successfully!
-  </div>
-
-  <div *ngIf="errorMessage" class="error-box">
-    {{ errorMessage }}
   </div>
 </form>

@@ -1,10 +1,27 @@
-// .container-color{
-//   background-color:rgb(3 3 34);
-// }
-// .signIn-btn{
-//   background-color:rgb(3 3 34);
-// }
 .ainuLogo {
   max-width: 40%;
   height: auto;
+}
+.sliding-bg {
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1s ease-in-out;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.forgot-password {
+  text-align: right;
+  font-size: 14px;
+  color: gray;
+  cursor: pointer;
+  text-decoration: underline;
 }

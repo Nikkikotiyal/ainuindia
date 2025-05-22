@@ -1,7 +1,54 @@
-<div>
-  <div class="flex h-screen">
+<div class="flex h-screen">
+  <!-- Sidebar Navigation -->
+  <aside
+    class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white pt-16 transform transition-transform duration-300 z-40"
+    [ngClass]="{
+      '-translate-x-full': !isSidebarOpen,
+      'translate-x-0': isSidebarOpen
+    }"
+  >
+    <nav class="space-y-2 bg-red-600 text-white h-full w-64 p-4">
+      <a
+        class="flex items-center px-6 py-3 hover:bg-gray-700 mt-5"
+        (click)="resetDashboard()"
+      >
+        <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
+      </a>
+
+      <a
+        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        (click)="openUserList()"
+      >
+        <i class="fas fa-user-md mr-3"></i> User
+      </a>
+
+      <a
+        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        routerLink="/services"
+      >
+        <i class="fas fa-file-medical mr-3"></i> Documents
+      </a>
+
+      <a
+        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        routerLink="/billing"
+      >
+        <i class="fas fa-file-invoice-dollar mr-3"></i> Bills
+      </a>
+
+      <a
+        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        routerLink="/summary"
+      >
+        <i class="fas fa-chart-bar mr-3"></i> Summary
+      </a>
+    </nav>
+  </aside>
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col">
+    <!-- Header -->
     <header
-      class="bg-gray-900 text-white flex justify-between items-center px-2 py-2 fixed w-full top-0 z-50"
+      class="bg-red-800 text-white flex justify-between items-center px-4 py-3 fixed w-full top-0 z-50"
     >
       <div class="flex items-center space-x-4">
         <img
@@ -14,536 +61,425 @@
 
       <div class="flex justify-end items-center space-x-4 w-full">
         <div class="flex items-center">
-          <i class="fas fa-map-marker-alt text-teal-600 mr-2"></i>
-          <span class="font-semibold text-white">
-            Location: {{ chosenLocation }}</span
+          <i class="fas fa-map-marker-alt text-white mr-2"></i>
+          <span class="font-semibold text-white"
+            >Location: {{ chosenLocation }}</span
           >
         </div>
 
         <div class="border-r border-white h-6 mx-4"></div>
 
-        <div class="flex items-center">
-          <i class="fas fa-envelope text-teal-600 mr-2"></i>
+        <div class="flex items-center" (click)="loginInfo($event)">
+          <i class="fas fa-envelope text-white mr-2"></i>
           <span class="font-semibold text-white">{{ userEmail }}</span>
         </div>
       </div>
+
+      <div
+        *ngIf="isLoginInfo"
+        class="absolute bg-white shadow-md rounded-lg mt-2 w-48 border border-gray-300 right-0 top-full"
+      >
+        <ul class="text-sm divide-y divide-gray-200">
+          <li (click)="viewProfile()" class="p-3 cursor-pointer text-red-800">
+            👤 Profile
+          </li>
+          <li
+            (click)="changePassword()"
+            class="p-3 cursor-pointer text-red-800"
+          >
+            🔑 Change Password
+          </li>
+          <li
+            (click)="logout()"
+            class="p-3 hover:bg-red-100 cursor-pointer text-red-800"
+          >
+            🚪 Logout
+          </li>
+        </ul>
+      </div>
     </header>
 
-    <div>
-      <aside
-        class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white pt-16 transform transition-transform duration-300 z-40"
-        [ngClass]="{
-          '-translate-x-full': !isSidebarOpen,
-          'translate-x-0': isSidebarOpen
-        }"
-      >
-        <nav class="space-y-2">
-          <a
-            class="block px-6 py-3 hover:bg-gray-700"
-            (click)="resetDashboard()"
-            >Dashboard</a
-          >
-          <a (click)="openUserList()" class="block px-6 py-3 hover:bg-gray-700">
-            User
-          </a>
-          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/services"
-            >Document</a
-          >
-          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/contact"
-            >Bills</a
-          >
-          <a class="block px-6 py-3 hover:bg-gray-700" routerLink="/contact"
-            >Summary</a
-          >
-          <a
-            class="block px-6 py-3 hover:bg-gray-700"
-            routerLink="/contact"
-            (click)="logout()"
-            >Logout</a
-          >
-        </nav>
-      </aside>
+    <!-- Page Content -->
+    <main class="flex-1 p-6 bg-gray-100">
+      <ng-container *ngIf="activePage === 'dashboard'">
+        <h3 class="text-xl font-bold">Dashboard Overview</h3>
 
-      <!-- Main Content -->
-      <main
-        class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-5"
-        [ngClass]="{
-          'ml-64': isSidebarOpen && !showUserList,
-          'ml-0': !isSidebarOpen || showUserList
-        }"
-      >
+        <!-- ✅ Dashboard Boxes (Hidden when User List is Active) -->
         <div
-          class="flex-1 flex flex-col"
-          *ngIf="!showUserList && !showModuleList"
-        >
-          <!-- Dashboard Cards -->
-          <div>
-            <div
-              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
-            >
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold text-sm md:text-base lg:text-lg"
-              >
-                <i class="fas fa-hospital fa-2x text-teal-600"></i>
-                <div>ADT</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-file-invoice-dollar fa-2x text-teal-600"></i>
-                <div>A/R</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-boxes-stacked fa-2x text-teal-600"></i>
-                <div>Asset Management</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fas fa-file-invoice-dollar fa-2x text-teal-600"></i>
-                <div>Billing</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-notes-medical fa-2x text-teal-600"></i>
-                <div>D/C Summary</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-procedures fa-2x text-teal-600"></i>
-                <div>Day Care</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fas fa-user-md fa-2x text-teal-600"></i>
-                <div>Diagnostics Admin</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-x-ray fa-2x text-teal-600"></i>
-                <div>Diagnostics</div>
-              </div>
-            </div>
-
-            <div
-              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
-            >
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fas fa-utensils fa-2x text-teal-600"></i>
-                <div>Diet</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-ambulance text-teal-600"></i>
-                <div>Emergency</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-concierge-bell text-teal-600"></i>
-                <div>Front Office</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-file-alt text-teal-600"></i>
-                <div>Incident Report</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-warehouse text-teal-600"></i>
-
-                <div>Inventory</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-kitchen-set text-teal-600"></i>
-
-                <div>Kitchen</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-vials text-teal-600"></i>
-                <div>Lab Medicine Admin</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-flask text-teal-600"></i>
-                <div>Lab Medicine</div>
-              </div>
-            </div>
-            <div
-              class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
-            >
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-cogs fa-flask text-teal-600"></i>
-                <div>Masters</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-              >
-                <i class="fa-solid fa-chart-bar text-teal-600"></i>
-                <div>MIS Report</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-folder text-teal-600"></i>
-                <div>MRD</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-user-nurse text-teal-600"></i>
-                <div>Nursing</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-procedures text-teal-600"></i>
-                <div>Operation Theatre</div>
-              </div>
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-umbrella-beach text-teal-600"></i>
-                <div>Package And Plans</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-user-md text-teal-600"></i>
-                <div>Physician</div>
-              </div>
-
-              <div
-                class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-              >
-                <i class="fa-solid fa-vial text-teal-600"></i>
-                <div>Sample Collection</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-
-    <!-- User Full-screen table -->
-    <div
-      *ngIf="showUserList"
-      class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-5"
-      [ngClass]="{
-        'ml-64': isSidebarOpen && !showUserList,
-        'ml-0': !isSidebarOpen || showUserList
-      }"
-    >
-      <div class="card shadow-sm border-0 rounded-3 p-3">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold d-flex align-items-center gap-2">
-            <i class="bi bi-people-fill"></i>
-            All Users
-          </h2>
-          <div class="input-group mt-3 w-50">
-            <span class="input-group-text bg-light">
-              <i class="fas fa-search text-muted"></i>
-            </span>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Search by name or email..."
-              [(ngModel)]="searchTerm"
-              (input)="filterUsers()"
-            />
-
-            <button
-              *ngIf="searchTerm"
-              class="btn btn-outline-secondary"
-              (click)="clearSearch()"
-            >
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <button
-            (click)="openAddUserDialog()"
-            class="bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 transition"
-          >
-            ➕ Add User
-          </button>
-        </div>
-
-        <div class="overflow-y-auto flex-grow">
-          <table class="w-full border-collapse border border-gray-300 text-sm">
-            <thead class="sticky top-0 bg-gray-200 z-10">
-              <tr class="px-2 py-2 border text-center">
-                <th
-                  (click)="sortData('_id')"
-                  class="px-4 py-2 border font-semibold"
-                >
-                  Id
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === '_id' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === '_id' && sortDirection === 'desc',
-                      'fa-sort': sortColumn !== '_id'
-                    }"
-                  ></i>
-                </th>
-                <th (click)="sortData('UserName')" class="px-4 py-2 text-left">
-                  Name
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === 'UserName' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === 'UserName' && sortDirection === 'desc',
-                      'fa-sort': sortColumn !== 'UserName'
-                    }"
-                  ></i>
-                </th>
-
-                <!-- <th class="px-4 py-2 border font-semibold">Name</th> -->
-                <th (click)="sortData('Email')" class="px-4 py-2 text-left">
-                  Email
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === 'Email' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === 'Email' && sortDirection === 'desc',
-                      'fa-sort': sortColumn !== 'Email'
-                    }"
-                  ></i>
-                </th>
-
-                <th (click)="sortData('MobileNo')" class="px-4 py-2 text-left">
-                  MobileNo
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === 'MobileNo' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === 'MobileNo' && sortDirection === 'desc',
-                      'fa-sort': sortColumn !== 'MobileNo'
-                    }"
-                  ></i>
-                </th>
-
-                <th
-                  (click)="sortData('Designation')"
-                  class="px-4 py-2 text-left"
-                >
-                  Designation
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === 'Designation' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === 'Designation' &&
-                        sortDirection === 'desc',
-                      'fa-sort': sortColumn !== 'Designation'
-                    }"
-                  ></i>
-                </th>
-
-                <th (click)="sortData('Status')" class="px-4 py-2 text-left">
-                  Status
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-sort-up':
-                        sortColumn === 'Status' && sortDirection === 'asc',
-                      'fa-sort-down':
-                        sortColumn === 'Status' && sortDirection === 'desc',
-                      'fa-sort': sortColumn !== 'Status'
-                    }"
-                  ></i>
-                </th>
-                <th
-                  class="px-4 py-2 border font-semibold text-center"
-                  class="px-4 py-2 text-left"
-                >
-                  Module
-                </th>
-                <th
-                  class="px-4 py-2 border font-semibold text-center"
-                  class="px-4 py-2 text-left"
-                >
-                  Edit
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                *ngFor="let user of users"
-                class="hover:bg-gray-50 transition"
-              >
-                <td class="px-4 py-2 border">{{ user._id }}</td>
-                <td class="px-4 py-2 border text-left">{{ user.UserName }}</td>
-                <td class="px-4 py-2 border text-left">{{ user.Email }}</td>
-                <td class="px-4 py-2 border text-left">{{ user.MobileNo }}</td>
-                <td class="px-4 py-2 border text-left">
-                  {{ user.Designation }}
-                </td>
-                <td class="px-4 py-2 border text-left">
-                  <span
-                    class="badge px-3 py-2 text-capitalize text-center fw-semibold rounded-pill"
-                    [ngClass]="{
-                      'bg-success text-white': user.Status === 'A',
-                      'bg-secondary text-white': user.Status === 'I',
-                      'bg-danger text-white': user.Status === 'S'
-                    }"
-                  >
-                    {{ statusMap[user.Status] }}
-                  </span>
-                </td>
-                <!-- <td class="px-4 py-2 border">{{ user.Status }}</td> -->
-                <td class="px-4 py-2 border text-center">
-                  <button
-                    (click)="openModuleList(user)"
-                    class="bg-teal-700 text-white px-3 py-1 rounded hover:bg-teal-800 transition"
-                  >
-                    Module
-                  </button>
-                </td>
-                <td class="px-4 py-2 border text-center">
-                  <button
-                    (click)="editUserModuleList(user)"
-                    class="bg-teal-700 text-white px-3 py-1 rounded hover:bg-teal-800 transition"
-                  >
-                    {{ buttonLabel }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Module-screen table -->
-    <div
-      *ngIf="showModuleList"
-      class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-5"
-      [ngClass]="{
-        'ml-64': isSidebarOpen && !showModuleList,
-        'ml-0': !isSidebarOpen || showModuleList
-      }"
-    >
-      <!-- User Info Row (Above the table) -->
-      <div
-        *ngIf="selectedUser"
-        class="w-full bg-gray-100 px-4 py-2 rounded-md mb-4 flex flex-wrap items-center text-sm gap-4 border border-gray-300"
-      >
-        <span class="font-semibold text-teal-700 flex items-center gap-1">
-          <i class="fas fa-user-circle text-teal-600"></i>
-          {{ selectedUser.UserName }}
-        </span>
-        <span><strong>Id:</strong> {{ selectedUser._id }}</span>
-
-        <span
-          class="px-2 py-1 rounded-full font-medium text-xs"
+          *ngIf="!showUserList && !showModuleList && !isDashVisible"
+          class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
-            'bg-green-100 text-green-700': selectedUser.Status === 'A',
-            'bg-yellow-100 text-yellow-700': selectedUser.Status === 'I',
-            'bg-red-100 text-red-700': selectedUser.Status === 'S'
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
           }"
         >
-          {{ statusMap[selectedUser.Status] }}
-        </span>
-        <span><strong>Email:</strong> {{ selectedUser.Email }}</span>
-        <span><strong>Mobile:</strong> {{ selectedUser.MobileNo }}</span>
-        <span
-          ><strong>Designation:</strong> {{ selectedUser.Designation }}</span
-        >
-      </div>
+          <div
+            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20"
+          >
+            <h2 class="text-lg font-bold text-gray-700">TRIODREE</h2>
+            <button
+              (click)="showDashboard()"
+              class="px-4 py-1 text-sm font-semibold text-white bg-red-800 rounded hover:bg-red-800 transition"
+            >
+              Proceed
+            </button>
+          </div>
 
-      <!-- Right Side (User Module List) -->
-      <div
-        class="flex flex-col bg-white rounded-xl shadow-md p-6 border border-gray-200 h-full"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">
-            <i class="fas fa-table mr-2 text-gray-600"></i>User Module List
-          </h2>
+          <div
+            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20"
+          >
+            <h2 class="text-lg font-bold text-gray-700">INSTA HMS</h2>
+            <button
+              (click)="showDashboard()"
+              class="px-4 py-1 text-sm font-semibold text-white bg-red-800 rounded hover:bg-red-800 transition"
+            >
+              Proceed
+            </button>
+          </div>
         </div>
 
-        <!-- Table header -->
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse text-sm">
-            <thead class="bg-gray-200">
-              <tr>
-                <th class="px-4 py-2 border w-[40px]">
-                  <input type="checkbox" (change)="toggleAll($event)" />
-                </th>
-                <th class="px-4 py-2 border w-[100px]">Module ID</th>
-                <th class="px-4 py-2 border w-[150px]">Module Name</th>
-                <th class="px-4 py-2 border w-[150px]">Report Name</th>
-                <!-- <th class="px-4 py-2 border w-[80px]">View</th>
+        <!-- ✅ User List Table (Hidden until "User" Button Clicked) -->
+        <div
+          class="flex-1 transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <!-- ✅ User List Table -->
+          <div *ngIf="showUserList" class="p-6 bg-white shadow-md rounded-lg">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill"></i>
+                All Users
+              </h2>
+              <div class="input-group mt-3 w-50">
+                <span class="input-group-text bg-light">
+                  <i class="fas fa-search text-muted"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search by name or email..."
+                  [(ngModel)]="searchTerm"
+                  (input)="filterUsers()"
+                />
+
+                <button
+                  *ngIf="searchTerm"
+                  class="btn btn-outline-secondary"
+                  (click)="clearSearch()"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <button
+                (click)="openAddUserDialog()"
+                class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition"
+              >
+                + Add User
+              </button>
+            </div>
+            <table
+              class="w-full border-collapse border border-gray-300 text-sm mt-4"
+            >
+              <thead class="bg-gray-200">
+                <tr>
+                  <th
+                    (click)="sortData('UserName')"
+                    class="px-4 py-2 text-left"
+                  >
+                    Name
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'UserName' && sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'UserName' && sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'UserName'
+                      }"
+                    ></i>
+                  </th>
+
+                  <!-- <th class="px-4 py-2 border font-semibold">Name</th> -->
+                  <th (click)="sortData('Email')" class="px-4 py-2 text-left">
+                    Email
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'Email' && sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'Email' && sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'Email'
+                      }"
+                    ></i>
+                  </th>
+
+                  <th (click)="sortData('Role')" class="px-4 py-2 text-left">
+                    Role
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'Role' && sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'Role' && sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'Role'
+                      }"
+                    ></i>
+                  </th>
+
+                  <th
+                    (click)="sortData('MobileNo')"
+                    class="px-4 py-2 text-left"
+                  >
+                    MobileNo
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'MobileNo' && sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'MobileNo' && sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'MobileNo'
+                      }"
+                    ></i>
+                  </th>
+
+                  <th
+                    (click)="sortData('Designation')"
+                    class="px-4 py-2 text-left"
+                  >
+                    Designation
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'Designation' &&
+                          sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'Designation' &&
+                          sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'Designation'
+                      }"
+                    ></i>
+                  </th>
+
+                  <th (click)="sortData('Status')" class="px-4 py-2 text-left">
+                    Status
+                    <i
+                      class="fas"
+                      [ngClass]="{
+                        'fa-sort-up':
+                          sortColumn === 'Status' && sortDirection === 'asc',
+                        'fa-sort-down':
+                          sortColumn === 'Status' && sortDirection === 'desc',
+                        'fa-sort': sortColumn !== 'Status'
+                      }"
+                    ></i>
+                  </th>
+                  <th
+                    class="px-4 py-2 border font-semibold text-center"
+                    class="px-4 py-2 text-left"
+                  >
+                    Module
+                  </th>
+                  <th
+                    class="px-4 py-2 border font-semibold text-center"
+                    class="px-4 py-2 text-left"
+                  >
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let user of users"
+                  class="hover:bg-gray-50 transition"
+                >
+                  <!-- <td class="px-4 py-2 border">{{ user._id }}</td> -->
+                  <td class="px-4 py-2 border text-left">
+                    {{ user.UserName }}
+                  </td>
+                  <td class="px-4 py-2 border text-left">{{ user.Email }}</td>
+                  <td class="px-4 py-2 border">{{ user.Role }}</td>
+                  <td class="px-4 py-2 border text-left">
+                    {{ user.MobileNo }}
+                  </td>
+                  <td class="px-4 py-2 border text-left">
+                    {{ user.Designation }}
+                  </td>
+                  <td class="px-4 py-2 border text-left">
+                    <span class="flex items-center gap-2">
+                      <!-- Colored Dot -->
+                      <span
+                        class="w-2.5 h-2.5 rounded-full"
+                        [ngClass]="{
+                          'bg-green-500': user.Status === 'A',
+                          'bg-orange-600': user.Status === 'I',
+                          'bg-red-500': user.Status === 'S'
+                        }"
+                      ></span>
+
+                      <!-- Status Text -->
+                      <span
+                        class="badge px-3 py-2 text-capitalize text-center fw-semibold rounded-pill"
+                        [ngClass]="{
+                          'text-green-600': user.Status === 'A',
+                          'text-orange-600': user.Status === 'I',
+                          'text-red-600': user.Status === 'S'
+                        }"
+                      >
+                        {{ statusMap[user.Status] }}
+                      </span>
+                    </span>
+                  </td>
+
+                  <!-- <td class="px-4 py-2 border">{{ user.Status }}</td> -->
+                  <td class="px-4 py-2 border text-center">
+                    <button
+                      (click)="openModuleList(user)"
+                      class="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-800 transition"
+                    >
+                      <i class="fas fa-puzzle-piece"></i>
+                    </button>
+                  </td>
+                  <td class="px-4 py-2 border text-center">
+                    <div class="flex items-center justify-center gap-3 text-lg">
+                      <!-- View -->
+                      <button
+                        (click)="viewUser(user)"
+                        title="View"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+
+                      <!-- Edit -->
+                      <button
+                        (click)="editUserModuleList(user)"
+                        title="Edit"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+
+                      <!-- Delete -->
+                      <button
+                        (click)="deleteUser(user)"
+                        title="Delete"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button
+              (click)="closeUserList()"
+              class="mt-4 bg-red-600 text-white px-4 py-2 rounded"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <!-- User Module-screen table -->
+        <div
+          *ngIf="showModuleList"
+          class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-5"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <!-- User Info Row (Above the table) -->
+          <div
+            *ngIf="selectedUser"
+            class="w-full bg-gray-100 px-4 py-2 rounded-md mb-4 flex flex-wrap items-center text-sm gap-4 border border-gray-300"
+          >
+            <span class="font-semibold text-teal-700 flex items-center gap-1">
+              <i class="fas fa-user-circle text-teal-600"></i>
+              {{ selectedUser.UserName }}
+            </span>
+            <span><strong>Id:</strong> {{ selectedUser._id }}</span>
+
+            <span
+              class="px-2 py-1 rounded-full font-medium text-xs"
+              [ngClass]="{
+                'bg-green-100 text-green-700': selectedUser.Status === 'A',
+                'bg-yellow-100 text-yellow-700': selectedUser.Status === 'I',
+                'bg-red-100 text-red-700': selectedUser.Status === 'S'
+              }"
+            >
+              {{ statusMap[selectedUser.Status] }}
+            </span>
+            <span><strong>Email:</strong> {{ selectedUser.Email }}</span>
+            <span><strong>Mobile:</strong> {{ selectedUser.MobileNo }}</span>
+            <span
+              ><strong>Designation:</strong>
+              {{ selectedUser.Designation }}</span
+            >
+          </div>
+
+          <!-- Right Side (User Module List) -->
+          <div
+            class="flex flex-col bg-white rounded-xl shadow-md p-6 border border-gray-200 h-full"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">
+                <i class="fas fa-table mr-2 text-gray-600"></i>User Module List
+              </h2>
+            </div>
+
+            <!-- Table header -->
+            <div class="overflow-x-auto">
+              <table class="w-full border-collapse text-sm">
+                <thead class="bg-gray-200">
+                  <tr>
+                    <th class="px-4 py-2 border w-[40px]">
+                      <input type="checkbox" (change)="toggleAll($event)" />
+                    </th>
+                    <th class="px-4 py-2 border w-[100px]">Module ID</th>
+                    <th class="px-4 py-2 border w-[150px]">Module Name</th>
+                    <th class="px-4 py-2 border w-[150px]">Report Name</th>
+                    <!-- <th class="px-4 py-2 border w-[80px]">View</th>
                   <th class="px-4 py-2 border w-[80px]">Print</th>
                   <th class="px-4 py-2 border w-[80px]">Export</th> -->
-              </tr>
-            </thead>
-          </table>
-        </div>
+                  </tr>
+                </thead>
+              </table>
+            </div>
 
-        <!-- Scrollable table body -->
-        <div class="overflow-y-scroll max-h-[400px] overflow-x-auto">
-          <table class="w-full border-collapse text-sm table-fixed">
-            <tbody>
-              <tr
-                *ngFor="let module of modules"
-                class="hover:bg-gray-50 transition"
-              >
-                <td class="px-4 py-2 border w-[40px]">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="module.selected"
-                    [attr.checked]="module.selected ? true : null"
-                  />
-                </td>
-                <td class="px-4 py-2 border w-[100px]">
-                  {{ module.Moduleid }}
-                </td>
-                <td class="px-4 py-2 border w-[150px]">
-                  {{ module["MODLE NAME "] }}
-                </td>
-                <td class="px-4 py-2 border w-[150px]">
-                  {{ module["REPORT NAME"] }}
-                </td>
-                <!-- <td class="px-4 py-2 border w-[80px]">
+            <!-- Scrollable table body -->
+            <div class="overflow-y-scroll max-h-[400px] overflow-x-auto">
+              <table class="w-full border-collapse text-sm table-fixed">
+                <tbody>
+                  <tr
+                    *ngFor="let module of modules"
+                    class="hover:bg-gray-50 transition"
+                  >
+                    <td class="px-4 py-2 border w-[40px]">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="module.selected"
+                        [attr.checked]="module.selected ? true : null"
+                      />
+                    </td>
+                    <td class="px-4 py-2 border w-[100px]">
+                      {{ module.Moduleid }}
+                    </td>
+                    <td class="px-4 py-2 border w-[150px]">
+                      {{ module["MODLE NAME "] }}
+                    </td>
+                    <td class="px-4 py-2 border w-[150px]">
+                      {{ module["REPORT NAME"] }}
+                    </td>
+                    <!-- <td class="px-4 py-2 border w-[80px]">
                     <input type="checkbox" [(ngModel)]="module.viewChecked" />
                   </td>
                   <td class="px-4 py-2 border w-[80px]">
@@ -552,28 +488,28 @@
                   <td class="px-4 py-2 border w-[80px]">
                     <input type="checkbox" [(ngModel)]="module.exportChecked" />
                   </td> -->
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="flex justify-end mt-4">
-          <button
-            (click)="BackToView()"
-            class="fade-button text-sm px-3 py-1 mb-5 mr-5 rounded-md"
-          >
-            Back to view
-          </button>
-          <button
-            (click)="submitCheckedData()"
-            class="bg-teal-700 text-white text-sm px-3 py-1 mb-5 rounded-md hover:bg-teal-800 transition"
-          >
-            Update Record
-          </button>
-        </div>
-      </div>
-      <!-- </div> -->
-      <!-- Pagination Controls -->
-      <!-- <div class="flex justify-between items-center mt-6">
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="flex justify-end mt-4">
+              <button
+                (click)="BackToView()"
+                class="fade-button text-sm px-3 py-1 mb-5 mr-5 rounded-md"
+              >
+                Back to view
+              </button>
+              <button
+                (click)="submitCheckedData()"
+                class="bg-orange-600 text-white text-sm px-3 py-1 mb-5 rounded-md hover:bg-orange-600 transition"
+              >
+                Update Record
+              </button>
+            </div>
+          </div>
+          <!-- </div> -->
+          <!-- Pagination Controls -->
+          <!-- <div class="flex justify-between items-center mt-6">
         <button
           (click)="prevPage()"
           [disabled]="currentPage === 1"
@@ -594,10 +530,216 @@
           Next →
         </button>
       </div> -->
-    </div>
-  </div>
+        </div>
 
-  <footer class="bg-gray-900 text-white text-center p-3 fixed bottom-0 w-full">
-    <p>&copy; 2025 AINU. All Rights Reserved.</p>
-  </footer>
+        <!-- dashboard -->
+
+        <div
+          *ngIf="isDashVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+          >
+          <div class="grid grid-cols-4 gap-6 mt-10">
+            <div class="bg-white p-6 shadow-md rounded-lg text-center">
+              <h2 class="text-lg font-bold text-gray-700">Total Patients</h2>
+              <p class="text-2xl font-bold text-red-800">350</p>
+            </div>
+            <div class="bg-white p-6 shadow-md rounded-lg text-center">
+              <h2 class="text-lg font-bold text-gray-700">Users</h2>
+              <p class="text-2xl font-bold text-red-800">45</p>
+            </div>
+
+            <div class="bg-white p-6 shadow-md rounded-lg text-center">
+              <h2 class="text-lg font-bold text-gray-700">Locaitons</h2>
+              <p class="text-2xl font-bold text-red-800">8</p>
+            </div>
+            <div class="bg-white p-6 shadow-md rounded-lg text-center">
+              <h2 class="text-lg font-bold text-gray-700">Documents</h2>
+              <p class="text-2xl font-bold text-red-800">2,50,000</p>
+            </div>
+          </div>
+
+          <div
+            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+          >
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold text-sm md:text-base lg:text-lg"
+            >
+              <i class="fas fa-hospital fa-2x text-red-800"></i>
+              <div>ADT</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
+              <div>A/R</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-boxes-stacked fa-2x text-red-800"></i>
+              <div>Asset Management</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
+              <div>Billing</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-notes-medical fa-2x text-red-800"></i>
+              <div>D/C Summary</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-procedures fa-2x text-red-800"></i>
+              <div>Day Care</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fas fa-user-md fa-2x text-red-800"></i>
+              <div>Diagnostics Admin</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-x-ray fa-2x text-red-800"></i>
+              <div>Diagnostics</div>
+            </div>
+          </div>
+
+          <div
+            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+          >
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fas fa-utensils fa-2x text-red-800"></i>
+              <div>Diet</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-ambulance fa-2x text-red-800"></i>
+              <div>Emergency</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-concierge-bell fa-2x text-red-800"></i>
+              <div>Front Office</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-file-alt fa-2x text-red-800"></i>
+              <div>Incident Report</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-warehouse fa-2x text-red-800"></i>
+
+              <div>Inventory</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-kitchen-set fa-2x text-red-800"></i>
+
+              <div>Kitchen</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-vials fa-2x text-red-800"></i>
+              <div>Lab Medicine Admin</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-flask fa-2x text-red-800"></i>
+              <div>Lab Medicine</div>
+            </div>
+          </div>
+          <div
+            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+          >
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-cogs fa-flask fa-2x text-red-800"></i>
+              <div>Masters</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+            >
+              <i class="fa-solid fa-chart-bar fa-2x text-red-800"></i>
+              <div>MIS Report</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-folder fa-2x text-red-800"></i>
+              <div>MRD</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-user-nurse fa-2x text-red-800"></i>
+              <div>Nursing</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-procedures fa-2x text-red-800"></i>
+              <div>Operation Theatre</div>
+            </div>
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-umbrella-beach fa-2x text-red-800"></i>
+              <div>Package And Plans</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-user-md fa-2x text-red-800"></i>
+              <div>Physician</div>
+            </div>
+
+            <div
+              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+            >
+              <i class="fa-solid fa-vial fa-2x text-red-800"></i>
+              <div>Sample Collection</div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-red-800 text-white py-3 text-center">
+      <p>&copy; 2025 AINU.in. All Rights Reserved.</p>
+    </footer>
+  </div>
 </div>

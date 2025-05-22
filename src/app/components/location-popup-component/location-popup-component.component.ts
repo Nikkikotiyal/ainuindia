@@ -63,4 +63,7 @@ export class LocationPopupComponentComponent {
       );
     }
   }
+  closePopup() {
+    this.dialogRef.close();
+  }
 }

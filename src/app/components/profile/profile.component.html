@@ -1,0 +1,56 @@
+<div
+  class="fixed inset-0  flex items-center justify-center popup-container"
+>
+  <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center border-b pb-2">
+      <h2 class="text-lg font-bold text-red-800">User profile</h2>
+      <button class="text-red-800 text-lg font-bold" (click)="closePopup()">
+        ✖
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="py-4">
+      <div class="flex items-center gap-2 mt-2">
+        <label class="block text-sm font-semibold text-gray-700">Name:</label>
+        <span class="font-semibold text-teal-700 flex items-center gap-1">
+          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
+          {{ userName }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 mt-5">
+        <label class="block text-sm font-semibold text-gray-700">Designation:</label>
+        <span class="font-semibold text-teal-700 flex items-center gap-1">
+          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
+          {{ Designation }}
+        </span>
+      </div>
+      <div class="flex items-center gap-2 mt-5">
+        <label class="block text-sm font-semibold text-gray-700">Email:</label>
+        <span class="font-semibold text-teal-700 flex items-center gap-1">
+          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
+          {{ Email }}
+        </span>
+      </div>
+       <div class="flex items-center gap-2 mt-5">
+        <label class="block text-sm font-semibold text-gray-700">Mobile no:</label>
+        <span class="font-semibold text-teal-700 flex items-center gap-1">
+          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
+          {{ MobileNo }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <!-- <div class="flex justify-end space-x-4 pt-4">
+      <button class="bg-gray-400 text-white px-4 py-2 rounded-lg">
+        Cancel
+      </button>
+      <button class="text-white bg-orange-600 px-4 py-2 rounded-lg">
+        Confirm
+      </button>
+    </div> -->
+  </div>
+</div>
