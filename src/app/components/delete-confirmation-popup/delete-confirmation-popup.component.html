@@ -1,0 +1,15 @@
+<h2 mat-dialog-title class="dialog-title">
+  <i class="material-icons warning-icon">warning</i>
+  Confirm Delete
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  <p>{{ data.message }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-button class="cancel-button" (click)="onCancel()">Cancel</button>
+  <button mat-button class="delete-button" (click)="onConfirm()">
+    <i class="material-icons">delete_forever</i> Delete
+  </button>
+</mat-dialog-actions>

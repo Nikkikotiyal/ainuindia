@@ -27,6 +27,15 @@
               placeholder="Enter name"
               formControlName="UserName"
             />
+            <p
+              *ngIf="
+                userForm.controls['UserName'].invalid &&
+                userForm.controls['UserName'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Name is required (Min: 3 chars, Max: 50 chars).
+            </p>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700"
@@ -39,6 +48,15 @@
               formControlName="Designation"
               name="Designation"
             />
+            <p
+              *ngIf="
+                userForm.controls['Designation'].invalid &&
+                userForm.controls['Designation'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Designation is required (Min: 3 chars, Max: 50 chars).
+            </p>
           </div>
 
           <div>
@@ -53,6 +71,15 @@
               <option value="SuperAdmin">Admin</option>
               <option value="User">User</option>
             </select>
+            <p
+              *ngIf="
+                userForm.controls['Role'].invalid &&
+                userForm.controls['Role'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Please select a valid role.
+            </p>
           </div>
 
           <div>
@@ -66,6 +93,15 @@
               formControlName="MobileNo"
               name="MobileNo"
             />
+            <p
+              *ngIf="
+                userForm.controls['MobileNo'].invalid &&
+                userForm.controls['MobileNo'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Valid mobile number is required (10 digits only).
+            </p>
           </div>
         </div>
 
@@ -80,6 +116,15 @@
             formControlName="Email"
             name="Email"
           />
+          <p
+            *ngIf="
+              userForm.controls['Email'].invalid &&
+              userForm.controls['Email'].touched
+            "
+            class="text-red-600 text-xs mt-1"
+          >
+            Please enter a valid email address.
+          </p>
         </div>
 
         <div class="col-span-2 mt-3">
@@ -151,6 +196,7 @@
       <div class="flex justify-center space-x-6 mt-4">
         <button
           *ngIf="!isEditing"
+          [disabled]="userForm.invalid"
           class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
           (click)="addUserSuccesfully()"
         >

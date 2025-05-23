@@ -1,0 +1,27 @@
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.cancel-button {
+  color: #757575;
+  background-color: #f1f1f1;
+  padding: 8px 16px;
+  border-radius: 5px;
+}
+
+.delete-button {
+  background-color: #991b1b;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-button i {
+  font-size: 18px;
+}

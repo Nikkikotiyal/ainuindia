@@ -19,6 +19,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ChangePasswordComponent } from '../change-password/change-password.component';
 import { ProfileComponent } from '../profile/profile.component';
+import { log } from 'node:console';
+import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/delete-confirmation-popup.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -135,18 +137,17 @@ export class DashboardComponent implements AfterViewInit {
   }
   showDashboard() {
     this.isDashVisible = !this.isDashVisible; // ✅ Show div on click
-     this.showUserList = false;
-
+    this.showUserList = false;
   }
 
- openUserList() {
-  this.showUserList = true;
-  this.isSidebarOpen = false;
-  this.showModuleList = false;
-  this.isSidebarOpen=true;
-  this.isDashVisible=false;
-  this.cdRef.detectChanges(); // ✅ Forces UI update
-}
+  openUserList() {
+    this.showUserList = true;
+    this.isSidebarOpen = false;
+    this.showModuleList = false;
+    this.isSidebarOpen = true;
+    this.isDashVisible = false;
+    this.cdRef.detectChanges(); // ✅ Forces UI update
+  }
   closeUserList() {
     this.showUserList = false;
   }
@@ -180,7 +181,6 @@ export class DashboardComponent implements AfterViewInit {
     this.showUserList = false;
     this.isSidebarOpen = true;
     this.selectedUser = user;
-
 
     // Step 1: First, fetch ALL modules
     this.apiService.getUserModulesByUserID(user._id).subscribe(
@@ -448,7 +448,27 @@ export class DashboardComponent implements AfterViewInit {
     // View logic here
   }
 
-  deleteUser(user: any) {
-    // Delete logic here
+  deleteUser(userId: string) {
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: { message: 'Are you sure you want to delete this user?' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.apiService.deleteUser(userId).subscribe(() => {
+          this.showSuccessSnackbar('✅ User deleted successfully!');
+          this.fetchUsers(); // Reload active users after soft deletion
+        });
+      }
+    });
+  }
+
+  showSuccessSnackbar(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+      panelClass: ['success-snackbar'],
+    });
   }
 }

@@ -11,9 +11,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ApiService } from '../../api.service';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -56,11 +58,22 @@ export class AddUserComponent {
     private cd: ChangeDetectorRef
   ) {
     this.userForm = this.fb.group({
-      UserName: [''],
-      Designation: [''],
-      Email: [''],
-      Role: [''],
-      MobileNo: [''],
+      UserName: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+      ]),
+      Designation: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+      ]),
+      Email: new FormControl('', [Validators.required, Validators.email]),
+      Role: new FormControl('', [Validators.required]),
+      MobileNo: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^[0-9]{10}$/), // Ensures exactly 10 digits
+      ]),
       Status: ['A'],
       Location: [''],
     });
@@ -101,6 +114,11 @@ export class AddUserComponent {
   }
 
   addUserSuccesfully() {
+     if (this.userForm.valid) {
+      console.log("User Added:", this.userForm.value);
+    } else {
+      console.log("Form is invalid!");
+    }
     this.apiService
       .signupUsers(
         this.userForm.value.UserName,

@@ -8,7 +8,7 @@ import { log } from 'node:console';
 })
 export class ApiService {
   private baseUrl = 'http://localhost:3000/api';
-  // private baseUrl = 'https://69.62.80.20:3000/api';
+  // private baseUrl = 'http://69.62.80.20:3000/api';
 
   constructor(private http: HttpClient) {}
   login(emailOrUsername: string, password: string) {
@@ -108,5 +108,9 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/changePassword`, payload, {
        headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } // ✅ Send user token  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
+  }
+
+    deleteUser(userId: string) {
+    return this.http.put(`${this.baseUrl}/deleteUser/${userId}`, {});
   }
 }

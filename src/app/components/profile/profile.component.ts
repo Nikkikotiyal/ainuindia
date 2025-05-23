@@ -26,4 +26,9 @@ export class ProfileComponent {
   closePopup() {
     this.dialogRef.close();
   }
+  closeProfile(){
+    console.log("hhh");
+
+    this.dialogRef.close();
+  }
 }

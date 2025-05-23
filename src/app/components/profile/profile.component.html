@@ -1,56 +1,52 @@
 <div
-  class="fixed inset-0  flex items-center justify-center popup-container"
+  class="fixed inset-0 flex items-center justify-center popup-container bg-gray-900 bg-opacity-50"
 >
-  <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6">
-    <!-- Header Section -->
+  <div class="bg-white w-full max-w-md rounded-lg shadow-2xl p-6">
     <div class="flex justify-between items-center border-b pb-2">
-      <h2 class="text-lg font-bold text-red-800">User profile</h2>
-      <button class="text-red-800 text-lg font-bold" (click)="closePopup()">
+      <h2 class="text-xl font-bold text-red-800">User Profile</h2>
+      <button
+        class="text-red-800 text-xl font-bold hover:text-red-600 transition"
+        (click)="closePopup()"
+      >
         ✖
       </button>
     </div>
+    <!-- Profile Header with Avatar -->
+    <div class="flex flex-col items-center">
+      <img
+        src="/assets/b7b952774a146d6f83c9c2837e2c86b1.jpg"
+        alt="User Avatar"
+        class="w-24 h-24 rounded-full shadow-lg border-2 border-red-800"
+      />
+      <h2 class="text-2xl font-bold text-red-800 mt-3">{{ userName }}</h2>
+      <p class="text-gray-500 text-sm">{{ Designation }}</p>
+    </div>
 
-    <!-- Content -->
-    <div class="py-4">
-      <div class="flex items-center gap-2 mt-2">
-        <label class="block text-sm font-semibold text-gray-700">Name:</label>
-        <span class="font-semibold text-teal-700 flex items-center gap-1">
-          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
-          {{ userName }}
-        </span>
+    <!-- User Details -->
+    <div class="mt-6 space-y-4">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-envelope text-teal-600 text-xl"></i>
+        <span class="font-semibold text-gray-700">{{ Email }}</span>
       </div>
 
-      <div class="flex items-center gap-2 mt-5">
-        <label class="block text-sm font-semibold text-gray-700">Designation:</label>
-        <span class="font-semibold text-teal-700 flex items-center gap-1">
-          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
-          {{ Designation }}
-        </span>
-      </div>
-      <div class="flex items-center gap-2 mt-5">
-        <label class="block text-sm font-semibold text-gray-700">Email:</label>
-        <span class="font-semibold text-teal-700 flex items-center gap-1">
-          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
-          {{ Email }}
-        </span>
-      </div>
-       <div class="flex items-center gap-2 mt-5">
-        <label class="block text-sm font-semibold text-gray-700">Mobile no:</label>
-        <span class="font-semibold text-teal-700 flex items-center gap-1">
-          <!-- <i class="fas fa-user-circle text-teal-600"></i>-->
-          {{ MobileNo }}
-        </span>
+      <div class="flex items-center gap-3">
+        <i class="fas fa-phone-alt text-teal-600 text-xl"></i>
+        <span class="font-semibold text-gray-700">{{ MobileNo }}</span>
       </div>
     </div>
 
     <!-- Action Buttons -->
-    <!-- <div class="flex justify-end space-x-4 pt-4">
-      <button class="bg-gray-400 text-white px-4 py-2 rounded-lg">
+    <div class="flex justify-center mt-6 gap-4">
+      <button
+        class="text-white bg-red-800 px-4 py-2 rounded-lg shadow hover:bg-red-700 transition"
+      >
+        Edit Profile
+      </button>
+      <button (click)="closeProfile()"
+        class="bg-gray-400 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-500 transition"
+      >
         Cancel
       </button>
-      <button class="text-white bg-orange-600 px-4 py-2 rounded-lg">
-        Confirm
-      </button>
-    </div> -->
+    </div>
   </div>
 </div>
