@@ -1,43 +1,43 @@
 <div class="flex h-screen">
   <!-- Sidebar Navigation -->
   <aside
-    class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white pt-16 transform transition-transform duration-300 z-40"
+    class="fixed top-0 left-0 h-full w-64 text-white pt-10 transform transition-transform duration-300 z-40"
     [ngClass]="{
       '-translate-x-full': !isSidebarOpen,
       'translate-x-0': isSidebarOpen
     }"
-  >
-    <nav class="space-y-2 bg-red-600 text-white h-full w-64 p-4">
+   >
+    <nav class="bg-red-50 text-gray-800 h-full w-64 p-4 text-sm">
       <a
-        class="flex items-center px-6 py-3 hover:bg-gray-700 mt-5"
+        class="flex items-center px-6 py-3 hover:bg-red-50"
         (click)="resetDashboard()"
       >
         <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
       </a>
 
       <a
-        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        class="flex items-center px-6 py-3 hover:bg-red-50 mt-2"
         (click)="openUserList()"
       >
         <i class="fas fa-user-md mr-3"></i> User
       </a>
 
       <a
-        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        class="flex items-center px-6 py-3 hover:bg-red-50 mt-2"
         routerLink="/services"
       >
         <i class="fas fa-file-medical mr-3"></i> Documents
       </a>
 
       <a
-        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        class="flex items-center px-6 py-3 hover:bg-red-50 mt-2"
         routerLink="/billing"
       >
         <i class="fas fa-file-invoice-dollar mr-3"></i> Bills
       </a>
 
       <a
-        class="flex items-center px-6 py-3 hover:bg-gray-700"
+        class="flex items-center px-6 py-3 hover:bg-red-50 mt-2"
         routerLink="/summary"
       >
         <i class="fas fa-chart-bar mr-3"></i> Summary
@@ -48,15 +48,15 @@
   <div class="flex-1 flex flex-col">
     <!-- Header -->
     <header
-      class="bg-red-800 text-white flex justify-between items-center px-4 py-3 fixed w-full top-0 z-50"
-    >
+      class="bg-red-800 text-white flex justify-between items-center px-1 py-1 fixed w-full top-0 z-50"
+     >
       <div class="flex items-center space-x-4">
         <img
           src="https://ainuindia.org/img/ainu-rebranding-new-logo.svg"
           alt="AINU Logo"
           class="ainuLogo"
         />
-        <button (click)="toggleSidebar()" class="text-2xl">☰</button>
+        <div><button (click)="toggleSidebar()" class="text-2xl">☰</button></div>
       </div>
 
       <div class="flex justify-end items-center space-x-4 w-full">
@@ -113,25 +113,36 @@
             'ml-16': !isSidebarOpen
           }"
         >
+          <!-- TRIOTREE Box -->
           <div
-            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20"
+            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20 flex flex-col items-center justify-between"
           >
-            <h2 class="text-lg font-bold text-gray-700">TRIODREE</h2>
+            <div class="flex items-center justify-center space-x-2">
+              <i class="fas fa-hospital fa-2x text-red-800"></i>
+              <p class="text-lg font-bold text-red-800">TRIOTREE</p>
+            </div>
+            <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+            <p class="text-lg text-gray-500">Manage Application</p>
             <button
               (click)="showDashboard()"
-              class="px-4 py-1 text-sm font-semibold text-white bg-red-800 rounded hover:bg-red-800 transition"
+              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
             >
               Proceed
             </button>
           </div>
 
+          <!-- INSTA HMS Box -->
           <div
-            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20"
+            class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20 flex flex-col items-center justify-between"
           >
-            <h2 class="text-lg font-bold text-gray-700">INSTA HMS</h2>
+            <div class="flex items-center justify-center space-x-2">
+              <i class="fas fa-hospital fa-2x text-red-800"></i>
+              <p class="text-lg font-bold text-red-800">INSTA HMS</p>
+            </div>
+            <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+            <p class="text-lg text-gray-500">Manage Application</p>
             <button
-              (click)="showDashboard()"
-              class="px-4 py-1 text-sm font-semibold text-white bg-red-800 rounded hover:bg-red-800 transition"
+              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
             >
               Proceed
             </button>
@@ -501,7 +512,7 @@
               </button>
               <button
                 (click)="submitCheckedData()"
-                class="bg-orange-600 text-white text-sm px-3 py-1 mb-5 rounded-md hover:bg-orange-600 transition"
+                class="bg-red-800 text-white text-sm px-3 py-1 mb-5 rounded-md hover:bg-orange-600 transition"
               >
                 Update Record
               </button>
@@ -541,196 +552,437 @@
             'ml-64': isSidebarOpen,
             'ml-16': !isSidebarOpen
           }"
+        >
+          <div
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
           >
-          <div class="grid grid-cols-4 gap-6 mt-10">
-            <div class="bg-white p-6 shadow-md rounded-lg text-center">
-              <h2 class="text-lg font-bold text-gray-700">Total Patients</h2>
-              <p class="text-2xl font-bold text-red-800">350</p>
-            </div>
-            <div class="bg-white p-6 shadow-md rounded-lg text-center">
-              <h2 class="text-lg font-bold text-gray-700">Users</h2>
-              <p class="text-2xl font-bold text-red-800">45</p>
+            <!-- Box 1 -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-hospital fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">ADT</p>
+              </div>
+              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage records</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
-            <div class="bg-white p-6 shadow-md rounded-lg text-center">
-              <h2 class="text-lg font-bold text-gray-700">Locaitons</h2>
-              <p class="text-2xl font-bold text-red-800">8</p>
+            <!-- Box 2 -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">A/R</p>
+              </div>
+              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Accounts receivable</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
-            <div class="bg-white p-6 shadow-md rounded-lg text-center">
-              <h2 class="text-lg font-bold text-gray-700">Documents</h2>
-              <p class="text-2xl font-bold text-red-800">2,50,000</p>
+
+            <!-- Box 3 -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-boxes-stacked fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Asset Management</p>
+              </div>
+              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Track assets</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- Box 4 -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Billing</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage payments</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
           </div>
 
           <div
-            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
           >
+            <!-- D/C Summary -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold text-sm md:text-base lg:text-lg"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fas fa-hospital fa-2x text-red-800"></i>
-              <div>ADT</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-notes-medical fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">D/C Summary</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Discharge summary</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Day Care -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
-              <div>A/R</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-procedures fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Day Care</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage short-term care</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Diagnostics Admin -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fas fa-boxes-stacked fa-2x text-red-800"></i>
-              <div>Asset Management</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-user-md fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Diagnostics Admin</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage diagnostic services</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Diagnostics -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fas fa-file-invoice-dollar fa-2x text-red-800"></i>
-              <div>Billing</div>
-            </div>
-
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fas fa-notes-medical fa-2x text-red-800"></i>
-              <div>D/C Summary</div>
-            </div>
-
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fas fa-procedures fa-2x text-red-800"></i>
-              <div>Day Care</div>
-            </div>
-
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fas fa-user-md fa-2x text-red-800"></i>
-              <div>Diagnostics Admin</div>
-            </div>
-
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fas fa-x-ray fa-2x text-red-800"></i>
-              <div>Diagnostics</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-x-ray fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Diagnostics</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Run diagnostic tests</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
           </div>
 
           <div
-            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
           >
+            <!-- Diet -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fas fa-utensils fa-2x text-red-800"></i>
-              <div>Diet</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fa-solid fa-ambulance fa-2x text-red-800"></i>
-              <div>Emergency</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fa-solid fa-concierge-bell fa-2x text-red-800"></i>
-              <div>Front Office</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-utensils fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Diet</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage meal plans</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Emergency -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-file-alt fa-2x text-red-800"></i>
-              <div>Incident Report</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-ambulance fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Emergency</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Handle critical cases</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fa-solid fa-warehouse fa-2x text-red-800"></i>
 
-              <div>Inventory</div>
-            </div>
+            <!-- Front Office -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-kitchen-set fa-2x text-red-800"></i>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-concierge-bell fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Front Office</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage reception</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
 
-              <div>Kitchen</div>
-            </div>
+            <!-- Incident Report -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-vials fa-2x text-red-800"></i>
-              <div>Lab Medicine Admin</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fa-solid fa-flask fa-2x text-red-800"></i>
-              <div>Lab Medicine</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-file-alt fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Incident Report</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Log incidents</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
           </div>
+
           <div
-            class="grid gap-4 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
           >
+            <!-- Inventory -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-cogs fa-flask fa-2x text-red-800"></i>
-              <div>Masters</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold"
-            >
-              <i class="fa-solid fa-chart-bar fa-2x text-red-800"></i>
-              <div>MIS Report</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-warehouse fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Inventory</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage stock levels</p>
+
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Kitchen -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-folder fa-2x text-red-800"></i>
-              <div>MRD</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fa-solid fa-user-nurse fa-2x text-red-800"></i>
-              <div>Nursing</div>
-            </div>
-
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fa-solid fa-procedures fa-2x text-red-800"></i>
-              <div>Operation Theatre</div>
-            </div>
-            <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
-            >
-              <i class="fa-solid fa-umbrella-beach fa-2x text-red-800"></i>
-              <div>Package And Plans</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-kitchen-set fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Kitchen</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage meal preparation</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Lab Medicine Admin -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-user-md fa-2x text-red-800"></i>
-              <div>Physician</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-vials fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Lab Medicine Admin</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage lab operations</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
 
+            <!-- Lab Medicine -->
             <div
-              class="bg-white rounded-lg p-6 shadow hover:bg-teal-100 text-center font-semibold flex flex-col items-center justify-center space-y-2"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
-              <i class="fa-solid fa-vial fa-2x text-red-800"></i>
-              <div>Sample Collection</div>
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-flask fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Lab Medicine</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Conduct medical tests</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+
+            <div
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+          >
+            <!-- Masters -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-cogs fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Masters</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Master settings</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- MIS Report -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-chart-bar fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">MIS Report</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Management reports</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- MRD -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-folder fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">MRD</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Medical record department</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- Nursing -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-user-nurse fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Nursing</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage nursing staff</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+          >
+            <!-- Operation Theatre -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-procedures fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Operation Theatre</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Surgical procedures</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- Package And Plans -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-umbrella-beach fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Package And Plans</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage treatment plans</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- Physician -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-user-md fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Physician</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Doctor consultation</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- Sample Collection -->
+            <div
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-vial fa-2x text-red-800"></i>
+                <p class="text-lg font-bold text-red-800">Sample Collection</p>
+              </div>
+              <hr class="w-4/5 border-red-800 mx-auto my-2" />
+              <p class="text-lg text-gray-500">Manage test samples</p>
+              <button
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
             </div>
           </div>
         </div>
@@ -738,8 +990,10 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-red-800 text-white py-3 text-center">
-      <p>&copy; 2025 AINU.in. All Rights Reserved.</p>
+    <footer
+      class="bg-red-800 text-white flex justify-between items-center px-2 py-2 fixed w-full bottom-0 z-50"
+    >
+      <!-- <p>&copy; 2025 AINU.in. All Rights Reserved.</p> -->
     </footer>
   </div>
 </div>

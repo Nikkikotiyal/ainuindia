@@ -8,7 +8,7 @@ import { log } from 'node:console';
 })
 export class ApiService {
   private baseUrl = 'http://localhost:3000/api';
-  // private baseUrl = 'http://69.62.80.20:3000/api';
+  // private baseUrl = 'https://69.62.80.20:3000/api';
 
   constructor(private http: HttpClient) {}
   login(emailOrUsername: string, password: string) {
