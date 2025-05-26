@@ -15,9 +15,9 @@ export class ApiService {
     console.log('🔄 Sending login request...'); // Debugging log
 
     return this.http
-      .post(
+      .post<{ user: any; token: string }>(
         `${this.baseUrl}/login`,
-        { emailOrUsername, password }, // ✅ Correct key names
+        { emailOrUsername, password },
         {
           headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
         }
@@ -25,15 +25,27 @@ export class ApiService {
       .pipe(
         tap((response) => {
           console.log('✅ Request sent successfully');
-          localStorage.setItem('user', JSON.stringify(response));
+
+          // 🔴 **Block Soft Deleted Users**
+          if (response.user.isDeleted) {
+            console.error('❌ Account deactivated: Blocking login');
+            throw new Error('Your account has been deactivated.');
+          }
+
+          // ✅ **Store user data for active users only**
+          localStorage.setItem('user', JSON.stringify(response.user));
+          localStorage.setItem('token', response.token);
         }),
 
         catchError((error) => {
           console.error('❌ Login request failed:', error);
-          return throwError(() => new Error('Login failed'));
+          return throwError(
+            () => new Error(error.error?.message || 'Login failed')
+          );
         })
       );
   }
+
   getUsers(): Observable<any> {
     return this.http.get(`${this.baseUrl}/get-users`);
   }
@@ -103,14 +115,36 @@ export class ApiService {
   }
 
   changePassword(payload: any) {
-    console.log("localStorage.getItem('token')",localStorage.getItem('userToken'));
+    console.log(
+      "localStorage.getItem('token')",
+      localStorage.getItem('userToken')
+    );
 
     return this.http.post(`${this.baseUrl}/changePassword`, payload, {
-       headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } // ✅ Send user token  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` }, // ✅ Send user token  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
   }
 
-    deleteUser(userId: string) {
+  deleteUser(userId: string) {
     return this.http.put(`${this.baseUrl}/deleteUser/${userId}`, {});
+  }
+
+  sendOtp(email: string) {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/sendOtp`, {
+      Email: email,
+    });
+  }
+
+  verifyOtp(email: string, otp: string) {
+    return this.http.post<{ token: string }>(`${this.baseUrl}/verifyOtp`, {
+      Email: email,
+      otp,
+    });
+  }
+
+  resendOtp(email: string) {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/resendOtp`, {
+      Email: email,
+    });
   }
 }

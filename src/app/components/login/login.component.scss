@@ -25,3 +25,11 @@
   cursor: pointer;
   text-decoration: underline;
 }
+.text-red-600 {
+  color: #f44336; /* Ensures red color for error */
+}
+.success-snackbar {
+  background: #4caf50 !important; /* Green background for success */
+  color: white !important;
+  font-weight: bold;
+}

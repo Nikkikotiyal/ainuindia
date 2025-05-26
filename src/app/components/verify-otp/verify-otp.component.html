@@ -6,25 +6,25 @@
       Enter the 4-digit code sent to your registered email or phone.
     </p>
 
-    <!-- OTP Inputs -->
+    <!-- OTP Inputs (Auto-focus & Prevent Non-Numeric Entries) -->
     <div class="flex justify-center gap-3 mb-6">
-      <input type="text" maxlength="1" class="otp-input" />
-      <input type="text" maxlength="1" class="otp-input" />
-      <input type="text" maxlength="1" class="otp-input" />
-      <input type="text" maxlength="1" class="otp-input" />
+      <input type="text" maxlength="1" class="otp-input" (input)="moveToNext($event, 0)" #otp0 />
+      <input type="text" maxlength="1" class="otp-input" (input)="moveToNext($event, 1)" #otp1 />
+      <input type="text" maxlength="1" class="otp-input" (input)="moveToNext($event, 2)" #otp2 />
+      <input type="text" maxlength="1" class="otp-input" (input)="moveToNext($event, 3)" #otp3 />
     </div>
 
     <!-- Verify Button -->
     <button (click)="verifyOtp()"
-      class="w-full bg-red-800 text-white py-2 rounded-lg hover:bg-red-800 transition"
+      class="w-full bg-red-800 text-white py-2 rounded-lg hover:bg-red-900 transition"
     >
       Verify
     </button>
 
-    <!-- Resend Link -->
+    <!-- Resend Link with Functionality -->
     <div class="text-center mt-4 text-sm text-gray-500">
       Didn’t receive the code?
-      <button class="text-red-800 font-medium hover:underline ml-1">
+      <button class="text-red-800 font-medium hover:underline ml-1" (click)="resendOtp()">
         Resend OTP
       </button>
     </div>

@@ -81,7 +81,9 @@ export class DashboardComponent implements AfterViewInit {
       const userDataStr = localStorage.getItem('user');
       if (userDataStr) {
         const parsed = JSON.parse(userDataStr);
-        this.userEmail = parsed?.user?.Email || 'No email';
+        this.userEmail = parsed?.Email || 'No email';
+        //  this.userEmail = parsed?.user?.Email || 'No email';
+        console.log("userEmail",userDataStr )
         this.chosenLocation = parsed?.user?.Location || 'No location';
       }
     }

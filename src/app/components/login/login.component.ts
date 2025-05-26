@@ -4,7 +4,7 @@ interface LoginResponse {
   userData?: any;
 }
 
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -19,6 +19,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { LocationPopupComponentComponent } from '../location-popup-component/location-popup-component.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   standalone: true,
@@ -37,18 +38,24 @@ export class LoginComponent {
   userLocation: any;
 
   constructor(
+    private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private fb: FormBuilder,
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  ngAfterViewChecked() {
+    this.cdr.detectChanges(); // ✅ Forces UI refresh if stuck
+  }
 
   // emailRegex = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
   // passwordRegex =
   //   '^(?=.{8,})((?=.*[^a-zA-Zs])(?=.*[a-z])(?=.*[A-Z])| (?=.*[^a-zA-Z0-9s])(?=.*d)(?=.*[a-zA-Z])).*$';
 
   ngOnInit(): void {
-    console.log('Background animation started!');
+    // console.log('Background animation started!');
     const images: string[] = [
       'assets/c1e4f92fd014f025cf45d378b573977d.jpg',
       'assets/backgroundimg.jpg',
@@ -61,12 +68,12 @@ export class LoginComponent {
     setInterval(() => {
       const bgElement = document.querySelector('.sliding-bg') as HTMLElement;
       if (bgElement) {
-        console.log('✅ Current Image Index:', index); // Debugging
-        console.log('🔄 Changing Background To:', images[index]); // Debugging
+        // console.log('✅ Current Image Index:', index); // Debugging
+        // console.log('🔄 Changing Background To:', images[index]); // Debugging
         bgElement.style.backgroundImage = `url(${images[index]})`;
         index = (index + 1) % images.length;
       } else {
-        console.error('❌ Background element not found!');
+        // console.error('❌ Background element not found!');
       }
     }, 2000);
     // this.userLocation = localStorage.getItem('userLocation') || 'Default Location';
@@ -98,38 +105,46 @@ export class LoginComponent {
     this.apiService.login(emailOrUsername, password).subscribe({
       next: (response: any) => {
         if (response.token && response.user) {
-          console.log('🔐 Token:', response.token); // ✅ Debug token storage
+          console.log('🔐 Token:', response.token);
+
           localStorage.setItem('userToken', response.token);
           localStorage.setItem('userData', JSON.stringify(response.user));
-          this.router.navigate(["/verifyOtp"]);
+
+          // ✅ Call sendOtp after successful login
+          this.apiService.sendOtp(emailOrUsername).subscribe({
+            next: () => {
+              console.log('📩 OTP sent successfully!');
+              this.snackBar.open('✅ OTP sent successfully!', 'Close', {
+                duration: 2000,
+                panelClass: ['success-snackbar'],
+                horizontalPosition: 'center', // ✅ Positions it centrally
+                verticalPosition: 'top', // ✅ Moves it to the top
+              });
+              this.router.navigate(['/verifyOtp'], {
+                state: { email: emailOrUsername },
+              }); // ✅ Use state instead
+            },
+            error: (error) => {
+              console.error('❌ Failed to send OTP:', error);
+            },
+          });
         } else {
           console.error('❌ Token missing in API response.');
         }
-
-        // const userLocation = Array.isArray(response?.user?.Location)
-        //   ? response.user.Location
-        //   : response.user?.Location?.split(',').map((loc: string) =>
-        //       loc.trim()
-        //     ) || ['Default Location'];
-
-        // this.router.navigate(['/dashboard']);
-
-        // const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
-        //   width: '400px',
-        //   data: { defaultLocation: userLocation },
-        // });
-
-        // dialogRef.afterClosed().subscribe((selectedLocation) => {
-        //   if (selectedLocation) {
-        //     localStorage.setItem('userLocation', selectedLocation);
-        //     this.userLocation = selectedLocation;
-        //   }
-        // });
       },
       error: (error) => {
         console.error('❌ Login Failed:', error);
-        this.loginError =
-          error?.error?.message || 'Invalid credentials. Try again.';
+        console.log('🔍 Full Error Object:', JSON.stringify(error, null, 2));
+
+        if (error?.status === 403) {
+          this.loginError =
+            error?.error?.message || 'Your account has been deactivated.';
+        } else {
+          this.loginError =
+            error?.error?.message || 'Invalid credentials. Try again.';
+        }
+
+        this.cdr.detectChanges(); // ✅ Forces UI refresh
       },
     });
 
