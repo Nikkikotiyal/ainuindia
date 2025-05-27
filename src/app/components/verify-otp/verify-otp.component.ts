@@ -4,11 +4,12 @@ import { LocationPopupComponentComponent } from '../location-popup-component/loc
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-verify-otp',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './verify-otp.component.html',
   styleUrl: './verify-otp.component.scss',
 })
@@ -16,6 +17,7 @@ export class VerifyOtpComponent {
   email!: string; // ✅ Ensure email is initialized correctly
   otp!: string;
   otpError: string = '';
+  invalidOtpError: string = '';
   otpInputs: string[] = ['', '', '', ''];
 
   // ViewChild references for OTP input fields
@@ -74,48 +76,81 @@ export class VerifyOtpComponent {
     this.apiService.verifyOtp(this.email, this.otp).subscribe({
       next: (response) => {
         localStorage.setItem('token', response.token);
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const userLocation = Array.isArray(userData?.Location)
+          ? userData.Location
+          : userData?.Location?.split(',').map((loc: string) => loc.trim()) || [
+              'Default Location',
+            ];
+
+        // ✅ Show Location Popup After OTP Verification
+        const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
+          width: '400px',
+          data: { defaultLocation: userLocation },
+        });
+
+        // ✅ After Popup Closes, Navigate to Dashboard
+        dialogRef.afterClosed().subscribe((selectedLocation) => {
+          if (selectedLocation) {
+            localStorage.setItem('userLocation', selectedLocation);
+          }
+        });
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        this.otpError = error.error?.message || 'Invalid OTP';
+        console.log('❌ API Error:', error);
+
+        // ✅ Assign error to `invalidOtpError`
+        if (error.status === 400 && error.error?.message === 'Invalid OTP') {
+          this.invalidOtpError = '🚨 Incorrect OTP! Please try again.';
+        } else {
+          this.invalidOtpError =
+            error.error?.message || 'Something went wrong!';
+        }
+
+        // ✅ Display error in UI & Snackbar
+        // this.snackBar.open(this.invalidOtpError, 'Close', {
+        //   duration: 3000,
+        //   panelClass: ['error-snackbar'],
+        // });
       },
     });
   }
- resendOtp() {
-  console.log("🔄 Requesting OTP resend for:", this.email);
 
-  // 🏁 Show an immediate snackbar before API call finishes
-  this.snackBar.open("🔄 Requesting new OTP...", "Close", {
-    duration: 2000,
-    panelClass: ["info-snackbar"],
-    horizontalPosition: "right",
-    verticalPosition: "top",
-  });
+  resendOtp() {
+    console.log('🔄 Requesting OTP resend for:', this.email);
 
-  this.apiService.resendOtp(this.email).subscribe({
-    next: () => {
-      console.log("✅ OTP resent successfully!");
-      this.snackBar.open("✅ New OTP sent! Check your inbox.", "Close", {
-        duration: 3000,
-        panelClass: ["success-snackbar"],
-        horizontalPosition: "right",
-        verticalPosition: "top",
-      });
+    // 🏁 Show an immediate snackbar before API call finishes
+    this.snackBar.open('🔄 Requesting new OTP...', 'Close', {
+      duration: 2000,
+      panelClass: ['info-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
 
-      this.otpError = "A new OTP has been sent!";
-    },
-    error: (error) => {
-      console.error("❌ Failed to resend OTP:", error);
-      this.snackBar.open("❌ Error resending OTP!", "Close", {
-        duration: 3000,
-        panelClass: ["error-snackbar"],
-        horizontalPosition: "right",
-        verticalPosition: "top",
-      });
+    this.apiService.resendOtp(this.email).subscribe({
+      next: () => {
+        console.log('✅ OTP resent successfully!');
+        this.snackBar.open('✅ New OTP sent! Check your inbox.', 'Close', {
+          duration: 6000,
+          panelClass: ['success-snackbar'],
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+        });
 
-      this.otpError = error.error?.message || "Error resending OTP.";
-    },
-  });
-}
+        this.otpError = 'A new OTP has been sent!';
+      },
+      error: (error) => {
+        console.error('❌ Failed to resend OTP:', error);
+        this.snackBar.open('❌ Error resending OTP!', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar'],
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+        });
 
+        this.otpError = error.error?.message || 'Error resending OTP.';
+      },
+    });
+  }
 }

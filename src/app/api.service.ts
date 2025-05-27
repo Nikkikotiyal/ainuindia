@@ -141,7 +141,6 @@ export class ApiService {
       otp,
     });
   }
-
   resendOtp(email: string) {
     return this.http.post<{ message: string }>(`${this.baseUrl}/resendOtp`, {
       Email: email,

@@ -18,10 +18,10 @@ export class ProfileComponent {
   ngOnInit() {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     console.log('🔍 Stored User Data:', userData);
-    this.userName = userData?.user?.UserName || 'Guest';
-    this.Designation = userData?.user?.Designation || 'Guest';
-    this.Email = userData?.user?.Email || 'Guest';
-    this.MobileNo = userData?.user?.MobileNo || 'Guest';
+    this.userName = userData?.UserName || 'Guest';
+    this.Designation = userData?.Designation || 'Guest';
+    this.Email = userData?.Email || 'Guest';
+    this.MobileNo = userData?.MobileNo || 'Guest';
   }
   closePopup() {
     this.dialogRef.close();

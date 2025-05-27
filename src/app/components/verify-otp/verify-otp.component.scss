@@ -13,3 +13,19 @@
   border-color: #14b8a6; /* Tailwind's teal-500 */
   box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
 }
+
+.error-snackbar {
+  background-color: #f44336 !important; /* Red for errors */
+  color: white !important;
+  font-weight: bold;
+}
+// .mat-mdc-snack-bar-label {
+//    background: #4caf50 !important; /* Green background for success */
+//   color: white !important;
+//   font-weight: bold;
+// }
+.success-snackbar{
+ background-color: #318d15 !important; /* Red for errors */
+  color: white !important;
+  font-weight: bold;
+}
