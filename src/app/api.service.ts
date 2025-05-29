@@ -3,6 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { log } from 'node:console';
 
+export interface UserModule {
+  ModuleId: number;
+  MODLE_NAME: string;
+  REPORT_NAME: string;
+  Selected: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -93,14 +100,30 @@ export class ApiService {
 
   // }
 
-  saveModules(payload: { userId: string; modules: any[] }): Observable<any> {
+ saveModules(payload: { userId: string; modules: any[] }): Observable<any> {
+    console.log('🔄 Sending payload:', JSON.stringify(payload, null, 2)); // ✅ Debugging step
+
+    if (!payload.userId || !Array.isArray(payload.modules)) {
+        console.error("❌ Invalid payload:", payload);
+        return throwError(() => new Error("Invalid payload structure!"));
+    }
+
     return this.http.post(`${this.baseUrl}/save-modules`, payload, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
-  }
+}
+
 
   getUserModulesByUserID(userId: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/getUserModules/${userId}`);
+    return this.http.get<any>(
+      `${this.baseUrl}/getUserModulesByUserID/${userId}`
+    );
+  }
+
+  getDashUserModulesByUserID(userId: string): Observable<UserModule[]> {
+    return this.http.get<UserModule[]>(
+      `${this.baseUrl}/getDashUserModuleByUserId/${userId}`
+    );
   }
 
   // ✅ File: api.service.ts

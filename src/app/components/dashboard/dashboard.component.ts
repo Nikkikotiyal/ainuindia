@@ -30,7 +30,12 @@ import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/d
   styleUrls: ['./dashboard.component.scss'], // Uncomment if needed
 })
 export class DashboardComponent implements AfterViewInit {
+  private baseUrl = 'http://localhost:3000/api';
   isDashVisible: boolean = false;
+  isBillingDashVisible: boolean = false;
+  errorMessage: string = '';
+  userModules: any[] = [];
+  userId: string = '';
   data: any[] = [];
   isSidebarOpen = false;
   modules: any[] = [];
@@ -47,6 +52,8 @@ export class DashboardComponent implements AfterViewInit {
   superAdminEmail: string = '';
   activePage = 'dashboard';
   user: any = {};
+  softwareName = 'Default Software';
+  softwareIcon = 'fas fa-question-circle'; // Default icon
   chosenLocation: any = {};
   userEmail: string = '';
   searchTerm: string = '';
@@ -69,6 +76,16 @@ export class DashboardComponent implements AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    this.userId = userData._id || '';
+    console.log('✅ Retrieved userId:', this.userId); // ✅ Retrieve user ID
+
+    if (!this.userId) {
+      console.error('❌ No user ID found in localStorage!');
+      return;
+    }
+
+    console.log(`🔄 User ID from localStorage: ${this.userId}`);
     this.fetchUsers();
     // const savedDarkMode = JSON.parse(localStorage.getItem("darkMode") || "false");
     // if (savedDarkMode) {
@@ -83,7 +100,7 @@ export class DashboardComponent implements AfterViewInit {
         const parsed = JSON.parse(userDataStr);
         this.userEmail = parsed?.Email || 'No email';
         //  this.userEmail = parsed?.user?.Email || 'No email';
-        console.log("userEmail",userDataStr )
+        console.log('userEmail', userDataStr);
         this.chosenLocation = parsed?.user?.Location || 'No location';
       }
     }
@@ -137,11 +154,44 @@ export class DashboardComponent implements AfterViewInit {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
-  showDashboard() {
-    this.isDashVisible = !this.isDashVisible; // ✅ Show div on click
+
+  showTrioDashboard(name: string, userId: string) {
+    this.softwareName = name;
+    this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
+    this.isDashVisible = true; // ✅ Ensure dashboard is visible on click
     this.showUserList = false;
+
+    if (!userId) {
+      console.error('❌ No userId found!');
+      return;
+    }
+
+    this.apiService.getDashUserModulesByUserID(userId).subscribe({
+      next: (response) => {
+        this.userModules = response; // ✅ Use response directly, NOT `response.modules`
+        console.log('✅ Retrieved Modules:', this.userModules);
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to fetch user modules!';
+        console.error('❌ API Error:', error);
+      },
+    });
   }
 
+  showInstaDashboard(name: string) {
+    this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
+    this.softwareName = name;
+  }
+
+  billingDetails() {
+    console.log('clicked');
+    this.isDashVisible = false;
+    this.isBillingDashVisible = !this.isBillingDashVisible;
+  }
+
+  showModuleDetails(moduleName: string) {
+    console.log(`🔄 Navigating to details for: ${moduleName}`);
+  }
   openUserList() {
     this.showUserList = true;
     this.isSidebarOpen = false;
@@ -249,19 +299,9 @@ export class DashboardComponent implements AfterViewInit {
     this.isSidebarOpen = true;
     this.isDashVisible = false;
     this.showModuleList = false;
-
-    // this.isDashVisible=true;
-    // this.cdr.detectChanges();
+    this.isBillingDashVisible = false;
   }
 
-  // filterUsers() {
-  //   const term = this.searchTerm.toLowerCase().trim();
-  //   this.users = this.users.filter(
-  //     (user) =>
-  //       user.UserName.toLowerCase().includes(term) ||
-  //       user.Email.toLowerCase().includes(term)
-  //   );
-  // }
   filterUsers() {
     const term = this.searchTerm.toLowerCase().trim();
 
