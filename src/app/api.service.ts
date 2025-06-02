@@ -120,11 +120,12 @@ export class ApiService {
     );
   }
 
-  getDashUserModulesByUserID(userId: string): Observable<UserModule[]> {
-    return this.http.get<UserModule[]>(
-      `${this.baseUrl}/getDashUserModuleByUserId/${userId}`
-    );
-  }
+getDashUserModulesByUserID(userId: string): Observable<{ modules: UserModule[] }> {
+  return this.http.get<{ modules: UserModule[] }>(
+    `${this.baseUrl}/getDashUserModuleByUserId/${userId}`
+  );
+}
+
 
   // ✅ File: api.service.ts
 

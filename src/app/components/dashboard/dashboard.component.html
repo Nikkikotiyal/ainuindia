@@ -22,6 +22,10 @@
         <i class="fas fa-user-md mr-3"></i> User
       </a>
 
+      <a class="flex items-center px-6 py-3 mt-2 hover:bg-red-300">
+        <i class="fas fa-puzzle-piece mr-3"></i>Modules
+      </a>
+
       <a
         class="flex items-center px-6 py-3 hover:bg-red-300 mt-2"
         routerLink="/services"
@@ -112,13 +116,14 @@
       <ng-container *ngIf="activePage === 'dashboard'">
         <h3 class="text-xl font-bold">Dashboard Overview</h3>
 
-        <!-- ✅ Dashboard Boxes (Hidden when User List is Active) -->
+        <!-- ✅ 1st Dashboard Boxes (Hidden when User List is Active) -->
         <div
           *ngIf="
             !showUserList &&
             !showModuleList &&
             !isDashVisible &&
-            !isBillingDashVisible
+            !secondDashVisible &&
+            !isAdtReportVisible
           "
           class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
@@ -127,6 +132,7 @@
           }"
         >
           <!-- TRIOTREE Box -->
+
           <div
             class="bg-white p-6 shadow-md rounded-lg text-center w-1/3 mt-20 flex flex-col items-center justify-between"
           >
@@ -143,6 +149,12 @@
             >
               Proceed
             </button>
+            <!-- <button
+              (click)="showTrioDashboard('TRIOTREE', userId)"
+              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+            >
+              Proceed
+            </button> -->
           </div>
 
           <!-- INSTA HMS Box -->
@@ -199,6 +211,7 @@
                   <i class="fas fa-times"></i>
                 </button>
               </div>
+
               <button
                 (click)="openAddUserDialog()"
                 class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition"
@@ -533,32 +546,72 @@
               </button>
             </div>
           </div>
-          <!-- </div> -->
-          <!-- Pagination Controls -->
-          <!-- <div class="flex justify-between items-center mt-6">
-        <button
-          (click)="prevPage()"
-          [disabled]="currentPage === 1"
-          class="px-5 py-2 bg-teal-700 text-white rounded-lg shadow-md transition disabled:opacity-50"
-        >
-          ← Previous
-        </button>
-
-        <span class="text-sm text-gray-700 font-semibold"
-          >Page {{ currentPage }} of {{ totalPages }}</span
-        >
-
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
-          class="px-5 py-2 bg-teal-700 text-white rounded-lg shadow-md transition disabled:opacity-50"
-        >
-          Next →
-        </button>
-      </div> -->
         </div>
 
-        <!-- dashboard -->
+        <!-- 2nd Dashboard -->
+
+        <div
+          *ngIf="secondDashVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div
+            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">Choose Module</p>
+            <button
+              (click)="goBackfirstDash()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+
+          <div
+            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+          >
+            <div
+              *ngFor="let module of distinctModules"
+              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+            >
+              <div class="flex items-center justify-center space-x-2">
+                <i
+                  [ngClass]="getIconClass(module.moduleDetails['MODLE NAME '])"
+                  class="text-red-800"
+                ></i>
+
+                <p class="text-lg font-bold text-red-800">
+                  {{ module.moduleDetails["MODLE NAME "] }}
+                </p>
+              </div>
+              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+              <p class="text-sm text-gray-500">Manage records</p>
+              <button
+                (click)="
+                  showModuleDashboard(
+                    userId,
+                    module.moduleDetails['MODLE NAME ']
+                  )
+                "
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+              >
+                Proceed
+              </button>
+            </div>
+
+            <!-- <button
+              (click)="showModuleDashboard(userId)"
+              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+            >
+              Proceed
+            </button> -->
+          </div>
+        </div>
+
+        <!-- 3rd dashboard -->
 
         <div
           *ngIf="isDashVisible"
@@ -568,58 +621,187 @@
             'ml-16': !isSidebarOpen
           }"
         >
+          <!-- ✅ Show Only Allowed reports Dynamically -->
           <div
-            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
           >
-            <!-- ✅ Show Only Allowed Modules Dynamically -->
-
-            <div *ngIf="userModules.length; else noData">
-              <h3>User Modules</h3>
-              <ul>
-                <li *ngFor="let module of userModules">
-                  <strong>{{ module.MODLE_NAME }}</strong> -
-                  {{ module.REPORT_NAME }}
-                </li>
-              </ul>
-              <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-            </div>
-
-            <ng-template #noData>
-              <p>No modules found for this user.</p>
-            </ng-template>
+            <p class="text-lg font-bold text-red-800">Choose Report</p>
+            <button
+              (click)="goBackSecondDash()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
           </div>
-        </div>
 
-        <!-- show on billing click -->
-        <!-- <div
-          *ngIf="isBillingDashVisible"
-          class="transition-all duration-300"
-          [ngClass]="{
-            'ml-64': isSidebarOpen,
-            'ml-16': !isSidebarOpen
-          }"
-          >
           <div
             class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
           >
-
             <div
+              *ngFor="let reportName of filteredReports"
               class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
             >
               <div class="flex items-center justify-center space-x-2">
-                <i class="fas fa-hospital fa-2x text-red-800"></i>
-                <p class="text-lg font-bold text-red-800">ADT</p>
+                <p class="text-sm text-gray-500">
+                  {{ reportName.MODLE_NAME }}
+                </p>
               </div>
+
               <hr class="w-4/5 border-gray-800 mx-auto my-2" />
-              <p class="text-lg text-gray-500">Manage records</p>
+
+              <p class="text-lg font-bold text-red-800">
+                {{ reportName.REPORT_NAME }}
+              </p>
+
               <button
-                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+                (click)="showAdtAdmission()"
+                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-200 transition"
               >
                 Proceed
               </button>
             </div>
           </div>
-        </div> -->
+        </div>
+        <!-- 4th dashboard -->
+        <div
+          *ngIf="isAdtReportVisible"
+          class="transition-all duration-300"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <div
+            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              ADT admission reports data
+            </p>
+            <button
+              (click)="goBackThirdDash()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+
+          <!-- 📌 Main Two-Column Layout -->
+          <div class="grid grid-cols-12 gap-4">
+            <!-- 🔍 Left Side: Search Fields (3/12) -->
+            <div
+              class="col-span-12 md:col-span-3 bg-white p-4 rounded-lg shadow-md"
+            >
+              <h3 class="text-lg font-semibold text-red-800 mb-4">
+                Search Filters
+              </h3>
+              <div class="mb-2">
+                <label class="block text-sm font-medium">UHID</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Enter UHID"
+                />
+              </div>
+              <div class="mb-2">
+                <label class="block text-sm font-medium">IPNO</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Enter IPNO"
+                />
+              </div>
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Patient Name</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Enter Name"
+                />
+              </div>
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Location</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Enter Location"
+                />
+              </div>
+
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Admission Date</label>
+                <input
+                  type="date"
+                  class="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <button
+                class="mt-4 w-full bg-red-800 text-white py-2 rounded hover:bg-red-900 transition"
+              >
+                Search
+              </button>
+            </div>
+
+            <!-- 📊 Right Side: Table Results (9/12) -->
+            <div
+              class="col-span-12 md:col-span-9 bg-white p-4 rounded-lg shadow-md"
+             >
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold d-flex align-items-center">
+                  <i class="bi bi-people-fill"></i>
+                 Search Results
+                </h2>
+                <div class="input-group mt-3 w-50">
+                  <span class="input-group-text bg-light">
+                    <i class="fas fa-search text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search by name or email..."
+                  />
+
+                  <button class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <table
+                class="w-full border border-collapse border-gray-300 mt-10"
+              >
+                <thead class="bg-red-100 text-red-800">
+                  <tr>
+                    <th class="border p-2">UHID</th>
+                    <th class="border p-2">IPNO</th>
+                    <th class="border p-2">Name</th>
+                    <th class="border p-2">Location</th>
+                    <th class="border p-2">Admission Date</th>
+                    <th class="border p-2">Payer</th>
+                    <th class="border p-2">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border p-2">AISC26</td>
+                    <td class="border p-2">371</td>
+                    <td class="border p-2">Suresh</td>
+                    <td class="border p-2">Banjara Hills</td>
+                    <td class="border p-2">12-05-25</td>
+                    <td class="border p-2">Cash</td>
+                    <td class="border p-2">
+                      <div>
+                        <!-- View -->
+                        <button
+                          title="View"
+                          class="text-gray-600 hover:text-gray-600 transition"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </ng-container>
     </main>
 

@@ -115,6 +115,7 @@ $my-angular-app-theme: mat.define-light-theme((
   color: white !important; /* ✅ White text for visibility */
   font-weight: bold !important;
 }
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 @font-face {
   font-family: 'Roboto';

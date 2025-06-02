@@ -21,6 +21,7 @@ import { ChangePasswordComponent } from '../change-password/change-password.comp
 import { ProfileComponent } from '../profile/profile.component';
 import { log } from 'node:console';
 import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/delete-confirmation-popup.component';
+import { ModuleService } from '../ModuleService';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,12 +32,35 @@ import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/d
 })
 export class DashboardComponent implements AfterViewInit {
   private baseUrl = 'http://localhost:3000/api';
+  iconMapping: { [key: string]: string } = {
+    ADT: 'fas fa-hospital fa-2x',
+    'A/R': 'fas fa-credit-card fa-2x',
+    'ASSET MANAGEMENT': 'fas fa-boxes-stacked fa-2x',
+    BILLING: 'fas fa-file-invoice-dollar fa-2x',
+    'DAY CARE': 'fas fa-procedures fa-2x',
+    EMERGENCY: 'fa-solid fa-ambulance fa-2x',
+    'FRONT OFFICE': 'fa-solid fa-concierge-bell fa-2x',
+    'GENERAL ITEMS': 'fa-solid fa-box-open fa-2x',
+    INVENTORY: 'fa-solid fa-warehouse fa-2x',
+    LAB: 'fa-solid fa-flask fa-2x',
+    MIS: 'fa-solid fa-chart-bar fa-2x',
+    MRD: 'fa-solid fa-folder fa-2x',
+    NURSING: 'fa-solid fa-user-nurse fa-2x',
+    OT: 'fa-solid fa-procedures fa-2x',
+    PHARMACY: 'fa-solid fa-capsules fa-2x',
+    'SAMPLE COLLECTION': 'fa-solid fa-vial fa-2x',
+  };
+  secondDashVisible: boolean = false;
   isDashVisible: boolean = false;
   isBillingDashVisible: boolean = false;
+  isAdtReportVisible: boolean = false;
   errorMessage: string = '';
   userModules: any[] = [];
   userId: string = '';
   data: any[] = [];
+  filteredModules: any[] = [];
+  distinctModules: any[] = [];
+  filteredReports: any[] = [];
   isSidebarOpen = false;
   modules: any[] = [];
   checkedModules: any[] = [];
@@ -69,6 +93,7 @@ export class DashboardComponent implements AfterViewInit {
   constructor(
     private snackBar: MatSnackBar,
     private apiService: ApiService,
+    private moduleService: ModuleService,
     private router: Router,
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
@@ -154,13 +179,77 @@ export class DashboardComponent implements AfterViewInit {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
+  // 3rd dashboard
+  showModuleDashboard(userId: string, moduleName: string) {
+    this.isDashVisible = true;
+    this.showUserList = false;
+    this.secondDashVisible = false;
 
+    if (!userId) {
+      console.error('❌ No userId found!');
+      return;
+    }
+    this.apiService.getDashUserModulesByUserID(userId).subscribe({
+      next: (response) => {
+        console.log(
+          '📦 Raw API Response:',
+          JSON.stringify(this.userModules, null, 2)
+        );
+
+        this.userModules.forEach((module) => {
+          console.log(
+            '📌 ModuleDetails Keys:',
+            Object.keys(module.moduleDetails)
+          );
+          console.log('🔍 MODLE NAME:', module.moduleDetails?.['MODLE NAME ']);
+          console.log(
+            '📑 REPORT NAME:',
+            module.moduleDetails?.['REPORT_NAME ']
+          );
+        });
+
+        this.userModules = response.modules;
+        console.log('✅ Retrieved Modules:', this.userModules);
+        const moduleNames = this.userModules.map((module) =>
+          module.moduleDetails?.['MODLE NAME ']?.trim()
+        );
+        // console.log('📌 Module Names:', moduleNames);
+
+        // ✅ Extract reports only for the selected module
+        this.filteredReports = this.userModules
+          .filter((module) => {
+            if (!module.moduleDetails) return false;
+
+            const modName = module.moduleDetails?.['MODLE NAME ']?.trim();
+            return (
+              modName && modName.toLowerCase() === moduleName.toLowerCase()
+            );
+          })
+          .map((module) => ({
+            MODLE_NAME:
+              module.moduleDetails?.['MODLE NAME ']?.trim() || 'Unknown Module',
+            REPORT_NAME:
+              module.moduleDetails?.['REPORT NAME']?.trim() ||
+              'No Report Available',
+          }));
+        console.log(
+          `📑 Final Filtered Reports for ${moduleName}:`,
+          this.filteredReports
+        );
+      },
+      error: (error) => {
+        console.error('❌ API Error:', JSON.stringify(error, null, 2));
+      },
+    });
+  }
+
+  // 2nd dashboard
   showTrioDashboard(name: string, userId: string) {
     this.softwareName = name;
     this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
-    this.isDashVisible = true; // ✅ Ensure dashboard is visible on click
+    this.secondDashVisible = true; // ✅ Ensure dashboard is visible on click
     this.showUserList = false;
-
+    this.isDashVisible = false;
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -168,16 +257,57 @@ export class DashboardComponent implements AfterViewInit {
 
     this.apiService.getDashUserModulesByUserID(userId).subscribe({
       next: (response) => {
-        this.userModules = response; // ✅ Use response directly, NOT `response.modules`
-        console.log('✅ Retrieved Modules:', this.userModules);
+        this.userModules = response.modules;
+        // console.log('✅ Retrieved Modules:', this.userModules);
+
+        // ✅ Extract and store distinct modules
+        const moduleMap = new Map();
+        this.userModules.forEach((module) => {
+          if (!module.moduleDetails) return; // Safety check
+
+          // Find dynamic key for 'MODLE NAME' (ignoring case and spaces)
+          const keys = Object.keys(module.moduleDetails);
+          const modleNameKey = keys.find(
+            (key) => key.replace(/\s/g, '').toUpperCase() === 'MODLENAME'
+          );
+
+          // Get modleName value from dynamic key
+          const modleName = modleNameKey
+            ? module.moduleDetails[modleNameKey]?.trim().toUpperCase()
+            : null;
+
+          if (modleName && !moduleMap.has(modleName)) {
+            moduleMap.set(modleName, module);
+          }
+        });
+
+        this.distinctModules = Array.from(moduleMap.values());
+        // console.log('🔎 Fixed Distinct Modules:', this.distinctModules);
       },
       error: (error) => {
-        this.errorMessage = 'Failed to fetch user modules!';
         console.error('❌ API Error:', error);
       },
     });
   }
-
+  //4th dashboard
+  showAdtAdmission() {
+    this.isDashVisible = false;
+    this.isAdtReportVisible=true;
+    console.log('clicked');
+  }
+  goBackSecondDash() {
+    this.secondDashVisible = true;
+    this.isDashVisible = false;
+  }
+  goBackThirdDash(){
+     this.isDashVisible = true;
+    this.isAdtReportVisible=false;
+  }
+  goBackfirstDash() {
+    this.secondDashVisible = false;
+    // this.isDashVisible = true;
+    // this.secondDashVisible = false;
+  }
   showInstaDashboard(name: string) {
     this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
     this.softwareName = name;
@@ -193,6 +323,7 @@ export class DashboardComponent implements AfterViewInit {
     console.log(`🔄 Navigating to details for: ${moduleName}`);
   }
   openUserList() {
+    this.secondDashVisible = false;
     this.showUserList = true;
     this.isSidebarOpen = false;
     this.showModuleList = false;
@@ -222,11 +353,6 @@ export class DashboardComponent implements AfterViewInit {
       }
     });
   }
-  // toggleDarkMode() {
-  //   this.darkModeEnabled = !this.darkModeEnabled;
-  //   document.body.classList.toggle("dark-mode", this.darkModeEnabled);
-  //   localStorage.setItem("darkMode", JSON.stringify(this.darkModeEnabled));
-  // }
 
   openModuleList(user: any) {
     this.showModuleList = true;
@@ -300,6 +426,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = false;
     this.showModuleList = false;
     this.isBillingDashVisible = false;
+    this.secondDashVisible = false;
   }
 
   filterUsers() {
@@ -513,4 +640,14 @@ export class DashboardComponent implements AfterViewInit {
       panelClass: ['success-snackbar'],
     });
   }
+
+  getIconClass(moduleName: string): string {
+    if (!moduleName) return 'fas fa-question-circle'; // ✅ Default icon for missing names
+
+    const normalizedName = moduleName.trim().toUpperCase(); // ✅ Ensure consistent formatting
+    // console.log('🔎 Checking Icon for:', normalizedName); // ✅ Debugging output
+
+    return this.iconMapping[normalizedName] || 'fas fa-question-circle'; // ✅ Lookup with normalized key
+  }
+
 }
