@@ -22,7 +22,10 @@
         <i class="fas fa-user-md mr-3"></i> User
       </a>
 
-      <a class="flex items-center px-6 py-3 mt-2 hover:bg-red-300">
+      <a
+        class="flex items-center px-6 py-3 mt-2 hover:bg-red-300"
+        (click)="openSideModuleList()"
+      >
         <i class="fas fa-puzzle-piece mr-3"></i>Modules
       </a>
 
@@ -45,6 +48,14 @@
         routerLink="/summary"
       >
         <i class="fas fa-chart-bar mr-3"></i> Summary
+      </a>
+
+      <a
+        *ngIf="userRole === 'SuperAdmin'"
+        class="flex items-center px-6 py-3 hover:bg-red-300 mt-2"
+        (click)="openLogList()"
+      >
+        <i class="fas fa-chart-bar mr-3"></i> Logs
       </a>
     </nav>
   </aside>
@@ -123,7 +134,10 @@
             !showModuleList &&
             !isDashVisible &&
             !secondDashVisible &&
-            !isAdtReportVisible
+            !isAdtReportVisible &&
+            !admissionDashVisible &&
+            !admissionviewDashVisible &&
+            !isSideModuleVisible
           "
           class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
@@ -149,12 +163,6 @@
             >
               Proceed
             </button>
-            <!-- <button
-              (click)="showTrioDashboard('TRIOTREE', userId)"
-              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
-            >
-              Proceed
-            </button> -->
           </div>
 
           <!-- INSTA HMS Box -->
@@ -398,7 +406,7 @@
 
                       <!-- Edit -->
                       <button
-                        (click)="editUserModuleList(user)"
+                        (click)="editUserList(user)"
                         title="Edit"
                         class="text-gray-600 hover:text-gray-600 transition"
                       >
@@ -558,56 +566,50 @@
             'ml-16': !isSidebarOpen
           }"
         >
-          <div
-            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
-          >
-            <p class="text-lg font-bold text-red-800">Choose Module</p>
-            <button
-              (click)="goBackfirstDash()"
-              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
-            >
-              Back
-            </button>
-          </div>
-
-          <div
-            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
-          >
-            <div
-              *ngFor="let module of distinctModules"
-              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
-            >
-              <div class="flex items-center justify-center space-x-2">
-                <i
-                  [ngClass]="getIconClass(module.moduleDetails['MODLE NAME '])"
-                  class="text-red-800"
-                ></i>
-
-                <p class="text-lg font-bold text-red-800">
-                  {{ module.moduleDetails["MODLE NAME "] }}
-                </p>
-              </div>
-              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
-              <p class="text-sm text-gray-500">Manage records</p>
+          <div class="p-4 bg-gray-150 rounded-lg shadow-md mb-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-red-800">Choose Module</h2>
               <button
-                (click)="
-                  showModuleDashboard(
-                    userId,
-                    module.moduleDetails['MODLE NAME ']
-                  )
-                "
-                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+                (click)="goBackfirstDash()"
+                class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
               >
-                Proceed
+                Back
               </button>
             </div>
-
-            <!-- <button
-              (click)="showModuleDashboard(userId)"
-              class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+            <div
+              class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
             >
-              Proceed
-            </button> -->
+              <div
+                *ngFor="let module of distinctModules"
+                class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+              >
+                <div class="flex items-center justify-center space-x-2">
+                  <i
+                    [ngClass]="
+                      getIconClass(module.moduleDetails['MODLE NAME '])
+                    "
+                    class="text-red-800"
+                  ></i>
+
+                  <p class="text-lg font-bold text-red-800">
+                    {{ module.moduleDetails["MODLE NAME "] }}
+                  </p>
+                </div>
+                <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+                <p class="text-sm text-gray-500">Manage records</p>
+                <button
+                  (click)="
+                    showModuleDashboard(
+                      userId,
+                      module.moduleDetails['MODLE NAME ']
+                    )
+                  "
+                  class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-100 transition"
+                >
+                  Proceed
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -622,54 +624,59 @@
           }"
         >
           <!-- ✅ Show Only Allowed reports Dynamically -->
-          <div
-            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
-          >
-            <p class="text-lg font-bold text-red-800">Choose Report</p>
-            <button
-              (click)="goBackSecondDash()"
-              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
-            >
-              Back
-            </button>
-          </div>
-
-          <div
-            class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
-          >
-            <div
-              *ngFor="let reportName of filteredReports"
-              class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
-            >
-              <div class="flex items-center justify-center space-x-2">
-                <p class="text-sm text-gray-500">
-                  {{ reportName.MODLE_NAME }}
-                </p>
-              </div>
-
-              <hr class="w-4/5 border-gray-800 mx-auto my-2" />
-
-              <p class="text-lg font-bold text-red-800">
-                {{ reportName.REPORT_NAME }}
-              </p>
-
+          <div class="p-4 bg-gray-150 rounded-lg shadow-md mb-4">
+            <!-- ✅ Top Bar: Heading & Back Button -->
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-red-800 ml-5">
+                Choose Report
+              </h2>
               <button
-                (click)="showAdtAdmission()"
-                class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-200 transition"
+                (click)="goBackSecondDash()"
+                class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
               >
-                Proceed
+                Back
               </button>
+            </div>
+
+            <!-- ✅ Reports Grid (Existing Layout) -->
+            <div
+              class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+            >
+              <div
+                *ngFor="let reportName of filteredReports"
+                class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
+              >
+                <div class="flex items-center justify-center space-x-2">
+                  <p class="text-sm text-gray-500">
+                    {{ reportName.MODLE_NAME }}
+                  </p>
+                </div>
+
+                <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+
+                <p class="text-lg font-bold text-red-800">
+                  {{ reportName.REPORT_NAME }}
+                </p>
+
+                <button
+                  (click)="showAdtAdmission()"
+                  class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-200 transition"
+                >
+                  Proceed
+                </button>
+              </div>
             </div>
           </div>
         </div>
         <!-- 4th dashboard -->
         <div
           *ngIf="isAdtReportVisible"
-          class="transition-all duration-300"
+          class="transition-all duration-300 min-h-screen"
           [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
         >
+          <!-- Header -->
           <div
-            class="flex items-center justify-between p-4 bg-red-100 rounded-lg shadow-md mb-4"
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
           >
             <p class="text-lg font-bold text-red-800">
               ADT admission reports data
@@ -682,9 +689,9 @@
             </button>
           </div>
 
-          <!-- 📌 Main Two-Column Layout -->
-          <div class="grid grid-cols-12 gap-4">
-            <!-- 🔍 Left Side: Search Fields (3/12) -->
+          <!-- 📌 Two-Column Grid Layout -->
+          <div class="grid grid-cols-12 gap-4 h-[calc(100vh-150px)]">
+            <!-- 🔍 Search Filter -->
             <div
               class="col-span-12 md:col-span-3 bg-white p-4 rounded-lg shadow-md"
             >
@@ -695,7 +702,8 @@
                 <label class="block text-sm font-medium">UHID</label>
                 <input
                   type="text"
-                  class="w-full p-2 border border-gray-300 rounded"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="searchCriteria.UHID"
                   placeholder="Enter UHID"
                 />
               </div>
@@ -703,7 +711,8 @@
                 <label class="block text-sm font-medium">IPNO</label>
                 <input
                   type="text"
-                  class="w-full p-2 border border-gray-300 rounded"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="searchCriteria.IPNO"
                   placeholder="Enter IPNO"
                 />
               </div>
@@ -711,7 +720,8 @@
                 <label class="block text-sm font-medium">Patient Name</label>
                 <input
                   type="text"
-                  class="w-full p-2 border border-gray-300 rounded"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="searchCriteria.patientName"
                   placeholder="Enter Name"
                 />
               </div>
@@ -719,34 +729,41 @@
                 <label class="block text-sm font-medium">Location</label>
                 <input
                   type="text"
-                  class="w-full p-2 border border-gray-300 rounded"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="searchCriteria.location"
                   placeholder="Enter Location"
                 />
               </div>
-
               <div class="mb-2">
                 <label class="block text-sm font-medium">Admission Date</label>
                 <input
                   type="date"
-                  class="w-full p-2 border border-gray-300 rounded"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="searchCriteria.admissionDate"
                 />
               </div>
+
               <button
                 class="mt-4 w-full bg-red-800 text-white py-2 rounded hover:bg-red-900 transition"
+                (click)="applySearchFilters()"
               >
                 Search
               </button>
+              <button
+                class="mt-2 w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600 transition"
+                (click)="clearSearchFilters()"
+              >
+                Clear
+              </button>
             </div>
 
-            <!-- 📊 Right Side: Table Results (9/12) -->
+            <!-- 📊 Table Section -->
+            <!-- 📊 Table Section -->
             <div
-              class="col-span-12 md:col-span-9 bg-white p-4 rounded-lg shadow-md"
-             >
+              class="col-span-12 md:col-span-9 bg-white p-4 rounded-lg shadow-md overflow-hidden"
+            >
               <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold d-flex align-items-center">
-                  <i class="bi bi-people-fill"></i>
-                 Search Results
-                </h2>
+                <h2 class="text-xl font-bold">Search Results</h2>
                 <div class="input-group mt-3 w-50">
                   <span class="input-group-text bg-light">
                     <i class="fas fa-search text-muted"></i>
@@ -754,51 +771,588 @@
                   <input
                     type="text"
                     class="form-control"
-                    placeholder="Search by name or email..."
+                    placeholder="Search by UHID, IPNO, Name, or Location..."
+                    (input)="filteredAdtReports()"
+                    [(ngModel)]="searchText"
                   />
-
-                  <button class="btn btn-outline-secondary">
+                  <button
+                    *ngIf="searchText"
+                    class="btn btn-outline-secondary"
+                    (click)="clearAdtSearch()"
+                  >
                     <i class="fas fa-times"></i>
                   </button>
                 </div>
               </div>
 
-              <table
-                class="w-full border border-collapse border-gray-300 mt-10"
-              >
-                <thead class="bg-red-100 text-red-800">
-                  <tr>
-                    <th class="border p-2">UHID</th>
-                    <th class="border p-2">IPNO</th>
-                    <th class="border p-2">Name</th>
-                    <th class="border p-2">Location</th>
-                    <th class="border p-2">Admission Date</th>
-                    <th class="border p-2">Payer</th>
-                    <th class="border p-2">View</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="border p-2">AISC26</td>
-                    <td class="border p-2">371</td>
-                    <td class="border p-2">Suresh</td>
-                    <td class="border p-2">Banjara Hills</td>
-                    <td class="border p-2">12-05-25</td>
-                    <td class="border p-2">Cash</td>
-                    <td class="border p-2">
-                      <div>
-                        <!-- View -->
-                        <button
-                          title="View"
-                          class="text-gray-600 hover:text-gray-600 transition"
+              <!-- ✅ Scrollable Table Container -->
+              <div class="overflow-y-auto max-h-[70vh]">
+                <table class="w-full border border-collapse border-gray-300">
+                  <thead class="sticky top-0 z-10 bg-red-100">
+                    <tr>
+                      <th class="p-2 border bg-red-100 h-12">UHID</th>
+                      <th class="p-2 border bg-red-100 h-12">IPNO</th>
+                      <th class="p-2 border bg-red-100 h-12">Name</th>
+                      <th class="p-2 border bg-red-100 h-12">Age</th>
+                      <th class="p-2 border bg-red-100 h-12">
+                        Admitting doctor
+                      </th>
+                      <th class="p-2 border bg-red-100 h-12">Admission Date</th>
+                      <th class="p-2 border bg-red-100 h-12">View</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let AdtAdmissionReport of filteredReports">
+                      <td class="border p-2">{{ AdtAdmissionReport.UHid }}</td>
+                      <td class="border p-2">{{ AdtAdmissionReport.IPNO }}</td>
+                      <td class="border p-2">
+                        {{ AdtAdmissionReport["Patient Name"] }}
+                      </td>
+                      <td class="border p-2">{{ AdtAdmissionReport.Age }}</td>
+                      <td class="border p-2">
+                        {{ AdtAdmissionReport.admittingDoctor || "N/A" }}
+                      </td>
+
+                      <td class="border p-2">
+                        {{ AdtAdmissionReport["Admission Date & Time"] }}
+                      </td>
+                      <td class="px-4 py-2 border text-center">
+                        <div
+                          class="flex items-center justify-center gap-3 text-lg"
                         >
-                          <i class="fas fa-eye"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                          <button
+                            (click)="viewAdtFormData(AdtAdmissionReport)"
+                            class="text-gray-600 hover:text-gray-800"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button
+                            class="text-gray-600 hover:text-gray-800"
+                            (click)="editAdtFormData()"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- edit adt admission form data -->
+        <div
+          *ngIf="admissionDashVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+            <h2 class="text-2xl font-bold text-red-800 mb-4 text-center">
+              Hospital Admission Form
+            </h2>
+
+            <!-- ✅ Basic Information -->
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Basic Information
+            </h3>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block font-semibold">Location Name</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">UHID</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">IP Number</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+            </div>
+
+            <!-- ✅ Personal Details -->
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Personal Details
+            </h3>
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="block font-semibold">Patient Name</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Age</label>
+                <input type="number" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">PatientType</label
+                ><select class="w-full border p-2 rounded">
+                  <option>IP</option>
+                  <option>DC</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold">Mobile No</label>
+                <input type="tel" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Gender</label>
+                <select class="w-full border p-2 rounded">
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold">Father/Spouse Name</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Address</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">City</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">State</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+
+              <div>
+                <label class="block font-semibold">Country</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Nationality</label>
+                <input type="text" class="w-full border p-2 rounded" />
+              </div>
+            </div>
+
+            <!-- ✅ Admission Details -->
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Admission Details
+            </h3>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block font-semibold">Admission Type</label
+                ><select class="w-full border p-2 rounded">
+                  <option>General</option>
+                  <option>Emergency</option>
+                  <option>Private</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold">Admission Date & Time</label
+                ><input
+                  type="datetime-local"
+                  class="w-full border p-2 rounded"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold">Discharge Date & Time</label
+                ><input
+                  type="datetime-local"
+                  class="w-full border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Bed & Billing Information
+            </h3>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block font-semibold">Bed No</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Bed Type</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Bed Occupied Date&Time</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Billable Bed Type</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Ward Name</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Bill No</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"
+                  >Bill Generate Date&Time </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"
+                  >Expected Date of Discharge</label
+                ><input type="date" class="w-full border p-2 rounded" />
+              </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Doctor & Referral Information
+            </h3>
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="block font-semibold">Admitted by</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+
+              <div>
+                <label class="block font-semibold"
+                  >Admitting Doctor Specialty</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Primary Doctor</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"
+                  >Primary Doctor Specialty</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Referral Doctor</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"> Secondary doctor</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">
+                  Secondary doctor Specialty </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"> Co specialty doctor </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">
+                  Co-specialty doctor specialty </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-700 mt-4">
+              Additional Information
+            </h3>
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="block font-semibold">Payer</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Source of Admission</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">MonthlyIncome</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Is MLC</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">IP_Visit</label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Last Modified by </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold"
+                  >Last Modified date/time </label
+                ><input type="text" class="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label class="block font-semibold">Payment Type</label
+                ><select class="w-full border p-2 rounded">
+                  <option>Cash</option>
+                  <option>Insurance</option>
+                  <option>Credit/Debit Card</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ✅ Buttons -->
+            <div class="flex justify-between mt-6">
+              <button
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Submit Admission
+              </button>
+              <button
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                (click)="BackToAdtReport()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- view adt admission form data -->
+        <div
+          *ngIf="admissionviewDashVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">Patient Details</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p><strong>UHID:</strong> {{ patient.UHid }}</p>
+              <p><strong>IP Number:</strong> {{ patient.IPNO }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p><strong>Gender:</strong> {{ patient.Gender }}</p>
+              <p><strong>Age:</strong> {{ patient.Age }}</p>
+              <p><strong>Mobile No:</strong> {{ patient.MobileNo }}</p>
+              <p><strong>Location:</strong> {{ patient.LocationName }}</p>
+              <!-- <p>
+                <strong>Father/SpouseName:</strong>
+                {{ patient.Father / SpouseName }}
+              </p> -->
+              <p>
+                <strong>Admission Type:</strong> {{ patient.AdmissionType }}
+              </p>
+              <p><strong>Location:</strong> {{ patient.LocationName }}</p>
+              <p><strong>Address:</strong> {{ patient.Address }}</p>
+              <p><strong>City:</strong> {{ patient.City }}</p>
+              <p><strong>State:</strong> {{ patient.State }}</p>
+              <p><strong>Country:</strong> {{ patient.Country }}</p>
+              <p><strong>Nationality:</strong> {{ patient.Nationality }}</p>
+              <p><strong>Bed No:</strong> {{ patient["Bed No"] }}</p>
+              <p><strong>Bed type:</strong> {{ patient["Bed Type"] }}</p>
+              <p><strong>Ward Name:</strong> {{ patient["Ward Name"] }}</p>
+              <p>
+                <strong>Billable Bed Type:</strong>
+                {{ patient["Billable Bed Type"] }}
+              </p>
+
+              <p>
+                <strong>Admission Date:</strong>
+                {{ patient["Admission Date & Time"] }}
+              </p>
+              <p><strong>Payer:</strong> {{ patient.Payer }}</p>
+              <p>
+                <strong>Admitting Doctor:</strong>
+                {{ patient["Admitting doctor"] }}
+              </p>
+              <p>
+                <strong>Doctor Specialty:</strong>
+                {{ patient["Co specialty doctor"] }}
+              </p>
+              <p>
+                <strong>Discharge Date&Time:</strong>
+                {{ patient["Discharge Date&Time"] }}
+              </p>
+              <p>
+                <strong>Bill No:</strong>
+                {{ patient["Bill No"] }}
+              </p>
+              <p>
+                <strong>Expected Date of Discharge:</strong>
+                {{ patient["Expected Date of Discharge"] }}
+              </p>
+              <p>
+                <strong>PatientType:</strong>
+                {{ patient.PatientType }}
+              </p>
+              <p>
+                <strong>Admitting doctor Specialty:</strong>
+                {{ patient["Admitting doctor Specialty"] }}
+              </p>
+              <p>
+                <strong>Primary doctor:</strong>
+                {{ patient["Primary doctor"] }}
+              </p>
+              <p>
+                <strong>Primary doctor Specialty:</strong>
+                {{ patient["Primary doctor Specialty"] }}
+              </p>
+              <p>
+                <strong>Secondary doctor:</strong>
+                {{ patient["Secondary doctor"] }}
+              </p>
+              <p>
+                <strong>Secondary doctor Specialty:</strong>
+                {{ patient["Secondary doctor Specialty"] }}
+              </p>
+              <p>
+                <strong>Co specialty doctor:</strong>
+                {{ patient["Co specialty doctor"] }}
+              </p>
+              <p>
+                <strong>Co-specialty doctor specialty:</strong>
+                {{ patient["Co-specialty doctor specialty"] }}
+              </p>
+              <p>
+                <strong>Referral Doctor:</strong>
+                {{ patient["Referral Doctor"] }}
+              </p>
+              <p>
+                <strong>Source of admission:</strong>
+                {{ patient["Source of admission"] }}
+              </p>
+              <p>
+                <strong>Operator Name:</strong>
+                {{ patient["Operator Name"] }}
+              </p>
+              <p>
+                <strong>Operator Name:</strong>
+                {{ patient.BedOccupiedDateTime }}
+              </p>
+              <p>
+                <strong>IP_Visit:</strong>
+                {{ patient.IP_Visit }}
+              </p>
+              <p>
+                <strong>Is MLC:</strong>
+                {{ patient["Is MLC"] }}
+              </p>
+              <p>
+                <strong>Admitted by:</strong>
+                {{ patient["Admitted by"] }}
+              </p>
+              <p>
+                <strong>Last Modified by:</strong>
+                {{ patient["Last Modified by"] }}
+              </p>
+              <p>
+                <strong>Last Modified date/time:</strong>
+                {{ patient["Last Modified date/time"] }}
+              </p>
+              <p>
+                <strong>Bill GenerateDateTime:</strong>
+                {{ patient["Bill GenerateDateTime"] }}
+              </p>
+              <p>
+                <strong>MonthlyIncome:</strong>
+                {{ patient.MonthlyIncome }}
+              </p>
+              <p>
+                <strong>PaymentType:</strong>
+                {{ patient.PaymentType }}
+              </p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToadtAdmissionData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- side module list edit and view -->
+        <div
+          *ngIf="isSideModuleVisible"
+          class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-3"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div
+            *ngIf="isSideModuleVisible"
+            class="p-6 bg-white shadow-md rounded-lg"
+          >
+            <div class="flex justify-between items-center">
+              <h2 class="text-xl font-bold d-flex align-items-center gap-2">
+                <i class="bi bi-puzzle"></i>
+                User Module List
+              </h2>
+
+              <button
+                (click)="AddModule()"
+                class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition"
+              >
+                + Add Module
+              </button>
+            </div>
+            <table
+              class="w-full table-auto border-collapse border border-gray-300 text-sm"
+            >
+              <thead class="bg-gray-200">
+                <tr>
+                  <th class="px-4 py-2 border">Module ID</th>
+                  <th class="px-4 py-2 border">MODLE NAME</th>
+                  <th class="px-4 py-2 border">REPORT NAME</th>
+                  <th class="px-4 py-2 border text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  class="hover:bg-gray-50 transition"
+                  *ngFor="let module of modules"
+                >
+                  <td class="px-4 py-2 border">{{ module.Moduleid }}</td>
+                  <td class="px-4 py-2 border">{{ module["MODLE NAME "] }}</td>
+                  <td class="px-4 py-2 border">{{ module["REPORT NAME"] }}</td>
+                  <td class="px-4 py-2 border text-center">
+                    <div class="flex items-center justify-center gap-3 text-lg">
+                      <!-- View -->
+                      <button
+                        title="View"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+
+                      <!-- Edit -->
+                      <button   (click)="editModuleList(module)"
+                        title="Edit"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+
+                      <!-- Delete -->
+                      <button
+                        title="Delete"
+                        class="text-gray-600 hover:text-gray-600 transition"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="flex justify-end mt-4">
+              <button
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

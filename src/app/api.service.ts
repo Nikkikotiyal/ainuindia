@@ -16,6 +16,7 @@ export interface UserModule {
 export class ApiService {
   private baseUrl = 'http://localhost:3000/api';
   // private baseUrl = 'http://69.62.80.20:3000/api';
+  // private baseUrl = 'https://dmsapi.softmaart.co.in:3443';
 
   constructor(private http: HttpClient) {}
   login(emailOrUsername: string, password: string) {
@@ -100,19 +101,18 @@ export class ApiService {
 
   // }
 
- saveModules(payload: { userId: string; modules: any[] }): Observable<any> {
+  saveModules(payload: { userId: string; modules: any[] }): Observable<any> {
     console.log('🔄 Sending payload:', JSON.stringify(payload, null, 2)); // ✅ Debugging step
 
     if (!payload.userId || !Array.isArray(payload.modules)) {
-        console.error("❌ Invalid payload:", payload);
-        return throwError(() => new Error("Invalid payload structure!"));
+      console.error('❌ Invalid payload:', payload);
+      return throwError(() => new Error('Invalid payload structure!'));
     }
 
     return this.http.post(`${this.baseUrl}/save-modules`, payload, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
-}
-
+  }
 
   getUserModulesByUserID(userId: string): Observable<any> {
     return this.http.get<any>(
@@ -120,12 +120,13 @@ export class ApiService {
     );
   }
 
-getDashUserModulesByUserID(userId: string): Observable<{ modules: UserModule[] }> {
-  return this.http.get<{ modules: UserModule[] }>(
-    `${this.baseUrl}/getDashUserModuleByUserId/${userId}`
-  );
-}
-
+  getDashUserModulesByUserID(
+    userId: string
+  ): Observable<{ modules: UserModule[] }> {
+    return this.http.get<{ modules: UserModule[] }>(
+      `${this.baseUrl}/getDashUserModuleByUserId/${userId}`
+    );
+  }
 
   // ✅ File: api.service.ts
 
@@ -169,5 +170,21 @@ getDashUserModulesByUserID(userId: string): Observable<{ modules: UserModule[] }
     return this.http.post<{ message: string }>(`${this.baseUrl}/resendOtp`, {
       Email: email,
     });
+  }
+
+  getAdtAdmissionReport() {
+    return this.http.get<any[]>(`${this.baseUrl}/AdtAdmissionReport`); // or /getModule
+  }
+
+  getLogs() {
+    return this.http.get<any[]>(`${this.baseUrl}/getLogs`); // 🔹 Backend se logs fetch karna
+  }
+
+  addModule(moduleData: any) {
+    return this.http.post(`${this.baseUrl}/addModule`, moduleData); // ✅ Send module data to API
+  }
+
+  updateModule(data: any) {
+    return this.http.put(`${this.baseUrl}/updateModule`, data);
   }
 }

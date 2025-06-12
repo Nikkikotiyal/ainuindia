@@ -1,0 +1,40 @@
+<div class="table-container">
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Method</th>
+        <th>URL</th>
+        <th>Timestamp</th>
+        <!-- <th>User</th> -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of logs; let i = index">
+        <td>{{ log.method }}</td>
+        <td>
+          <a href="{{ log.url }}" target="_blank">{{ log.url }}</a>
+        </td>
+        <td>{{ log.timestamp | date : "medium" }}</td>
+        <!-- <td *ngIf="log.url.includes('/api/login')">
+          {{ log.emailOrUsername }}
+        </td> -->
+        <!-- ✅ Correct Key Binding -->
+
+        <!-- ✅ Email appears only for login API rows -->
+
+        <!-- ✅ Adjust based on response structure -->
+
+        <!-- ✅ Show only for login API -->
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="button-container">
+  <button
+    (click)="BackToDash()"
+    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+  >
+    Cancel
+  </button>
+</div>

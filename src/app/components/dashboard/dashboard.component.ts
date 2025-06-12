@@ -22,6 +22,10 @@ import { ProfileComponent } from '../profile/profile.component';
 import { log } from 'node:console';
 import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/delete-confirmation-popup.component';
 import { ModuleService } from '../ModuleService';
+import { AddModuleComponent } from '../add-module/add-module.component';
+
+const normalizeText = (text: string) =>
+  text.replace(/\s+/g, ' ').trim().toLowerCase();
 
 @Component({
   selector: 'app-dashboard',
@@ -31,6 +35,9 @@ import { ModuleService } from '../ModuleService';
   styleUrls: ['./dashboard.component.scss'], // Uncomment if needed
 })
 export class DashboardComponent implements AfterViewInit {
+  normalizeText(text: string) {
+    return text.replace(/\s+/g, ' ').trim().toLowerCase();
+  }
   private baseUrl = 'http://localhost:3000/api';
   iconMapping: { [key: string]: string } = {
     ADT: 'fas fa-hospital fa-2x',
@@ -54,16 +61,23 @@ export class DashboardComponent implements AfterViewInit {
   isDashVisible: boolean = false;
   isBillingDashVisible: boolean = false;
   isAdtReportVisible: boolean = false;
+  admissionDashVisible: boolean = false;
+  admissionviewDashVisible: boolean = false;
+  isSideModuleVisible: boolean = false;
   errorMessage: string = '';
   userModules: any[] = [];
+  patient: any;
   userId: string = '';
   data: any[] = [];
+  originalAdtAdmissionReports: any[] = [];
+  filteredReports: any[] = [];
   filteredModules: any[] = [];
   distinctModules: any[] = [];
-  filteredReports: any[] = [];
   isSidebarOpen = false;
+  // AdtAdmissionReports: any[] = [];
   modules: any[] = [];
   checkedModules: any[] = [];
+  userRole: string = '';
   users: any[] = []; // ✅ Declare the 'users' property
   // selectedRecord: any = null;
   selectedUser: any = null;
@@ -81,12 +95,14 @@ export class DashboardComponent implements AfterViewInit {
   chosenLocation: any = {};
   userEmail: string = '';
   searchTerm: string = '';
+  searchText: string = '';
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   public loggedIn: boolean = false;
   formData: any = {};
   buttonLabel: string = 'Edit';
   originalUsers: any[] = [];
+
   // selectedModuleNames: string[] = [];
   isLoginInfo: boolean = false;
 
@@ -99,11 +115,20 @@ export class DashboardComponent implements AfterViewInit {
     private cdRef: ChangeDetectorRef,
     private cdr: ChangeDetectorRef // @Inject(PLATFORM_ID) private platformId: Object, // @Inject(MAT_DIALOG_DATA) public userData: any
   ) {}
-
+  searchCriteria = {
+    UHID: '',
+    IPNO: '',
+    patientName: '',
+    location: '',
+    admissionDate: '',
+  };
   ngOnInit(): void {
+    // this.userRole = this.authService.getUserRole();
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.userId = userData._id || '';
-    console.log('✅ Retrieved userId:', this.userId); // ✅ Retrieve user ID
+    console.log('✅ Retrieved userId:', this.userId);
+    this.userRole = userData.Role; // ✅ Retrieve user ID
+    console.log('✅ Retrieved role:', this.userRole);
 
     if (!this.userId) {
       console.error('❌ No user ID found in localStorage!');
@@ -112,11 +137,7 @@ export class DashboardComponent implements AfterViewInit {
 
     console.log(`🔄 User ID from localStorage: ${this.userId}`);
     this.fetchUsers();
-    // const savedDarkMode = JSON.parse(localStorage.getItem("darkMode") || "false");
-    // if (savedDarkMode) {
-    //   document.body.classList.add("dark-mode");
-    //   this.darkModeEnabled = true;
-    // }
+    this.fetchModules();
 
     const storedLocation = localStorage.getItem('userLocation');
     if (typeof window !== 'undefined') {
@@ -154,6 +175,7 @@ export class DashboardComponent implements AfterViewInit {
       (data: any) => {
         console.log('Data from API:', data);
         this.modules = data;
+        this.modules = [...this.modules];
       },
       (error) => {
         console.error('Error fetching users:', error);
@@ -184,6 +206,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = true;
     this.showUserList = false;
     this.secondDashVisible = false;
+    this.isAdtReportVisible = false;
+    this.admissionviewDashVisible = false;
 
     if (!userId) {
       console.error('❌ No userId found!');
@@ -250,6 +274,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = true; // ✅ Ensure dashboard is visible on click
     this.showUserList = false;
     this.isDashVisible = false;
+    this.isAdtReportVisible = false;
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -292,16 +317,34 @@ export class DashboardComponent implements AfterViewInit {
   //4th dashboard
   showAdtAdmission() {
     this.isDashVisible = false;
-    this.isAdtReportVisible=true;
-    console.log('clicked');
+    this.isAdtReportVisible = true;
+    this.apiService.getAdtAdmissionReport().subscribe(
+      (data: any) => {
+        console.log('API Data:', data); // Debugging Step
+
+        // 🔹 Map "Admitting doctor" to a new key "admittingDoctor"
+        this.originalAdtAdmissionReports = data.map((report: any) => ({
+          ...report,
+          admittingDoctor: report['Admitting doctor']
+            ? report['Admitting doctor']
+            : 'N/A', // Ensures binding
+        }));
+
+        this.filteredReports = [...this.originalAdtAdmissionReports]; // Initialize filtered data
+      },
+      (error) => {
+        console.error('Error fetching users:', error);
+      }
+    );
   }
+
   goBackSecondDash() {
     this.secondDashVisible = true;
     this.isDashVisible = false;
   }
-  goBackThirdDash(){
-     this.isDashVisible = true;
-    this.isAdtReportVisible=false;
+  goBackThirdDash() {
+    this.isDashVisible = true;
+    this.isAdtReportVisible = false;
   }
   goBackfirstDash() {
     this.secondDashVisible = false;
@@ -323,16 +366,57 @@ export class DashboardComponent implements AfterViewInit {
     console.log(`🔄 Navigating to details for: ${moduleName}`);
   }
   openUserList() {
+    this.isAdtReportVisible = false;
     this.secondDashVisible = false;
     this.showUserList = true;
     this.isSidebarOpen = false;
     this.showModuleList = false;
     this.isSidebarOpen = true;
     this.isDashVisible = false;
+    this.admissionDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.isSideModuleVisible = false;
     this.cdRef.detectChanges(); // ✅ Forces UI update
   }
   closeUserList() {
     this.showUserList = false;
+  }
+
+  openSideModuleList() {
+    this.isSideModuleVisible = true;
+    this.showUserList = false;
+    this.showModuleList = false;
+  }
+
+  AddModule() {
+    const dialogRef = this.dialog.open(AddModuleComponent, {
+      width: '600px',
+      disableClose: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        console.log('✅ Dialog closed with:', result);
+
+        // ✅ Activate this code to refresh table after closing popup
+        this.fetchModules();
+      }
+    });
+  }
+
+  fetchModules() {
+    this.apiService.getModules().subscribe((data: any) => {
+      this.modules = data; // Display filtered users
+      this.modules = [...this.modules]; // Store original list for reset
+      console.log('✅ Modules Fetched:', this.modules);
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn === column) {
+      return this.sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+    }
+    return 'fa-sort';
   }
 
   openAddUserDialog() {
@@ -359,6 +443,7 @@ export class DashboardComponent implements AfterViewInit {
     this.showUserList = false;
     this.isSidebarOpen = true;
     this.selectedUser = user;
+    this.isSideModuleVisible = false;
 
     // Step 1: First, fetch ALL modules
     this.apiService.getUserModulesByUserID(user._id).subscribe(
@@ -427,6 +512,10 @@ export class DashboardComponent implements AfterViewInit {
     this.showModuleList = false;
     this.isBillingDashVisible = false;
     this.secondDashVisible = false;
+    this.admissionDashVisible = false;
+    this.isAdtReportVisible = false;
+    this.admissionviewDashVisible = false;
+    this.isSideModuleVisible = false;
   }
 
   filterUsers() {
@@ -447,6 +536,87 @@ export class DashboardComponent implements AfterViewInit {
   clearSearch() {
     this.searchTerm = '';
     this.users = [...this.originalUsers]; // ✅ Restore full user list
+  }
+
+  filteredAdtReports() {
+    const term = this.searchText.toLowerCase().trim();
+
+    if (!term) {
+      this.filteredReports = [...this.originalAdtAdmissionReports]; // Reset filter
+      return;
+    }
+
+    this.filteredReports = this.originalAdtAdmissionReports.filter(
+      (report: any) => {
+        const patientName = String(report['Patient Name'] || '')
+          .trim()
+          .toLowerCase();
+        const match = patientName.includes(term);
+
+        console.log(
+          'Checking Patient Name:',
+          `"${patientName}"`,
+          '| Search Term:',
+          `"${term}"`,
+          '| Match:',
+          match
+        );
+
+        return (
+          match ||
+          String(report.UHid || '')
+            .toLowerCase()
+            .includes(term) ||
+          String(report.IPNO || '')
+            .toLowerCase()
+            .includes(term) ||
+          String(report['Admission Date & Time'] || '')
+            .toLowerCase()
+            .includes(term)
+        );
+      }
+    );
+  }
+
+  clearAdtSearch() {
+    this.searchText = '';
+    this.filteredReports = [...this.originalAdtAdmissionReports]; // Reset data
+  }
+
+  applySearchFilters() {
+    const nameSearch = this.normalizeText(this.searchCriteria.patientName);
+    const uhidSearch = this.normalizeText(this.searchCriteria.UHID);
+    const ipnoSearch = this.normalizeText(this.searchCriteria.IPNO);
+    const locationSearch = this.normalizeText(this.searchCriteria.location);
+
+    this.filteredReports = this.originalAdtAdmissionReports.filter((report) => {
+      const patientName = this.normalizeText(
+        String(report['Patient Name'] || '')
+      );
+      const uhid = this.normalizeText(String(report.UHid || ''));
+      const ipno = this.normalizeText(String(report.IPNO || ''));
+      const location = this.normalizeText(String(report.LocationName || ''));
+
+      const match =
+        (!nameSearch || patientName.includes(nameSearch)) &&
+        (!uhidSearch || uhid.includes(uhidSearch)) &&
+        (!ipnoSearch || ipno.includes(ipnoSearch)) &&
+        (!locationSearch || location.includes(locationSearch));
+
+      console.log('Checking:', { patientName, uhid, ipno, location, match });
+      return match;
+    });
+  }
+
+  clearSearchFilters() {
+    this.searchCriteria = {
+      UHID: '',
+      IPNO: '',
+      patientName: '',
+      location: '',
+      admissionDate: '',
+    };
+    this.filteredReports = [...this.originalAdtAdmissionReports];
   }
 
   fetchUsers() {
@@ -549,7 +719,7 @@ export class DashboardComponent implements AfterViewInit {
   // isModuleActive(name: string): boolean {
   //   return this.selectedModuleNames?.includes(name) || false;
   // }
-  editUserModuleList(user: any) {
+  editUserList(user: any) {
     console.log('🛠 Debugging Selected User:', user);
     console.log('🔄 Available Keys in User:', Object.keys(user || {}));
     // console.log('📢 Extracted User ID:', user?._id || user?.userId);
@@ -575,6 +745,21 @@ export class DashboardComponent implements AfterViewInit {
           this.users = [...this.users];
           console.log('Updated Users:', this.users);
         });
+      }
+    });
+  }
+
+  editModuleList(module: any) {
+    const dialogRef = this.dialog.open(AddModuleComponent, {
+      width: '600px',
+      disableClose: false,
+      data: module,
+    });
+
+    // console.log('📢 User ID Sent to Dialog:', user._id);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.fetchModules(); // ✅ Refresh table when dialog closes with success
       }
     });
   }
@@ -650,4 +835,30 @@ export class DashboardComponent implements AfterViewInit {
     return this.iconMapping[normalizedName] || 'fas fa-question-circle'; // ✅ Lookup with normalized key
   }
 
+  editAdtFormData() {
+    this.admissionDashVisible = true;
+    this.isAdtReportVisible = false;
+    this.secondDashVisible = false;
+  }
+  viewAdtFormData(data: any) {
+    this.patient = data;
+    console.log('data', this.patient);
+    // Optional: Save to localStorage (if needed)
+    localStorage.setItem('selectedAdtPatient', JSON.stringify(data));
+
+    this.admissionviewDashVisible = true;
+    this.isAdtReportVisible = false;
+  }
+  BackToAdtReport() {
+    this.isAdtReportVisible = true;
+    this.admissionDashVisible = false;
+  }
+  BackToadtAdmissionData() {
+    this.admissionviewDashVisible = false;
+    this.isAdtReportVisible = true;
+  }
+
+  openLogList() {
+    this.router.navigate(['/logs']);
+  }
 }

@@ -1,0 +1,33 @@
+.table-container {
+  max-height: 400px; /* ✅ Set fixed height */
+  overflow-y: auto; /* ✅ Enable vertical scrolling */
+  overflow-x: hidden;
+  border: 1px solid #ddd; /* Optional: Add border */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #343a40;
+  color: white;
+  position: sticky; /* ✅ Keep headers fixed */
+  top: 0;
+  z-index: 2;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+}
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}

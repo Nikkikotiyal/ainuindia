@@ -1,0 +1,110 @@
+<form [formGroup]="moduleForm">
+  <div
+    *ngIf="!showAddModulePopup"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overlay-container"
+  >
+    <div class="bg-white w-full max-w-4xl rounded-lg shadow-lg p-6">
+      <!-- Header Section -->
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="text-lg font-bold text-gray-700">
+          {{ isEditing ? "Update Module" : "Add Module" }}
+        </h2>
+        <button class="text-red-800 text-lg font-bold" (click)="closePopup()">
+          ✖
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="py-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Module id:</label
+            >
+            <input
+              type="text"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter id"
+              formControlName="Moduleid"
+            />
+            <p
+              *ngIf="
+                moduleForm.controls['Moduleid'].invalid &&
+                moduleForm.controls['Moduleid'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Moduleid is required (Min: 3 chars, Max: 50 chars).
+            </p>
+            <p *ngIf="errorMessage" class="text-red-600 text-sm mb-2">
+              {{ errorMessage }}
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Module name:</label
+            >
+            <input
+              type="text"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter Module Name"
+              formControlName="MODLE NAME "
+            />
+            <!-- ✅ Space included -->
+            <p
+              *ngIf="
+                moduleForm.controls['MODLE NAME '].invalid &&
+                moduleForm.controls['MODLE NAME '].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Module Name is required (Min: 3 chars, Max: 50 chars).
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700"
+              >Report name:</label
+            >
+            <input
+              type="text"
+              class="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:border-teal-500 text-sm"
+              placeholder="Enter Report Name"
+              formControlName="REPORT NAME"
+            />
+            <p
+              *ngIf="
+                moduleForm.controls['REPORT NAME'].invalid &&
+                moduleForm.controls['REPORT NAME'].touched
+              "
+              class="text-red-600 text-xs mt-1"
+            >
+              Report Name is required (Min: 3 chars, Max: 50 chars).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+       <div class="flex justify-center space-x-6 mt-4">
+        <button
+          *ngIf="!isEditing"
+          [disabled]="moduleForm.invalid"
+          class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
+          (click)="addModuleSuccesfully()"
+        >
+          <i class="fas fa-user-plus mr-2"></i> Save module
+        </button>
+
+        <button
+          *ngIf="isEditing"
+          class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
+          (click)="editModuleSuccesfully()"
+        >
+          <i class="fas fa-edit mr-2"></i> Update Module
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- <app-add-module (moduleAdded)="refreshModules()"></app-add-module> ✅ Refresh on event -->
+</form>
