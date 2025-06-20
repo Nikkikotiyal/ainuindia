@@ -126,14 +126,15 @@
             Please enter a valid email address.
           </p>
         </div>
-
         <div class="col-span-2 mt-3">
           <label class="block text-sm font-semibold text-gray-700"
             >Location:</label
           >
+
           <div class="relative">
             <input
               type="text"
+              formControlName="Location"
               placeholder="Select locations..."
               [value]="selectedLocations.join(', ')"
               readonly
@@ -141,9 +142,10 @@
               (focus)="dropdownOpen = true"
             />
 
+            <!-- Dropdown for multi-select -->
             <div
               *ngIf="dropdownOpen"
-              class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10"
+              class="absolute w-full bg-white shadow-lg rounded border border-gray-300 mt-2 z-10 max-h-48 overflow-y-auto"
             >
               <div class="p-2 text-sm">
                 <label
@@ -163,7 +165,19 @@
               </div>
             </div>
           </div>
+
+          <!-- 🔴 Inline Validation Message -->
+          <p
+            *ngIf="
+              userForm.controls['Location'].invalid &&
+              userForm.controls['Location'].touched
+            "
+            class="text-red-600 text-xs mt-1"
+          >
+            Please select at least one location.
+          </p>
         </div>
+
         <div class="col-span-2 mt-3">
           <label class="block text-sm font-semibold text-gray-700"
             >Status:</label
@@ -196,7 +210,6 @@
       <div class="flex justify-center space-x-6 mt-4">
         <button
           *ngIf="!isEditing"
-          [disabled]="userForm.invalid"
           class="bg-red-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-800 transition flex items-center text-sm"
           (click)="addUserSuccesfully()"
         >
@@ -210,6 +223,9 @@
         >
           <i class="fas fa-edit mr-2"></i> Update User
         </button>
+      </div>
+      <div *ngIf="validationMessage" class="text-red-600 mt-2 text-sm">
+        {{ validationMessage }}
       </div>
     </div>
   </div>

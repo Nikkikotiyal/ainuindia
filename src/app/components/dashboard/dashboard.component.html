@@ -55,7 +55,8 @@
         class="flex items-center px-6 py-3 hover:bg-red-300 mt-2"
         (click)="openLogList()"
       >
-        <i class="fas fa-chart-bar mr-3"></i> Logs
+        <i class="fas fa-database mr-3"></i>
+        Logs
       </a>
     </nav>
   </aside>
@@ -123,10 +124,18 @@
     </header>
 
     <!-- Page Content -->
-    <main class="flex-1 p-6 bg-gray-100">
-      <ng-container *ngIf="activePage === 'dashboard'">
-        <h3 class="text-xl font-bold">Dashboard Overview</h3>
+    <main class="flex-1 pt-2 pr-6 pb-6 pl-6 bg-gray-100">
+      <div
+        class="breadcrumb"
+        [ngClass]="{
+          'ml-64': isSidebarOpen,
+          'ml-16': !isSidebarOpen
+        }"
+      >
+        {{ breadcrumbs.join(" → ") }}
+      </div>
 
+      <ng-container *ngIf="activePage === 'dashboard'">
         <!-- ✅ 1st Dashboard Boxes (Hidden when User List is Active) -->
         <div
           *ngIf="
@@ -137,7 +146,8 @@
             !isAdtReportVisible &&
             !admissionDashVisible &&
             !admissionviewDashVisible &&
-            !isSideModuleVisible
+            !isSideModuleVisible &&
+            !isLogVisible
           "
           class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
@@ -343,7 +353,7 @@
               </thead>
               <tbody>
                 <tr
-                  *ngFor="let user of users"
+                  *ngFor="let user of filteredUsers"
                   class="hover:bg-gray-50 transition"
                 >
                   <!-- <td class="px-4 py-2 border">{{ user._id }}</td> -->
@@ -432,6 +442,9 @@
             >
               Close
             </button>
+            <p *ngIf="filteredUsers?.length" class="mt-3 text-sm text-gray-600">
+              Total users in table: <strong>{{ filteredUsers.length }}</strong>
+            </p>
           </div>
         </div>
 
@@ -567,7 +580,8 @@
           }"
         >
           <div class="p-4 bg-gray-150 rounded-lg shadow-md mb-4">
-            <div class="flex items-center justify-between">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-semibold text-red-800">Choose Module</h2>
               <button
                 (click)="goBackfirstDash()"
@@ -576,11 +590,34 @@
                 Back
               </button>
             </div>
+
+            <!-- 🔍 Search Bar -->
+            <div class="input-group mb-4 w-50">
+              <span class="input-group-text bg-light">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search modules..."
+                [(ngModel)]="searchDistinctModuleTerm"
+                (input)="filterDistinctModules()"
+              />
+              <button
+                *ngIf="searchDistinctModuleTerm"
+                class="btn btn-outline-secondary"
+                (click)="searchDistinctModuleTerm = ''; filterDistinctModules()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Module Grid -->
             <div
               class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
             >
               <div
-                *ngFor="let module of distinctModules"
+                *ngFor="let module of filteredDistinctModules"
                 class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
               >
                 <div class="flex items-center justify-center space-x-2">
@@ -610,6 +647,15 @@
                 </button>
               </div>
             </div>
+
+            <!-- Total Count -->
+            <p
+              *ngIf="filteredDistinctModules?.length"
+              class="text-sm text-gray-600 px-6"
+            >
+              Total modules shown:
+              <strong>{{ filteredDistinctModules.length }}</strong>
+            </p>
           </div>
         </div>
 
@@ -624,40 +670,70 @@
           }"
         >
           <!-- ✅ Show Only Allowed reports Dynamically -->
-          <div class="p-4 bg-gray-150 rounded-lg shadow-md mb-4">
-            <!-- ✅ Top Bar: Heading & Back Button -->
-            <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-red-800 ml-5">
+          <div class="p-4 bg-gray-100 rounded-lg shadow-md mb-4">
+            <!-- 🔺 Top Bar: Heading, Search & Back -->
+            <div
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4"
+            >
+              <h2 class="text-xl font-semibold text-red-800 ml-2 sm:ml-5">
                 Choose Report
               </h2>
+
+              <!-- 🔍 Search Bar -->
+              <!-- 🔍 Search Bar for Reports -->
+              <div class="input-group mb-4 w-50">
+                <span class="input-group-text bg-light">
+                  <i class="fas fa-search text-muted"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search reports..."
+                  [(ngModel)]="reportSearchTerm"
+                  (input)="filterReports()"
+                />
+                <button
+                  *ngIf="reportSearchTerm"
+                  class="btn btn-outline-secondary"
+                  (click)="reportSearchTerm = ''; filterReports()"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <!-- 🔙 Back Button -->
               <button
                 (click)="goBackSecondDash()"
-                class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition self-start sm:self-auto"
               >
                 Back
               </button>
             </div>
 
-            <!-- ✅ Reports Grid (Existing Layout) -->
+            <!-- 📋 Reports Grid -->
             <div
+              *ngIf="filteredReports && filteredReports.length > 0"
               class="grid gap-6 p-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
             >
               <div
                 *ngFor="let reportName of filteredReports"
                 class="bg-white rounded-lg p-6 shadow-md text-center flex flex-col justify-between w-full"
               >
-                <div class="flex items-center justify-center space-x-2">
+                <!-- 🔹 Module Name -->
+                <div class="flex items-center justify-center space-x-2 mb-2">
                   <p class="text-sm text-gray-500">
                     {{ reportName.MODLE_NAME }}
                   </p>
                 </div>
 
-                <hr class="w-4/5 border-gray-800 mx-auto my-2" />
+                <hr class="w-4/5 border-gray-300 mx-auto my-2" />
 
+                <!-- 🔸 Report Name -->
                 <p class="text-lg font-bold text-red-800">
                   {{ reportName.REPORT_NAME }}
                 </p>
 
+                <!-- 🔘 Proceed Button -->
                 <button
                   (click)="showAdtAdmission()"
                   class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-200 transition"
@@ -665,6 +741,21 @@
                   Proceed
                 </button>
               </div>
+            </div>
+            <!-- 📊 Total Reports Count -->
+            <p
+              *ngIf="filteredReports?.length"
+              class="text-sm text-gray-600 px-6"
+            >
+              Total reports shown:
+              <strong>{{ filteredReports.length }}</strong>
+            </p>
+            <!-- 🚫 No Reports Message -->
+            <div
+              *ngIf="filteredReports?.length === 0"
+              class="text-center text-gray-600 p-6"
+            >
+              No reports available for this module.
             </div>
           </div>
         </div>
@@ -688,7 +779,10 @@
               Back
             </button>
           </div>
-
+          <p *ngIf="filteredReports?.length" class="text-sm text-gray-600 mb-3">
+            ADT admission reports data:
+            <strong>{{ filteredReports.length }}</strong>
+          </p>
           <!-- 📌 Two-Column Grid Layout -->
           <div class="grid grid-cols-12 gap-4 h-[calc(100vh-150px)]">
             <!-- 🔍 Search Filter -->
@@ -827,12 +921,12 @@
                           >
                             <i class="fas fa-eye"></i>
                           </button>
-                          <button
+                          <!-- <button
                             class="text-gray-600 hover:text-gray-800"
                             (click)="editAdtFormData()"
                           >
                             <i class="fas fa-edit"></i>
-                          </button>
+                          </button> -->
                         </div>
                       </td>
                     </tr>
@@ -842,276 +936,72 @@
             </div>
           </div>
         </div>
-
-        <!-- edit adt admission form data -->
+        <!-- 5th dashboard -->
         <div
-          *ngIf="admissionDashVisible"
-          class="transition-all duration-300"
-          [ngClass]="{
-            'ml-64': isSidebarOpen,
-            'ml-16': !isSidebarOpen
-          }"
+          *ngIf="isLogVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
         >
-          <div class="max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-            <h2 class="text-2xl font-bold text-red-800 mb-4 text-center">
-              Hospital Admission Form
-            </h2>
-
-            <!-- ✅ Basic Information -->
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Basic Information
-            </h3>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <label class="block font-semibold">Location Name</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">UHID</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">IP Number</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-            </div>
-
-            <!-- ✅ Personal Details -->
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Personal Details
-            </h3>
-            <div class="grid grid-cols-4 gap-4">
-              <div>
-                <label class="block font-semibold">Patient Name</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Age</label>
-                <input type="number" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">PatientType</label
-                ><select class="w-full border p-2 rounded">
-                  <option>IP</option>
-                  <option>DC</option>
-                </select>
-              </div>
-              <div>
-                <label class="block font-semibold">Mobile No</label>
-                <input type="tel" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Gender</label>
-                <select class="w-full border p-2 rounded">
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block font-semibold">Father/Spouse Name</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Address</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">City</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">State</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-
-              <div>
-                <label class="block font-semibold">Country</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Nationality</label>
-                <input type="text" class="w-full border p-2 rounded" />
-              </div>
-            </div>
-
-            <!-- ✅ Admission Details -->
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Admission Details
-            </h3>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <label class="block font-semibold">Admission Type</label
-                ><select class="w-full border p-2 rounded">
-                  <option>General</option>
-                  <option>Emergency</option>
-                  <option>Private</option>
-                </select>
-              </div>
-              <div>
-                <label class="block font-semibold">Admission Date & Time</label
-                ><input
-                  type="datetime-local"
-                  class="w-full border p-2 rounded"
-                />
-              </div>
-              <div>
-                <label class="block font-semibold">Discharge Date & Time</label
-                ><input
-                  type="datetime-local"
-                  class="w-full border p-2 rounded"
-                />
-              </div>
-            </div>
-
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Bed & Billing Information
-            </h3>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <label class="block font-semibold">Bed No</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Bed Type</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Bed Occupied Date&Time</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Billable Bed Type</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Ward Name</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Bill No</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"
-                  >Bill Generate Date&Time </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"
-                  >Expected Date of Discharge</label
-                ><input type="date" class="w-full border p-2 rounded" />
-              </div>
-            </div>
-
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Doctor & Referral Information
-            </h3>
-            <div class="grid grid-cols-4 gap-4">
-              <div>
-                <label class="block font-semibold">Admitted by</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-
-              <div>
-                <label class="block font-semibold"
-                  >Admitting Doctor Specialty</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Primary Doctor</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"
-                  >Primary Doctor Specialty</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Referral Doctor</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"> Secondary doctor</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">
-                  Secondary doctor Specialty </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"> Co specialty doctor </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">
-                  Co-specialty doctor specialty </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-            </div>
-
-            <h3 class="text-lg font-bold text-gray-700 mt-4">
-              Additional Information
-            </h3>
-            <div class="grid grid-cols-4 gap-4">
-              <div>
-                <label class="block font-semibold">Payer</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Source of Admission</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">MonthlyIncome</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Is MLC</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">IP_Visit</label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Last Modified by </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold"
-                  >Last Modified date/time </label
-                ><input type="text" class="w-full border p-2 rounded" />
-              </div>
-              <div>
-                <label class="block font-semibold">Payment Type</label
-                ><select class="w-full border p-2 rounded">
-                  <option>Cash</option>
-                  <option>Insurance</option>
-                  <option>Credit/Debit Card</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- ✅ Buttons -->
-            <div class="flex justify-between mt-6">
-              <button
-                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                Submit Admission
-              </button>
-              <button
-                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                (click)="BackToAdtReport()"
-              >
-                Cancel
-              </button>
-            </div>
+          <!-- 🔍 Search Bar -->
+          <div class="input-group mb-4 w-50">
+            <span class="input-group-text bg-light">
+              <i class="fas fa-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search by Module ID, Name or Report..."
+              [(ngModel)]="searchTerm"
+              (input)="filterLogs()"
+            />
+            <button
+              *ngIf="searchTerm"
+              class="btn btn-outline-secondary"
+              (click)="searchTerm = ''; filterLogs()"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">Log reports data</p>
+          </div>
+          <table class="w-full border-collapse border border-gray-300">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="border p-2">OnDated</th>
+                <th class="border p-2">By Userid</th>
+                <th class="border p-2">Purpose</th>
+                <th class="border p-2">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of filteredLogs">
+                <td class="border p-2">{{ log.formattedTimestamp }}</td>
+                <td class="border p-2">{{ log.userId || "No User Data" }}</td>
+                <td class="border p-2">{{ log.purpose }}</td>
+                <td
+                  [ngClass]="{
+                    success: log.remarks.includes('Login Successful'),
+                    failed: log.remarks.includes('Login Attempt Failed')
+                  }"
+                >
+                  {{ log.remarks || "N/A" }}
+                </td>
+                <!-- <td class="border p-2">{{ log.remarks }}</td> -->
+              </tr>
+            </tbody>
+          </table>
+          <div class="flex justify-end mt-4">
+            <button
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"
+            >
+              Close
+            </button>
           </div>
         </div>
-
         <!-- view adt admission form data -->
         <div
           *ngIf="admissionviewDashVisible"
@@ -1275,17 +1165,14 @@
         <!-- side module list edit and view -->
         <div
           *ngIf="isSideModuleVisible"
-          class="flex-1 pt-16 p-4 bg-gray-100 min-h-screen transition-all duration-300 mt-3"
-          [ngClass]="{
-            'ml-64': isSidebarOpen,
-            'ml-16': !isSidebarOpen
-          }"
+          class="pt-0 mt-0"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
         >
           <div
             *ngIf="isSideModuleVisible"
             class="p-6 bg-white shadow-md rounded-lg"
           >
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-bold d-flex align-items-center gap-2">
                 <i class="bi bi-puzzle"></i>
                 User Module List
@@ -1298,6 +1185,29 @@
                 + Add Module
               </button>
             </div>
+
+            <!-- 🔍 Search Bar -->
+            <div class="input-group mb-4 w-50">
+              <span class="input-group-text bg-light">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search by Module ID, Name or Report..."
+                [(ngModel)]="searchModuleTerm"
+                (input)="filterModules()"
+              />
+              <button
+                *ngIf="searchModuleTerm"
+                class="btn btn-outline-secondary"
+                (click)="searchModuleTerm = ''; filterModules()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- 📋 Table -->
             <table
               class="w-full table-auto border-collapse border border-gray-300 text-sm"
             >
@@ -1312,7 +1222,7 @@
               <tbody>
                 <tr
                   class="hover:bg-gray-50 transition"
-                  *ngFor="let module of modules"
+                  *ngFor="let module of filteredModules"
                 >
                   <td class="px-4 py-2 border">{{ module.Moduleid }}</td>
                   <td class="px-4 py-2 border">{{ module["MODLE NAME "] }}</td>
@@ -1328,7 +1238,8 @@
                       </button>
 
                       <!-- Edit -->
-                      <button   (click)="editModuleList(module)"
+                      <button
+                        (click)="editModuleList(module)"
                         title="Edit"
                         class="text-gray-600 hover:text-gray-600 transition"
                       >
@@ -1337,6 +1248,7 @@
 
                       <!-- Delete -->
                       <button
+                        (click)="deleteModule(module)"
                         title="Delete"
                         class="text-gray-600 hover:text-gray-600 transition"
                       >
@@ -1347,6 +1259,17 @@
                 </tr>
               </tbody>
             </table>
+
+            <!-- Total Count -->
+            <p
+              *ngIf="filteredModules?.length"
+              class="mt-3 text-sm text-gray-600"
+            >
+              Total modules in table:
+              <strong>{{ filteredModules.length }}</strong>
+            </p>
+
+            <!-- Close Button -->
             <div class="flex justify-end mt-4">
               <button
                 class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"

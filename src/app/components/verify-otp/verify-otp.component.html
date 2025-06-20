@@ -8,7 +8,7 @@
       Enter the 4-digit code sent to your registered email or phone.
     </p>
 
-    <!-- OTP Inputs (Auto-focus & Prevent Non-Numeric Entries) -->
+    <!-- OTP Inputs -->
     <div class="flex justify-center gap-3 mb-6">
       <input
         type="text"
@@ -47,9 +47,13 @@
     >
       Verify
     </button>
-    <p *ngIf="invalidOtpError" class="error-message text-red-800">{{ invalidOtpError }}</p>
 
-    <!-- Resend Link with Functionality -->
+    <!-- Error Message -->
+    <p *ngIf="invalidOtpError" class="text-red-800 text-sm text-center mt-2">
+      {{ invalidOtpError }}
+    </p>
+
+    <!-- Resend OTP -->
     <div class="text-center mt-4 text-sm text-gray-500">
       Didn’t receive the code?
       <button
@@ -59,8 +63,15 @@
         Resend OTP
       </button>
     </div>
-    <!-- <ng-container *ngIf="invalidError">
-      <p class="error-message">{{ invalidError }}</p>
-    </ng-container> -->
+
+    <!-- Back to Login -->
+    <div class="text-center mt-4">
+      <button
+        class="text-sm text-red-800 font-medium hover:underline"
+        (click)="navigateToLogin()"
+      >
+        ← Back to Login
+      </button>
+    </div>
   </div>
 </div>

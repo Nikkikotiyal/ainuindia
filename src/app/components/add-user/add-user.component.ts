@@ -31,6 +31,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 export class AddUserComponent {
   userForm: FormGroup;
   @Output() userAdded = new EventEmitter<void>();
+  validationMessage: string = '';
+
   errorMessage: string = '';
   dropdownOpen: boolean = false;
   searchText: string = '';
@@ -75,7 +77,8 @@ export class AddUserComponent {
         Validators.pattern(/^[0-9]{10}$/), // Ensures exactly 10 digits
       ]),
       Status: ['A'],
-      Location: [''],
+      Location: ['', Validators.required],
+
     });
   }
   // ✅ File: add-user.component.ts
@@ -113,12 +116,10 @@ export class AddUserComponent {
     }
   }
 
-  addUserSuccesfully() {
-     if (this.userForm.valid) {
-      console.log("User Added:", this.userForm.value);
-    } else {
-      console.log("Form is invalid!");
-    }
+ addUserSuccesfully() {
+  if (this.userForm.valid) {
+    this.validationMessage = ''; // clear message on valid
+
     this.apiService
       .signupUsers(
         this.userForm.value.UserName,
@@ -138,7 +139,17 @@ export class AddUserComponent {
         },
         error: this.handleError,
       });
+  } else {
+    // Set plain message instead of snackbar
+    this.validationMessage = '❌ All fields are required';
+
+    Object.values(this.userForm.controls).forEach(control => {
+      control.markAsTouched();
+    });
   }
+}
+
+
   editUserSuccesfully() {
     // console.log("🛡️ Role before API request:", this.userForm.value.role);
     this.apiService

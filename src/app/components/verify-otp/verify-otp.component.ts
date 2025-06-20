@@ -153,4 +153,7 @@ export class VerifyOtpComponent {
       },
     });
   }
+  navigateToLogin() {
+    this.router.navigate(['']);
+  }
 }

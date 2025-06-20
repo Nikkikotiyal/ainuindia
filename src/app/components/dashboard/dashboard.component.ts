@@ -23,6 +23,7 @@ import { log } from 'node:console';
 import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/delete-confirmation-popup.component';
 import { ModuleService } from '../ModuleService';
 import { AddModuleComponent } from '../add-module/add-module.component';
+import { HttpHeaders } from '@angular/common/http';
 
 const normalizeText = (text: string) =>
   text.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -35,6 +36,7 @@ const normalizeText = (text: string) =>
   styleUrls: ['./dashboard.component.scss'], // Uncomment if needed
 })
 export class DashboardComponent implements AfterViewInit {
+  breadcrumbs: string[] = ['Welcome To Document Management Software : AINU']; // ✅ Breadcrumbs Variable Defined
   normalizeText(text: string) {
     return text.replace(/\s+/g, ' ').trim().toLowerCase();
   }
@@ -57,6 +59,8 @@ export class DashboardComponent implements AfterViewInit {
     PHARMACY: 'fa-solid fa-capsules fa-2x',
     'SAMPLE COLLECTION': 'fa-solid fa-vial fa-2x',
   };
+  filteredLogs: any[] = [];
+  logs: any[] = [];
   secondDashVisible: boolean = false;
   isDashVisible: boolean = false;
   isBillingDashVisible: boolean = false;
@@ -64,6 +68,7 @@ export class DashboardComponent implements AfterViewInit {
   admissionDashVisible: boolean = false;
   admissionviewDashVisible: boolean = false;
   isSideModuleVisible: boolean = false;
+  isLogVisible: boolean = false;
   errorMessage: string = '';
   userModules: any[] = [];
   patient: any;
@@ -72,12 +77,20 @@ export class DashboardComponent implements AfterViewInit {
   originalAdtAdmissionReports: any[] = [];
   filteredReports: any[] = [];
   filteredModules: any[] = [];
+  searchDistinctModuleTerm: string = '';
   distinctModules: any[] = [];
+  filteredDistinctModules: any[] = [];
+  searchModuleTerm: string = '';
   isSidebarOpen = false;
   // AdtAdmissionReports: any[] = [];
   modules: any[] = [];
   checkedModules: any[] = [];
   userRole: string = '';
+  filteredUsers: any[] = [];
+  reportSearchTerm: string = '';
+  // filteredReportsByUserId: any[] = []; // Final list shown
+  originalReports: any[] = []; // Unfiltered copy
+
   users: any[] = []; // ✅ Declare the 'users' property
   // selectedRecord: any = null;
   selectedUser: any = null;
@@ -101,7 +114,8 @@ export class DashboardComponent implements AfterViewInit {
   public loggedIn: boolean = false;
   formData: any = {};
   buttonLabel: string = 'Edit';
-  originalUsers: any[] = [];
+  // originalUsers: any[] = [];
+  totalUsers: number = 0;
 
   // selectedModuleNames: string[] = [];
   isLoginInfo: boolean = false;
@@ -109,7 +123,6 @@ export class DashboardComponent implements AfterViewInit {
   constructor(
     private snackBar: MatSnackBar,
     private apiService: ApiService,
-    private moduleService: ModuleService,
     private router: Router,
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
@@ -123,6 +136,10 @@ export class DashboardComponent implements AfterViewInit {
     admissionDate: '',
   };
   ngOnInit(): void {
+    this.filteredLogs = this.logs; // initially show all
+    this.fetchLogs();
+    this.fetchUsers();
+    this.fetchModules();
     // this.userRole = this.authService.getUserRole();
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.userId = userData._id || '';
@@ -136,9 +153,6 @@ export class DashboardComponent implements AfterViewInit {
     }
 
     console.log(`🔄 User ID from localStorage: ${this.userId}`);
-    this.fetchUsers();
-    this.fetchModules();
-
     const storedLocation = localStorage.getItem('userLocation');
     if (typeof window !== 'undefined') {
       const userDataStr = localStorage.getItem('user');
@@ -190,6 +204,7 @@ export class DashboardComponent implements AfterViewInit {
   };
 
   ngAfterViewInit() {}
+
   logout() {
     localStorage.removeItem('token'); // ✅ Remove authentication token
     localStorage.removeItem('userLocation'); // ✅ Remove stored location
@@ -203,6 +218,7 @@ export class DashboardComponent implements AfterViewInit {
   }
   // 3rd dashboard
   showModuleDashboard(userId: string, moduleName: string) {
+    this.updateBreadcrumb('Choose Report');
     this.isDashVisible = true;
     this.showUserList = false;
     this.secondDashVisible = false;
@@ -215,6 +231,11 @@ export class DashboardComponent implements AfterViewInit {
     }
     this.apiService.getDashUserModulesByUserID(userId).subscribe({
       next: (response) => {
+        // ✅ Step 1: Store data first
+        this.userModules = response.modules;
+        console.log('✅ Retrieved Modules:', this.userModules);
+
+        // ✅ Step 2: Debug raw data
         console.log(
           '📦 Raw API Response:',
           JSON.stringify(this.userModules, null, 2)
@@ -223,27 +244,15 @@ export class DashboardComponent implements AfterViewInit {
         this.userModules.forEach((module) => {
           console.log(
             '📌 ModuleDetails Keys:',
-            Object.keys(module.moduleDetails)
+            Object.keys(module.moduleDetails || {})
           );
           console.log('🔍 MODLE NAME:', module.moduleDetails?.['MODLE NAME ']);
-          console.log(
-            '📑 REPORT NAME:',
-            module.moduleDetails?.['REPORT_NAME ']
-          );
+          console.log('📑 REPORT NAME:', module.moduleDetails?.['REPORT NAME']);
         });
 
-        this.userModules = response.modules;
-        console.log('✅ Retrieved Modules:', this.userModules);
-        const moduleNames = this.userModules.map((module) =>
-          module.moduleDetails?.['MODLE NAME ']?.trim()
-        );
-        // console.log('📌 Module Names:', moduleNames);
-
-        // ✅ Extract reports only for the selected module
-        this.filteredReports = this.userModules
+        // ✅ Step 3: Extract reports for selected moduleName
+        const reports = this.userModules
           .filter((module) => {
-            if (!module.moduleDetails) return false;
-
             const modName = module.moduleDetails?.['MODLE NAME ']?.trim();
             return (
               modName && modName.toLowerCase() === moduleName.toLowerCase()
@@ -256,6 +265,11 @@ export class DashboardComponent implements AfterViewInit {
               module.moduleDetails?.['REPORT NAME']?.trim() ||
               'No Report Available',
           }));
+
+        // ✅ Step 4: Save original & filtered (for search)
+        this.originalReports = reports;
+        this.filteredReports = [...reports];
+
         console.log(
           `📑 Final Filtered Reports for ${moduleName}:`,
           this.filteredReports
@@ -267,14 +281,27 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
+  // Call this after setting originalReports once
+  filterReports() {
+    const term = this.reportSearchTerm.toLowerCase().trim();
+
+    this.filteredReports = !term
+      ? [...this.originalReports]
+      : this.originalReports.filter((report) =>
+          report.REPORT_NAME.toLowerCase().includes(term)
+        );
+  }
+
   // 2nd dashboard
   showTrioDashboard(name: string, userId: string) {
+    this.updateBreadcrumb('Choose Module');
     this.softwareName = name;
     this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
-    this.secondDashVisible = true; // ✅ Ensure dashboard is visible on click
+    this.secondDashVisible = true;
     this.showUserList = false;
     this.isDashVisible = false;
     this.isAdtReportVisible = false;
+
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -283,39 +310,100 @@ export class DashboardComponent implements AfterViewInit {
     this.apiService.getDashUserModulesByUserID(userId).subscribe({
       next: (response) => {
         this.userModules = response.modules;
-        // console.log('✅ Retrieved Modules:', this.userModules);
 
-        // ✅ Extract and store distinct modules
         const moduleMap = new Map();
         this.userModules.forEach((module) => {
-          if (!module.moduleDetails) return; // Safety check
+          if (!module.moduleDetails) return;
 
-          // Find dynamic key for 'MODLE NAME' (ignoring case and spaces)
           const keys = Object.keys(module.moduleDetails);
           const modleNameKey = keys.find(
             (key) => key.replace(/\s/g, '').toUpperCase() === 'MODLENAME'
           );
 
-          // Get modleName value from dynamic key
           const modleName = modleNameKey
             ? module.moduleDetails[modleNameKey]?.trim().toUpperCase()
             : null;
 
           if (modleName && !moduleMap.has(modleName)) {
-            moduleMap.set(modleName, module);
+            moduleMap.set(modleName, { ...module, moduleName: modleName }); // ✅ Store moduleName explicitly
           }
         });
 
         this.distinctModules = Array.from(moduleMap.values());
-        // console.log('🔎 Fixed Distinct Modules:', this.distinctModules);
+        this.filteredDistinctModules = [...this.distinctModules]; // ✅ Preserve module names
+
+        console.log(
+          '✅ Loaded Modules with Names:',
+          this.filteredDistinctModules
+        );
       },
       error: (error) => {
         console.error('❌ API Error:', error);
       },
     });
   }
+
+  navigateTo(section: string, label: string) {
+    this.resetSections();
+
+    // Ensure the correct section is activated
+    switch (section) {
+      case 'showModuleList':
+        this.showModuleList = true;
+        break;
+      case 'showUserList':
+        this.showUserList = true;
+        break;
+      case 'isDashVisible':
+        this.isDashVisible = true;
+        break;
+      case 'admissionDashVisible':
+        this.admissionDashVisible = true;
+        break;
+    }
+
+    console.log('Navigating to Choose Module...');
+    this.updateBreadcrumb('Choose Module');
+  }
+
+  updateBreadcrumb(label: string) {
+    // Ensure "Software Dashboard" is always at the start
+    if (this.breadcrumbs.length === 0) {
+      this.breadcrumbs.push('Welcome To Document Management Software : AINU');
+    }
+
+    // Prevent duplicate entries
+    if (!this.breadcrumbs.includes(label)) {
+      this.breadcrumbs.push(label);
+    }
+  }
+  // ✅ New Function: Remove Last Entry When Going Back
+  removeLastBreadcrumb() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+    }
+  }
+  resetSections() {
+    this.showUserList = false;
+    this.showModuleList = false;
+    this.isDashVisible = false;
+    this.admissionDashVisible = false;
+  }
+
+  filterDistinctModules() {
+    const term = this.searchDistinctModuleTerm?.toLowerCase().trim();
+    if (!term) {
+      this.filteredDistinctModules = [...this.distinctModules];
+    } else {
+      this.filteredDistinctModules = this.distinctModules.filter((mod) =>
+        mod.moduleDetails?.['MODLE NAME ']?.toLowerCase().includes(term)
+      );
+    }
+  }
+
   //4th dashboard
   showAdtAdmission() {
+    this.updateBreadcrumb('ADT admission reports data');
     this.isDashVisible = false;
     this.isAdtReportVisible = true;
     this.apiService.getAdtAdmissionReport().subscribe(
@@ -341,13 +429,26 @@ export class DashboardComponent implements AfterViewInit {
   goBackSecondDash() {
     this.secondDashVisible = true;
     this.isDashVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+    }
   }
   goBackThirdDash() {
+    this.filteredReports = this.distinctModules.map((module) => ({
+      REPORT_NAME: module.REPORT_NAME,
+      MODLE_NAME: module.moduleName || 'Unknown Module', // ✅ Ensure module name is retained
+    }));
     this.isDashVisible = true;
     this.isAdtReportVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+    }
   }
   goBackfirstDash() {
     this.secondDashVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+    }
     // this.isDashVisible = true;
     // this.secondDashVisible = false;
   }
@@ -376,7 +477,9 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionDashVisible = false;
     this.admissionviewDashVisible = false;
     this.isSideModuleVisible = false;
+    this.isLogVisible = false;
     this.cdRef.detectChanges(); // ✅ Forces UI update
+    this.breadcrumbs = ['Master -> User'];
   }
   closeUserList() {
     this.showUserList = false;
@@ -386,6 +489,10 @@ export class DashboardComponent implements AfterViewInit {
     this.isSideModuleVisible = true;
     this.showUserList = false;
     this.showModuleList = false;
+    this.isLogVisible = false;
+    this.isAdtReportVisible = false;
+    this.secondDashVisible = false;
+    this.breadcrumbs = ['Master -> Module List'];
   }
 
   AddModule() {
@@ -405,10 +512,15 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   fetchModules() {
-    this.apiService.getModules().subscribe((data: any) => {
-      this.modules = data; // Display filtered users
-      this.modules = [...this.modules]; // Store original list for reset
-      console.log('✅ Modules Fetched:', this.modules);
+    this.apiService.getModules().subscribe({
+      next: (data: any) => {
+        this.modules = data.filter(
+          (module: { isDeleted: any }) => !module.isDeleted
+        ); // ✅ Keep only active modules
+        this.filteredModules = [...this.modules]; // ✅ Mirror the filtered list
+        console.log('✅ Filtered Modules:', this.modules);
+      },
+      error: (err) => console.error('❌ Error fetching modules:', err),
     });
   }
 
@@ -430,8 +542,9 @@ export class DashboardComponent implements AfterViewInit {
         console.log('Dialog closed with:', result);
 
         this.apiService.getUsers().subscribe((data: any) => {
-          this.users = data; // ✅ Assign response to the `users` array
-          this.users = [...this.users];
+          this.fetchUsers();
+          // this.users = data; // ✅ Assign response to the `users` array
+          // this.users = [...this.users];
           console.log('Updated Users:', this.users);
         });
       }
@@ -444,6 +557,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isSidebarOpen = true;
     this.selectedUser = user;
     this.isSideModuleVisible = false;
+    this.isLogVisible = false;
 
     // Step 1: First, fetch ALL modules
     this.apiService.getUserModulesByUserID(user._id).subscribe(
@@ -516,26 +630,41 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.admissionviewDashVisible = false;
     this.isSideModuleVisible = false;
+    this.isLogVisible = false;
+    this.breadcrumbs = ['Welcome To Document Management Software : AINU'];
   }
 
   filterUsers() {
-    const term = this.searchTerm.toLowerCase().trim();
+    const term = this.searchTerm?.toLowerCase().trim();
 
     if (!term) {
-      this.users = [...this.originalUsers]; // ✅ Reset full list when search is empty
-      return;
+      this.filteredUsers = [...this.users]; // Show all if empty search
+    } else {
+      this.filteredUsers = this.users.filter(
+        (user) =>
+          user.UserName?.toLowerCase().includes(term) ||
+          user.Email?.toLowerCase().includes(term)
+      );
     }
-
-    this.users = this.originalUsers.filter(
-      (user) =>
-        user.UserName.toLowerCase().includes(term) ||
-        user.Email.toLowerCase().includes(term)
-    );
   }
 
   clearSearch() {
     this.searchTerm = '';
-    this.users = [...this.originalUsers]; // ✅ Restore full user list
+    this.users = [...this.filteredUsers]; // ✅ Restore full user list
+  }
+
+  filterModules() {
+    const term = this.searchModuleTerm?.toLowerCase().trim();
+    if (!term) {
+      this.filteredModules = [...this.modules];
+    } else {
+      this.filteredModules = this.modules.filter(
+        (module) =>
+          module['MODLE NAME ']?.toLowerCase().includes(term) ||
+          module['REPORT NAME']?.toLowerCase().includes(term) ||
+          module.Moduleid?.toString().includes(term)
+      );
+    }
   }
 
   filteredAdtReports() {
@@ -622,7 +751,9 @@ export class DashboardComponent implements AfterViewInit {
   fetchUsers() {
     this.apiService.getUsers().subscribe((data) => {
       this.users = data; // Display filtered users
-      this.originalUsers = [...data]; // Store original list for reset
+      // this.filteredUsers = [...data]; // Store original list for reset
+      this.totalUsers = this.users.length; // ✅ count
+      this.filteredUsers = [...data]; // Show all initially
     });
   }
   sortData(column: string) {
@@ -739,12 +870,7 @@ export class DashboardComponent implements AfterViewInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         console.log('Dialog closed with:', result);
-
-        this.apiService.getUsers().subscribe((data: any) => {
-          this.users = data; // ✅ Assign response to the `users` array
-          this.users = [...this.users];
-          console.log('Updated Users:', this.users);
-        });
+        this.fetchUsers();
       }
     });
   }
@@ -841,6 +967,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
   }
   viewAdtFormData(data: any) {
+    this.updateBreadcrumb('view ADT admission reports data');
     this.patient = data;
     console.log('data', this.patient);
     // Optional: Save to localStorage (if needed)
@@ -848,17 +975,68 @@ export class DashboardComponent implements AfterViewInit {
 
     this.admissionviewDashVisible = true;
     this.isAdtReportVisible = false;
+    this.isLogVisible = false;
   }
   BackToAdtReport() {
     this.isAdtReportVisible = true;
     this.admissionDashVisible = false;
   }
   BackToadtAdmissionData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+    }
     this.admissionviewDashVisible = false;
     this.isAdtReportVisible = true;
   }
 
   openLogList() {
-    this.router.navigate(['/logs']);
+    this.isLogVisible = true;
+    this.showModuleList = false;
+    this.showUserList = false;
+    this.isSideModuleVisible = false;
+    this.secondDashVisible = false;
+    this.isDashVisible = false;
+    this.isAdtReportVisible = false;
+    this.admissionviewDashVisible = false;
+    this.breadcrumbs = ['Master -> Log List'];
+  }
+
+  deleteModule(module: any) {
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: { message: 'Are you sure you want to delete this module?' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.apiService.deleteModule(module.Moduleid).subscribe(() => {
+          this.showSuccessSnackbar('✅ Module deleted successfully!');
+          this.fetchModules(); // Reload active users after soft deletion
+        });
+      }
+    });
+  }
+
+  fetchLogs() {
+    this.apiService.getLogs().subscribe({
+      next: (data: any[] = []) => {
+        this.logs = data;
+        this.filteredLogs = data;
+        // this.logs = [...this.logs];
+        console.log('✅ Logs Fetched:', this.logs);
+      },
+      error: (err) => console.error('❌ Error fetching logs:', err),
+    });
+  }
+
+  filterLogs() {
+    const term = this.searchTerm.toLowerCase();
+
+    this.filteredLogs = this.logs.filter(
+      (log) =>
+        (log.formattedTimestamp?.toLowerCase() || '').includes(term) ||
+        (log.userId?.toLowerCase() || '').includes(term) ||
+        (log.purpose?.toLowerCase() || '').includes(term) ||
+        (log.remarks?.toLowerCase() || '').includes(term)
+    );
   }
 }

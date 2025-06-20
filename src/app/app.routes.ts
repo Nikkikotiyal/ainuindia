@@ -4,7 +4,6 @@ import { LoginComponent } from './components/login/login.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { AuthGuard } from './auth.guard';
 import { VerifyOtpComponent } from './components/verify-otp/verify-otp.component';
-import { LogComponent } from './components/log/log.component';
 
 
 export const routes: Routes = [
@@ -33,10 +32,6 @@ export const routes: Routes = [
     component: VerifyOtpComponent,
   },
 
-  {
-    path: 'logs',
-    component: LogComponent,
-  },
   // { path: '**', redirectTo: '' ,
   //   component: LoginComponent,
   // },
