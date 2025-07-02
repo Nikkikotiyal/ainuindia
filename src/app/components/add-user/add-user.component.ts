@@ -44,6 +44,7 @@ export class AddUserComponent {
     'Siliguri',
     'Secunderabad',
     'Chennai',
+    'Hyderabad'
   ];
   isPopupVisible = false;
   isEditing = false;

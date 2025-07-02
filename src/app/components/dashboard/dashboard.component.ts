@@ -59,7 +59,9 @@ export class DashboardComponent implements AfterViewInit {
     PHARMACY: 'fa-solid fa-capsules fa-2x',
     'SAMPLE COLLECTION': 'fa-solid fa-vial fa-2x',
   };
+  selectedFile: File | null = null;
   filteredLogs: any[] = [];
+  filteredSpecility: any[] = [];
   logs: any[] = [];
   secondDashVisible: boolean = false;
   isDashVisible: boolean = false;
@@ -116,10 +118,21 @@ export class DashboardComponent implements AfterViewInit {
   buttonLabel: string = 'Edit';
   // originalUsers: any[] = [];
   totalUsers: number = 0;
-
+  noReportData: boolean = false;
   // selectedModuleNames: string[] = [];
   isLoginInfo: boolean = false;
-
+  claims: any[] = [];
+  filteredClaims: any[] = [];
+  originalClaimReports: any[] = [];
+  claimSearchText = '';
+  isClaimVisible: boolean = false;
+  noClaimData: boolean = false;
+  fromDate: string = '';
+  toDate: string = '';
+  isSpecility: boolean = false;
+  specialtyList: string[] = [];
+  specialties: string[] = [];
+  selectedSpecialty: string = '';
   constructor(
     private snackBar: MatSnackBar,
     private apiService: ApiService,
@@ -128,6 +141,7 @@ export class DashboardComponent implements AfterViewInit {
     private cdRef: ChangeDetectorRef,
     private cdr: ChangeDetectorRef // @Inject(PLATFORM_ID) private platformId: Object, // @Inject(MAT_DIALOG_DATA) public userData: any
   ) {}
+
   searchCriteria = {
     UHID: '',
     IPNO: '',
@@ -135,7 +149,25 @@ export class DashboardComponent implements AfterViewInit {
     location: '',
     admissionDate: '',
   };
+
+  claimSearch = {
+    UHID: '',
+    ClaimNo: '',
+    PatientName: '',
+    CompanyName: '',
+  };
+
   ngOnInit(): void {
+    this.apiService.getSpecility().subscribe({
+      next: (res) =>
+        (this.specialties = res.map((s: { specialty: any }) => s.specialty)),
+      error: (err) => console.error('❌ Failed to fetch specialties', err),
+    });
+
+    this.apiService
+      .getClaimReports()
+      .subscribe((data) => console.log('✅ Claim data:', data));
+
     this.filteredLogs = this.logs; // initially show all
     this.fetchLogs();
     this.fetchUsers();
@@ -224,6 +256,10 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.isAdtReportVisible = false;
     this.admissionviewDashVisible = false;
+    this.noReportData = false;
+    this.isClaimVisible = false;
+    this.noClaimData = false;
+    this.isSpecility = false;
 
     if (!userId) {
       console.error('❌ No userId found!');
@@ -301,6 +337,8 @@ export class DashboardComponent implements AfterViewInit {
     this.showUserList = false;
     this.isDashVisible = false;
     this.isAdtReportVisible = false;
+    this.isSpecility = false;
+    this.isClaimVisible = false;
 
     if (!userId) {
       console.error('❌ No userId found!');
@@ -402,28 +440,77 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   //4th dashboard
-  showAdtAdmission() {
-    this.updateBreadcrumb('ADT admission reports data');
+  showAdtAdmission(reportType: string): void {
+    console.log('▶️ Report clicked:', reportType);
+    this.updateBreadcrumb(`${reportType} data`);
+
+    // Reset all view states
     this.isDashVisible = false;
-    this.isAdtReportVisible = true;
-    this.apiService.getAdtAdmissionReport().subscribe(
-      (data: any) => {
-        console.log('API Data:', data); // Debugging Step
+    this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
+    this.noReportData = false;
+    this.noClaimData = false;
+    this.isSpecility = false;
+    this.filteredReports = [];
+    this.filteredClaims = [];
 
-        // 🔹 Map "Admitting doctor" to a new key "admittingDoctor"
-        this.originalAdtAdmissionReports = data.map((report: any) => ({
-          ...report,
-          admittingDoctor: report['Admitting doctor']
-            ? report['Admitting doctor']
-            : 'N/A', // Ensures binding
-        }));
+    const normalized = reportType?.trim().toLowerCase();
+    console.log('🧾 Normalized type:', normalized);
 
-        this.filteredReports = [...this.originalAdtAdmissionReports]; // Initialize filtered data
-      },
-      (error) => {
-        console.error('Error fetching users:', error);
-      }
-    );
+    // 🔎 ADT Admission Report
+    if (
+      normalized === 'adt admission report' ||
+      normalized === 'admission reports'
+    ) {
+      this.apiService.getAdtAdmissionReport().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isAdtReportVisible = false;
+            return;
+          }
+
+          this.originalAdtAdmissionReports = data.map((report: any) => ({
+            ...report,
+            admittingDoctor: report['Admitting doctor'] || 'N/A',
+          }));
+          this.filteredReports = [...this.originalAdtAdmissionReports];
+          this.isAdtReportVisible = true;
+        },
+        error: (err) => {
+          console.error('❌ Failed to load ADT reports:', err);
+          this.noReportData = true;
+        },
+      });
+    }
+
+    // 🆕 Claimed Raised Report
+    else if (normalized.includes('claimed') || normalized.includes('claim')) {
+      this.apiService.getClaimReports().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noClaimData = true;
+            this.isClaimVisible = false;
+            return;
+          }
+
+          this.claims = data;
+          this.filteredClaims = [...data];
+          this.isClaimVisible = true;
+        },
+        error: (err) => {
+          console.error('❌ Failed to load claim reports:', err);
+          this.noClaimData = true;
+          this.isClaimVisible = false;
+        },
+      });
+    }
+
+    // ⚠️ Unrecognized Report Type
+    else {
+      console.warn('⚠️ Unknown report type:', normalized);
+      this.noReportData = true;
+    }
   }
 
   goBackSecondDash() {
@@ -433,25 +520,35 @@ export class DashboardComponent implements AfterViewInit {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
   }
+
   goBackThirdDash() {
-    this.filteredReports = this.distinctModules.map((module) => ({
-      REPORT_NAME: module.REPORT_NAME,
-      MODLE_NAME: module.moduleName || 'Unknown Module', // ✅ Ensure module name is retained
-    }));
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
     this.isDashVisible = true;
     this.isAdtReportVisible = false;
     if (this.breadcrumbs.length > 1) {
-      this.breadcrumbs.pop(); // Removes the last breadcrumb step
+      this.breadcrumbs.pop();
     }
   }
+
   goBackfirstDash() {
     this.secondDashVisible = false;
+    this.noReportData = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
     // this.isDashVisible = true;
     // this.secondDashVisible = false;
   }
+
+  goBackfourthDashboard() {
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
+    this.isDashVisible = true;
+    this.isClaimVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+  }
+
   showInstaDashboard(name: string) {
     this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
     this.softwareName = name;
@@ -478,6 +575,8 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionviewDashVisible = false;
     this.isSideModuleVisible = false;
     this.isLogVisible = false;
+    this.isClaimVisible = false;
+    this.isSpecility = false;
     this.cdRef.detectChanges(); // ✅ Forces UI update
     this.breadcrumbs = ['Master -> User'];
   }
@@ -491,7 +590,9 @@ export class DashboardComponent implements AfterViewInit {
     this.showModuleList = false;
     this.isLogVisible = false;
     this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
     this.secondDashVisible = false;
+    this.isSpecility = false;
     this.breadcrumbs = ['Master -> Module List'];
   }
 
@@ -631,6 +732,10 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionviewDashVisible = false;
     this.isSideModuleVisible = false;
     this.isLogVisible = false;
+    this.noReportData = false;
+    this.isClaimVisible = false;
+    this.noClaimData = false;
+    this.isSpecility = false;
     this.breadcrumbs = ['Welcome To Document Management Software : AINU'];
   }
 
@@ -669,40 +774,47 @@ export class DashboardComponent implements AfterViewInit {
 
   filteredAdtReports() {
     const term = this.searchText.toLowerCase().trim();
-
-    if (!term) {
-      this.filteredReports = [...this.originalAdtAdmissionReports]; // Reset filter
-      return;
-    }
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
 
     this.filteredReports = this.originalAdtAdmissionReports.filter(
       (report: any) => {
         const patientName = String(report['Patient Name'] || '')
           .trim()
           .toLowerCase();
-        const match = patientName.includes(term);
+        const admissionDateStr = report['Admission Date & Time'];
+        const admissionDate = admissionDateStr
+          ? new Date(admissionDateStr)
+          : null;
 
-        console.log(
-          'Checking Patient Name:',
-          `"${patientName}"`,
-          '| Search Term:',
-          `"${term}"`,
-          '| Match:',
-          match
-        );
-
-        return (
-          match ||
+        const matchText =
+          patientName.includes(term) ||
           String(report.UHid || '')
             .toLowerCase()
             .includes(term) ||
           String(report.IPNO || '')
             .toLowerCase()
             .includes(term) ||
-          String(report['Admission Date & Time'] || '')
+          String(admissionDateStr || '')
             .toLowerCase()
-            .includes(term)
-        );
+            .includes(term);
+
+        const matchDate =
+          (!from || (admissionDate && admissionDate >= from)) &&
+          (!to || (admissionDate && admissionDate <= to));
+
+        const specialtyInReport =
+          report.specialty ||
+          report.Specialty ||
+          report['Primary doctor Specialty'] ||
+          '';
+
+        const matchSpecialty =
+          !this.selectedSpecialty ||
+          specialtyInReport.toLowerCase() ===
+            this.selectedSpecialty.toLowerCase();
+
+        return matchText && matchDate && matchSpecialty;
       }
     );
   }
@@ -965,6 +1077,8 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionDashVisible = true;
     this.isAdtReportVisible = false;
     this.secondDashVisible = false;
+    this.isClaimVisible = false;
+    this.isSpecility = false;
   }
   viewAdtFormData(data: any) {
     this.updateBreadcrumb('view ADT admission reports data');
@@ -975,7 +1089,9 @@ export class DashboardComponent implements AfterViewInit {
 
     this.admissionviewDashVisible = true;
     this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
     this.isLogVisible = false;
+    this.isSpecility = false;
   }
   BackToAdtReport() {
     this.isAdtReportVisible = true;
@@ -997,10 +1113,33 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.isDashVisible = false;
     this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
+    this.isSpecility = false;
     this.admissionviewDashVisible = false;
     this.breadcrumbs = ['Master -> Log List'];
   }
 
+  openSpecilityList() {
+    this.isSpecility = true;
+    this.isLogVisible = false;
+    this.showModuleList = false;
+    this.showUserList = false;
+    this.isSideModuleVisible = false;
+    this.secondDashVisible = false;
+    this.isDashVisible = false;
+    this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
+    this.admissionviewDashVisible = false;
+    this.breadcrumbs = ['Master -> Specility List'];
+    this.apiService.getSpecility().subscribe({
+      next: (res) => {
+        this.filteredSpecility = res;
+      },
+      error: (err) => {
+        console.error('❌ Failed to load specialties:', err);
+      },
+    });
+  }
   deleteModule(module: any) {
     const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
       data: { message: 'Are you sure you want to delete this module?' },
@@ -1037,6 +1176,89 @@ export class DashboardComponent implements AfterViewInit {
         (log.userId?.toLowerCase() || '').includes(term) ||
         (log.purpose?.toLowerCase() || '').includes(term) ||
         (log.remarks?.toLowerCase() || '').includes(term)
+    );
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
+  uploadFile(): void {
+    if (!this.selectedFile) return;
+
+    this.apiService.uploadFile(this.selectedFile).subscribe({
+      next: (res) => {
+        alert('✅ File uploaded successfully');
+        console.log('🧾 Upload response:', res);
+
+        if (res?.data && Array.isArray(res.data)) {
+          // 🔄 Create a fresh array to force table refresh
+          this.filteredReports = [...res.data];
+          this.isAdtReportVisible = true;
+          this.noReportData = false;
+
+          // ✅ Reset filters
+          this.searchText = '';
+          this.searchCriteria = {
+            UHID: '',
+            IPNO: '',
+            patientName: '',
+            location: '',
+            admissionDate: '',
+          };
+        }
+
+        this.selectedFile = null;
+      },
+      error: (err) => {
+        alert('❌ File upload failed');
+        console.error(err);
+      },
+    });
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  applyClaimFilters() {
+    this.filteredClaims = this.claims.filter(
+      (c) =>
+        (!this.claimSearch.UHID || c.UHID?.includes(this.claimSearch.UHID)) &&
+        (!this.claimSearch.ClaimNo ||
+          c.ClaimNo?.includes(this.claimSearch.ClaimNo)) &&
+        (!this.claimSearch.PatientName ||
+          c['Patient Name']
+            ?.toLowerCase()
+            .includes(this.claimSearch.PatientName.toLowerCase())) &&
+        (!this.claimSearch.CompanyName ||
+          c['Company Name']
+            ?.toLowerCase()
+            .includes(this.claimSearch.CompanyName.toLowerCase()))
+    );
+  }
+
+  clearClaimFilters() {
+    this.claimSearch = {
+      UHID: '',
+      ClaimNo: '',
+      PatientName: '',
+      CompanyName: '',
+    };
+    this.filteredClaims = [...this.claims];
+  }
+
+  filterClaimResults() {
+    const text = this.claimSearchText.toLowerCase();
+    this.filteredClaims = this.claims.filter(
+      (c) =>
+        c.UHID?.toLowerCase().includes(text) ||
+        c.ClaimNo?.toLowerCase().includes(text) ||
+        c['Patient Name']?.toLowerCase().includes(text) ||
+        c['Company Name']?.toLowerCase().includes(text)
     );
   }
 }

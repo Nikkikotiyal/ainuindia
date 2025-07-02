@@ -16,6 +16,7 @@
       </a>
 
       <a
+        *ngIf="userRole === 'SuperAdmin'"
         class="flex items-center px-6 py-3 mt-2 hover:bg-red-300"
         (click)="openUserList()"
       >
@@ -23,6 +24,7 @@
       </a>
 
       <a
+        *ngIf="userRole === 'SuperAdmin'"
         class="flex items-center px-6 py-3 mt-2 hover:bg-red-300"
         (click)="openSideModuleList()"
       >
@@ -57,6 +59,17 @@
       >
         <i class="fas fa-database mr-3"></i>
         Logs
+      </a>
+
+      <a
+        *ngIf="userRole === 'SuperAdmin'"
+        class="flex items-center px-6 py-3 hover:bg-red-300 mt-2"
+        (click)="openSpecilityList()"
+      >
+        <i class="fas fa-stethoscope mr-3"></i>
+        <!-- Medical specialist -->
+
+        Specility
       </a>
     </nav>
   </aside>
@@ -147,7 +160,11 @@
             !admissionDashVisible &&
             !admissionviewDashVisible &&
             !isSideModuleVisible &&
-            !isLogVisible
+            !isLogVisible &&
+            !noReportData &&
+            !isClaimVisible &&
+            !noClaimData &&
+            !isSpecility
           "
           class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
@@ -735,7 +752,7 @@
 
                 <!-- 🔘 Proceed Button -->
                 <button
-                  (click)="showAdtAdmission()"
+                  (click)="showAdtAdmission(reportName.REPORT_NAME)"
                   class="mt-3 px-3 py-1 text-xs font-semibold text-gray-800 bg-red-100 rounded hover:bg-red-200 transition"
                 >
                   Proceed
@@ -753,15 +770,15 @@
             <!-- 🚫 No Reports Message -->
             <div
               *ngIf="filteredReports?.length === 0"
-              class="text-center text-gray-600 p-6"
+              class="text-center text-gray-600 p-10 text-xl font-semibold"
             >
-              No reports available for this module.
+              🚫 No reports found for this module.
             </div>
           </div>
         </div>
         <!-- 4th dashboard -->
         <div
-          *ngIf="isAdtReportVisible"
+          *ngIf="isAdtReportVisible || noReportData"
           class="transition-all duration-300 min-h-screen"
           [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
         >
@@ -770,7 +787,9 @@
             class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
           >
             <p class="text-lg font-bold text-red-800">
-              ADT admission reports data
+              {{
+                noReportData ? "No records found" : "ADT admission reports data"
+              }}
             </p>
             <button
               (click)="goBackThirdDash()"
@@ -779,12 +798,53 @@
               Back
             </button>
           </div>
+
+          <!-- 📁 Upload File Section (Always Visible) -->
+          <!-- <div class="flex items-center gap-2 mb-4">
+            <input
+              type="file"
+              class="hidden"
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+            <button
+              (click)="fileInput.click()"
+              class="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 transition"
+            >
+              📁 Choose File
+            </button>
+            <button
+              (click)="uploadFile()"
+              [disabled]="!selectedFile"
+              class="bg-green-600 text-white py-1 px-4 rounded hover:bg-green-700 transition"
+            >
+              ⬆️ Upload
+            </button>
+            <span
+              *ngIf="selectedFile"
+              class="text-sm text-gray-600 max-w-[200px] truncate"
+            >
+              {{ selectedFile.name }}
+            </span>
+          </div> -->
+
+          <div
+            *ngIf="noReportData"
+            class="text-center text-gray-600 p-10 text-xl font-semibold"
+          >
+            🚫 No records found for this report.
+          </div>
+
           <p *ngIf="filteredReports?.length" class="text-sm text-gray-600 mb-3">
             ADT admission reports data:
             <strong>{{ filteredReports.length }}</strong>
           </p>
+
           <!-- 📌 Two-Column Grid Layout -->
-          <div class="grid grid-cols-12 gap-4 h-[calc(100vh-150px)]">
+          <div
+            *ngIf="isAdtReportVisible && !noReportData"
+            class="grid grid-cols-12 gap-4 h-[calc(100vh-150px)]"
+          >
             <!-- 🔍 Search Filter -->
             <div
               class="col-span-12 md:col-span-3 bg-white p-4 rounded-lg shadow-md"
@@ -852,30 +912,65 @@
             </div>
 
             <!-- 📊 Table Section -->
-            <!-- 📊 Table Section -->
             <div
               class="col-span-12 md:col-span-9 bg-white p-4 rounded-lg shadow-md overflow-hidden"
             >
               <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold">Search Results</h2>
-                <div class="input-group mt-3 w-50">
-                  <span class="input-group-text bg-light">
-                    <i class="fas fa-search text-muted"></i>
-                  </span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Search by UHID, IPNO, Name, or Location..."
-                    (input)="filteredAdtReports()"
-                    [(ngModel)]="searchText"
-                  />
-                  <button
-                    *ngIf="searchText"
-                    class="btn btn-outline-secondary"
-                    (click)="clearAdtSearch()"
+
+                <!-- 📅 From Date -->
+                <!-- 📅 Date Range Filter -->
+                <div class="flex flex-wrap items-center gap-3 mt-3">
+                  <!-- From Date -->
+                  <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-44 px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                      (change)="filteredAdtReports()"
+                    />
+                  </div>
+
+                  <!-- To Date -->
+                  <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-44 px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                      (change)="filteredAdtReports()"
+                    />
+                  </div>
+
+                  <!-- Clear Button -->
+                  <!-- <button
+                    class="mt-5 bg-gray-500 text-white px-3 py-1.5 rounded hover:bg-gray-600 transition"
+                    (click)="clearDateFilters()"
                   >
-                    <i class="fas fa-times"></i>
-                  </button>
+                    Clear Dates
+                  </button> -->
+                </div>
+
+                <!-- 🔽 Specialty Filter -->
+                <div class="flex flex-col">
+                  <label class="text-sm font-medium text-gray-700 mb-1"
+                    >Specialty</label
+                  >
+                  <select
+                    class="form-control w-52 px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    [(ngModel)]="selectedSpecialty"
+                    (change)="filteredAdtReports()"
+                  >
+                    <option value="">All Specialties</option>
+                    <option *ngFor="let s of specialties" [value]="s">
+                      {{ s }}
+                    </option>
+                  </select>
                 </div>
               </div>
 
@@ -889,13 +984,12 @@
                       <th class="p-2 border bg-red-100 h-12">Name</th>
                       <th class="p-2 border bg-red-100 h-12">Age</th>
                       <th class="p-2 border bg-red-100 h-12">
-                        Admitting doctor
+                       Primary doctor Specialty
                       </th>
                       <th class="p-2 border bg-red-100 h-12">Admission Date</th>
                       <th class="p-2 border bg-red-100 h-12">View</th>
                     </tr>
                   </thead>
-
                   <tbody>
                     <tr *ngFor="let AdtAdmissionReport of filteredReports">
                       <td class="border p-2">{{ AdtAdmissionReport.UHid }}</td>
@@ -905,9 +999,8 @@
                       </td>
                       <td class="border p-2">{{ AdtAdmissionReport.Age }}</td>
                       <td class="border p-2">
-                        {{ AdtAdmissionReport.admittingDoctor || "N/A" }}
+                        {{ AdtAdmissionReport["Primary doctor Specialty"] || "N/A" }}
                       </td>
-
                       <td class="border p-2">
                         {{ AdtAdmissionReport["Admission Date & Time"] }}
                       </td>
@@ -921,12 +1014,14 @@
                           >
                             <i class="fas fa-eye"></i>
                           </button>
-                          <!-- <button
-                            class="text-gray-600 hover:text-gray-800"
-                            (click)="editAdtFormData()"
-                          >
-                            <i class="fas fa-edit"></i>
-                          </button> -->
+                          <!--
+                  <button
+                    class="text-gray-600 hover:text-gray-800"
+                    (click)="editAdtFormData()"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  -->
                         </div>
                       </td>
                     </tr>
@@ -936,6 +1031,153 @@
             </div>
           </div>
         </div>
+
+        <!-- claimed data table -->
+
+        <div
+          *ngIf="isClaimVisible && !noClaimData"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-blue-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              {{ noClaimData ? "No claims found" : "Claimed Raised Data" }}
+            </p>
+            <button
+              (click)="goBackfourthDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+
+          <!-- No Data Message -->
+          <div
+            *ngIf="noClaimData"
+            class="text-center text-gray-600 p-10 text-xl font-semibold"
+          >
+            🚫 No claims found.
+          </div>
+
+          <!-- Filter + Table Grid -->
+          <div
+            *ngIf="isClaimVisible && !noClaimData"
+            class="grid grid-cols-12 gap-4 h-[calc(100vh-150px)]"
+          >
+            <!-- 🔍 Filters -->
+            <div
+              class="col-span-12 md:col-span-3 bg-white p-4 rounded-lg shadow-md"
+            >
+              <h3 class="text-lg font-semibold text-red-800 mb-4">
+                Search Filters
+              </h3>
+
+              <div class="mb-2">
+                <label class="block text-sm font-medium">UHID</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="claimSearch.UHID"
+                />
+              </div>
+
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Claim No</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="claimSearch.ClaimNo"
+                />
+              </div>
+
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Patient Name</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="claimSearch.PatientName"
+                />
+              </div>
+
+              <div class="mb-2">
+                <label class="block text-sm font-medium">Company</label>
+                <input
+                  type="text"
+                  class="w-full p-2 border rounded"
+                  [(ngModel)]="claimSearch.CompanyName"
+                />
+              </div>
+
+              <button
+                class="mt-4 w-full bg-red-800 text-white py-2 rounded hover:bg-red-900 transition"
+                (click)="applyClaimFilters()"
+              >
+                Search
+              </button>
+              <button
+                class="mt-2 w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600 transition"
+                (click)="clearClaimFilters()"
+              >
+                Clear
+              </button>
+            </div>
+
+            <!-- 📊 Table -->
+            <div
+              class="col-span-12 md:col-span-9 bg-white p-4 rounded-lg shadow-md overflow-hidden"
+            >
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Search Results</h2>
+                <input
+                  type="text"
+                  class="form-control w-64"
+                  placeholder="Search by UHID, Claim No, Name..."
+                  [(ngModel)]="claimSearchText"
+                  (input)="filterClaimResults()"
+                />
+              </div>
+
+              <div class="overflow-y-auto max-h-[70vh]">
+                <table class="w-full border border-collapse border-gray-300">
+                  <thead class="sticky top-0 z-10 bg-blue-100">
+                    <tr>
+                      <th class="p-2 border">UHID</th>
+                      <th class="p-2 border">Patient Name</th>
+                      <th class="p-2 border">Claim No</th>
+                      <th class="p-2 border">Claim Amount</th>
+                      <!-- <th class="p-2 border">Claim Status</th> -->
+                      <th class="p-2 border">Settle Status</th>
+                      <!-- <th class="p-2 border">Company</th> -->
+                      <!-- <th class="p-2 border">Covering Letter No</th> -->
+                      <th class="p-2 border">Covering Letter Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let claim of filteredClaims">
+                      <td class="border p-2">{{ claim.UHID }}</td>
+                      <td class="border p-2">{{ claim["Patient Name"] }}</td>
+                      <td class="border p-2">{{ claim.ClaimNo }}</td>
+                      <td class="border p-2">{{ claim["Claim Amount"] }}</td>
+                      <!-- <td class="border p-2">{{ claim["Claim Status"] }}</td> -->
+                      <!-- <td class="border p-2">{{ claim["Settle Status"] }}</td> -->
+                      <td class="border p-2">{{ claim["Company Name"] }}</td>
+                      <!-- <td class="border p-2">
+                        {{ claim["Covering Letter No"] }}
+                      </td> -->
+                      <td class="border p-2">
+                        {{ claim["Covering Letter DateTime"] }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 5th dashboard -->
         <div
           *ngIf="isLogVisible"
@@ -1002,6 +1244,42 @@
             </button>
           </div>
         </div>
+
+        <!-- specility table -->
+        <div
+          *ngIf="isSpecility"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">Specility reports data</p>
+          </div>
+
+          <table class="w-full border-collapse border border-gray-300">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="border p-2">primary doctor specility</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let specility of filteredSpecility">
+                <td class="border p-2">
+                  {{ specility.specialty }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="flex justify-end mt-4">
+            <button
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
         <!-- view adt admission form data -->
         <div
           *ngIf="admissionviewDashVisible"
@@ -1023,15 +1301,15 @@
               <p><strong>Gender:</strong> {{ patient.Gender }}</p>
               <p><strong>Age:</strong> {{ patient.Age }}</p>
               <p><strong>Mobile No:</strong> {{ patient.MobileNo }}</p>
-              <p><strong>Location:</strong> {{ patient.LocationName }}</p>
+              <!-- <p><strong>Location:</strong> {{ patient.City }}</p> -->
               <!-- <p>
                 <strong>Father/SpouseName:</strong>
                 {{ patient.Father / SpouseName }}
               </p> -->
-              <p>
+              <!-- <p>
                 <strong>Admission Type:</strong> {{ patient.AdmissionType }}
-              </p>
-              <p><strong>Location:</strong> {{ patient.LocationName }}</p>
+              </p> -->
+              <!-- <p><strong>Location:</strong> {{ patient.LocationName }}</p> -->
               <p><strong>Address:</strong> {{ patient.Address }}</p>
               <p><strong>City:</strong> {{ patient.City }}</p>
               <p><strong>State:</strong> {{ patient.State }}</p>
@@ -1049,15 +1327,16 @@
                 <strong>Admission Date:</strong>
                 {{ patient["Admission Date & Time"] }}
               </p>
-              <p><strong>Payer:</strong> {{ patient.Payer }}</p>
+              <!-- <p><strong>Payer:</strong> {{ patient.Payer }}</p> -->
               <p>
                 <strong>Admitting Doctor:</strong>
-                {{ patient["Admitting doctor"] }}
+                {{ patient?.['Admitting doctor'] || 'Not specified' }}
               </p>
-              <p>
+
+              <!-- <p>
                 <strong>Doctor Specialty:</strong>
                 {{ patient["Co specialty doctor"] }}
-              </p>
+              </p> -->
               <p>
                 <strong>Discharge Date&Time:</strong>
                 {{ patient["Discharge Date&Time"] }}
@@ -1090,10 +1369,10 @@
                 <strong>Secondary doctor:</strong>
                 {{ patient["Secondary doctor"] }}
               </p>
-              <p>
+              <!-- <p>
                 <strong>Secondary doctor Specialty:</strong>
                 {{ patient["Secondary doctor Specialty"] }}
-              </p>
+              </p> -->
               <p>
                 <strong>Co specialty doctor:</strong>
                 {{ patient["Co specialty doctor"] }}

@@ -141,7 +141,7 @@ export class LoginComponent {
             error?.error?.message || 'Your account has been deactivated.';
         } else {
           this.loginError =
-            error?.error?.message || 'Invalid credentials. Try again.';
+            error.message || error.error || 'Login failed. Try again.';
         }
 
         this.cdr.detectChanges(); // ✅ Forces UI refresh
