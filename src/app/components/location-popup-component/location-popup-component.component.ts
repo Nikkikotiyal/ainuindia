@@ -35,7 +35,6 @@ export class LocationPopupComponentComponent {
     'Siliguri',
     'Secunderabad',
     'Chennai',
-    'Hyderabad',
   ];
 
   toggleDropdown() {

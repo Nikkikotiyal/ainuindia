@@ -24,10 +24,9 @@ import { DeleteConfirmationPopupComponent } from '../delete-confirmation-popup/d
 import { ModuleService } from '../ModuleService';
 import { AddModuleComponent } from '../add-module/add-module.component';
 import { HttpHeaders } from '@angular/common/http';
-
-const normalizeText = (text: string) =>
-  text.replace(/\s+/g, ' ').trim().toLowerCase();
-
+import { LocationPopupComponentComponent } from '../location-popup-component/location-popup-component.component';
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -133,6 +132,20 @@ export class DashboardComponent implements AfterViewInit {
   specialtyList: string[] = [];
   specialties: string[] = [];
   selectedSpecialty: string = '';
+  ipDischargeReports: any[] = [];
+  filteredIPDischargeReports: any[] = [];
+  originalIPDischargeReports: any[] = [];
+  isIPDischargeVisible: boolean = false; // toggle visibility
+  ipSearchText: string = '';
+  hasSearched: boolean = false;
+  selectedLocation: string = '';
+
+  ipSearch: any = {
+    UHID: '',
+    PatientName: '',
+    Doctor: '',
+  };
+
   constructor(
     private snackBar: MatSnackBar,
     private apiService: ApiService,
@@ -157,7 +170,18 @@ export class DashboardComponent implements AfterViewInit {
     CompanyName: '',
   };
 
+  locations: string[] = [
+    'Banjara Hills',
+    'Dilsukhnagar',
+    'HITECH city',
+    'Visakhapatnam',
+    'Siliguri',
+    'Secunderabad',
+    'Chennai',
+  ];
+
   ngOnInit(): void {
+
     this.apiService.getSpecility().subscribe({
       next: (res) =>
         (this.specialties = res.map((s: { specialty: any }) => s.specialty)),
@@ -172,6 +196,7 @@ export class DashboardComponent implements AfterViewInit {
     this.fetchLogs();
     this.fetchUsers();
     this.fetchModules();
+     this.fetchIPDischargeReports();
     // this.userRole = this.authService.getUserRole();
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.userId = userData._id || '';
@@ -235,6 +260,21 @@ export class DashboardComponent implements AfterViewInit {
     S: 'Suspended',
   };
 
+  openLocationPopup(): void {
+    const dialogRef = this.dialog.open(LocationPopupComponentComponent, {
+      width: '400px',
+      data: { defaultLocation: this.locations }, // ✅ Pass full array, not a single value
+    });
+
+    dialogRef.afterClosed().subscribe((selectedLocation) => {
+      if (selectedLocation) {
+        localStorage.setItem('userLocation', selectedLocation);
+        this.chosenLocation = selectedLocation;
+        // this.filteredIPDischargeReport(); // Apply location change
+      }
+    });
+  }
+
   ngAfterViewInit() {}
 
   logout() {
@@ -260,6 +300,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.noClaimData = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
 
     if (!userId) {
       console.error('❌ No userId found!');
@@ -339,6 +380,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.isSpecility = false;
     this.isClaimVisible = false;
+    this.isIPDischargeVisible = false;
 
     if (!userId) {
       console.error('❌ No userId found!');
@@ -426,6 +468,7 @@ export class DashboardComponent implements AfterViewInit {
     this.showModuleList = false;
     this.isDashVisible = false;
     this.admissionDashVisible = false;
+    this.isIPDischargeVisible = false;
   }
 
   filterDistinctModules() {
@@ -448,11 +491,14 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = false;
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
+    this.isIPDischargeVisible = false;
+    this.isSpecility = false;
     this.noReportData = false;
     this.noClaimData = false;
-    this.isSpecility = false;
+
     this.filteredReports = [];
     this.filteredClaims = [];
+    this.filteredIPDischargeReports = [];
 
     const normalized = reportType?.trim().toLowerCase();
     console.log('🧾 Normalized type:', normalized);
@@ -506,6 +552,35 @@ export class DashboardComponent implements AfterViewInit {
       });
     }
 
+    // 🆕 IP Discharge TAT Report
+    else if (
+      normalized.includes('ip discharge') ||
+      normalized.includes('tat report')
+    ) {
+      this.apiService.getIPDischargeReports().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isIPDischargeVisible = false;
+            return;
+          }
+
+          this.originalIPDischargeReports = [...data];
+          this.ipDischargeReports = [...data]; // ✅ for consistent logic
+          this.filteredIPDischargeReports = [...data]; // ✅ for table binding
+
+          // this.filteredIPDischargeReports = [...data];
+          // ✅ bind this to table
+          this.isIPDischargeVisible = true;
+        },
+        error: (err) => {
+          console.error('❌ Failed to load IP Discharge reports:', err);
+          this.noReportData = true;
+          this.isIPDischargeVisible = false;
+        },
+      });
+    }
+
     // ⚠️ Unrecognized Report Type
     else {
       console.warn('⚠️ Unknown report type:', normalized);
@@ -516,6 +591,7 @@ export class DashboardComponent implements AfterViewInit {
   goBackSecondDash() {
     this.secondDashVisible = true;
     this.isDashVisible = false;
+    this.isIPDischargeVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -525,6 +601,7 @@ export class DashboardComponent implements AfterViewInit {
     this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
     this.isDashVisible = true;
     this.isAdtReportVisible = false;
+    this.isIPDischargeVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -533,6 +610,7 @@ export class DashboardComponent implements AfterViewInit {
   goBackfirstDash() {
     this.secondDashVisible = false;
     this.noReportData = false;
+    this.isIPDischargeVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -544,11 +622,21 @@ export class DashboardComponent implements AfterViewInit {
     this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
     this.isDashVisible = true;
     this.isClaimVisible = false;
+    this.isIPDischargeVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
   }
 
+  goBackToFifthDashboard() {
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
+    this.isDashVisible = true;
+    this.isIPDischargeVisible = false;
+    // this.isClaimVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+  }
   showInstaDashboard(name: string) {
     this.softwareIcon = name === 'TRIOTREE' ? 'fas fa-tree' : 'fas fa-bolt';
     this.softwareName = name;
@@ -577,6 +665,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isLogVisible = false;
     this.isClaimVisible = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
     this.cdRef.detectChanges(); // ✅ Forces UI update
     this.breadcrumbs = ['Master -> User'];
   }
@@ -593,6 +682,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.secondDashVisible = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
     this.breadcrumbs = ['Master -> Module List'];
   }
 
@@ -736,6 +826,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.noClaimData = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
     this.breadcrumbs = ['Welcome To Document Management Software : AINU'];
   }
 
@@ -1079,6 +1170,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.isClaimVisible = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
   }
   viewAdtFormData(data: any) {
     this.updateBreadcrumb('view ADT admission reports data');
@@ -1092,6 +1184,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isLogVisible = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
   }
   BackToAdtReport() {
     this.isAdtReportVisible = true;
@@ -1115,6 +1208,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
     this.isSpecility = false;
+    this.isIPDischargeVisible = false;
     this.admissionviewDashVisible = false;
     this.breadcrumbs = ['Master -> Log List'];
   }
@@ -1130,6 +1224,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
     this.admissionviewDashVisible = false;
+    this.isIPDischargeVisible = false;
     this.breadcrumbs = ['Master -> Specility List'];
     this.apiService.getSpecility().subscribe({
       next: (res) => {
@@ -1260,5 +1355,178 @@ export class DashboardComponent implements AfterViewInit {
         c['Patient Name']?.toLowerCase().includes(text) ||
         c['Company Name']?.toLowerCase().includes(text)
     );
+  }
+
+  // loadIPDischargeData(): void {
+  //   this.apiService.getIPDischargeReports().subscribe({
+  //     next: (data) => {
+  //       this.ipDischargeReports = [...data];
+  //       this.filteredIPDischargeReports = [...data];
+
+  //       this.specialties = Array.from(
+  //         new Set<string>(
+  //           data.map((r: any) =>
+  //             (
+  //               r['Primary doctor Specialty'] ||
+  //               r['Admitting doctor Specialty'] ||
+  //               r['Specialty'] ||
+  //               ''
+  //             ).trim()
+  //           )
+  //         )
+  //       ).filter((s) => s);
+  //     },
+  //     error: (err) => {
+  //       console.error('❌ API error:', err);
+  //     },
+  //   });
+  // }
+
+  filteredIPDischargeReport(): void {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate + 'T23:59:59') : null;
+
+    this.filteredIPDischargeReports = this.ipDischargeReports.filter(
+      (report: any) => {
+        const rawDate =
+          report['Discharge Date & Time']?.trim() ||
+          report['Discharge Date & Time ']?.trim();
+
+        let dischargeDate: Date | null = null;
+
+        if (rawDate) {
+          const [datePart, timePart] = rawDate.split(' ');
+          const [day, month, year] = datePart.split('-');
+          dischargeDate = new Date(
+            `${year}-${month}-${day}T${timePart || '00:00:00'}`
+          );
+        }
+
+        const matchDate =
+          (!from || (dischargeDate && dischargeDate >= from)) &&
+          (!to || (dischargeDate && dischargeDate <= to));
+
+        const specialty =
+          report['Primary doctor Specialty'] ||
+          report['Admitting doctor Specialty'] ||
+          report['Specialty'] ||
+          '';
+
+        const matchSpecialty =
+          !this.selectedSpecialty?.trim() ||
+          specialty
+            .trim()
+            .toLowerCase()
+            .includes(this.selectedSpecialty.trim().toLowerCase());
+
+        const locationInReport = report['H Location'] || '';
+        const matchLocation =
+          !this.chosenLocation?.trim() ||
+          locationInReport.trim().toLowerCase() ===
+            this.chosenLocation.trim().toLowerCase();
+
+        return matchDate && matchSpecialty && matchLocation;
+      }
+    );
+
+    this.hasSearched = true;
+  }
+
+  clearFilters(): void {
+    this.selectedSpecialty = '';
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredIPDischargeReports = [...this.ipDischargeReports];
+  }
+
+  viewIPDischargeReportFormData() {}
+  downloadAsCSV(): void {
+    const rows = this.filteredIPDischargeReports;
+    if (!rows.length) return;
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','), // header row first
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Discharge_Report.csv');
+    link.click();
+  }
+
+  downloadAsExcel(): void {
+    const fileName = 'Discharge_Report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredIPDischargeReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
+  }
+
+  selectAll: boolean = false;
+
+  toggleSelectAll() {
+    this.filteredIPDischargeReports.forEach(
+      (report) => (report.isSelected = this.selectAll)
+    );
+  }
+
+  deleteSelectedIPDischargeReports() {
+    const selectedReports = this.filteredIPDischargeReports.filter(
+      (r) => r.isSelected
+    );
+    if (selectedReports.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message: 'Are you sure you want to delete selected discharge records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedReports.map((report) => report._id);
+
+        this.apiService.softDeleteIPReports(selectedIds).subscribe(() => {
+          this.showSuccessSnackbar('✅ Records marked as deleted!');
+          this.selectAll = false;
+
+          this.fetchIPDischargeReports();
+        });
+      }
+    });
+  }
+
+  fetchIPDischargeReports() {
+    this.apiService.getIPDischargeReports().subscribe({
+      next: (data: any) => {
+        this.ipDischargeReports = data.filter(
+          (report: { isDeleted: boolean }) => !report.isDeleted
+        ); // ✅ Remove deleted records
+        this.filteredIPDischargeReports = [...this.ipDischargeReports]; // ✅ Mirror for display
+        console.log(
+          '✅ Active Discharge Reports:',
+          this.filteredIPDischargeReports
+        );
+      },
+      error: (err) => {
+        console.error('❌ Error fetching IP discharge reports:', err);
+      },
+    });
   }
 }

@@ -14,8 +14,8 @@ export interface UserModule {
   providedIn: 'root',
 })
 export class ApiService {
-  // private baseUrl = 'http://localhost:3000/api';
-  private baseUrl = 'https://dmsapi.softmaart.co.in:3000/api';
+  private baseUrl = 'http://localhost:3000/api';
+  // private baseUrl = 'https://dmsapi.softmaart.co.in:3000/api';
 
   constructor(private http: HttpClient) {}
   login(
@@ -355,5 +355,22 @@ export class ApiService {
 
   getSpecility(): Observable<any> {
     return this.http.get(`${this.baseUrl}/specialties`);
+  }
+
+  getIPDischargeReports(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/ipdischarge`);
+  }
+
+  //   softDeleteIPReports(reportIds: string[]): Observable<any> {
+  //     return this.http.post('${this.baseUrl}/ip-discharge-reports/soft-delete', {
+  //       reportIds: reportIds,
+  //     });
+  //   }
+  // }
+
+  softDeleteIPReports(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/ip-discharge-reports/soft-delete`, {
+      reportIds: reportIds,
+    });
   }
 }
