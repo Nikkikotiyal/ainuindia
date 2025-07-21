@@ -76,7 +76,9 @@ export class DashboardComponent implements AfterViewInit {
   userId: string = '';
   data: any[] = [];
   originalAdtAdmissionReports: any[] = [];
+  // filteredReports: any[] = [];
   filteredReports: any[] = [];
+
   filteredModules: any[] = [];
   searchDistinctModuleTerm: string = '';
   distinctModules: any[] = [];
@@ -131,10 +133,18 @@ export class DashboardComponent implements AfterViewInit {
   isSpecility: boolean = false;
   specialtyList: string[] = [];
   specialties: string[] = [];
+  departments: string[] = [];
   selectedSpecialty: string = '';
+  selectedDepartment: string = '';
   ipDischargeReports: any[] = [];
+  packageReports: any[] = [];
+  claimRaisedRecords: any[] = [];
+  adtAdmissionReports: any[] = [];
   filteredIPDischargeReports: any[] = [];
   originalIPDischargeReports: any[] = [];
+  originalPackageReports: any[] = [];
+  filteredPackageReports: any[] = [];
+  isPackageReportVisible: boolean = false; // toggle visibility
   isIPDischargeVisible: boolean = false; // toggle visibility
   ipSearchText: string = '';
   hasSearched: boolean = false;
@@ -181,7 +191,6 @@ export class DashboardComponent implements AfterViewInit {
   ];
 
   ngOnInit(): void {
-
     this.apiService.getSpecility().subscribe({
       next: (res) =>
         (this.specialties = res.map((s: { specialty: any }) => s.specialty)),
@@ -196,7 +205,7 @@ export class DashboardComponent implements AfterViewInit {
     this.fetchLogs();
     this.fetchUsers();
     this.fetchModules();
-     this.fetchIPDischargeReports();
+    this.fetchIPDischargeReports();
     // this.userRole = this.authService.getUserRole();
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.userId = userData._id || '';
@@ -301,7 +310,7 @@ export class DashboardComponent implements AfterViewInit {
     this.noClaimData = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
-
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -381,7 +390,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isSpecility = false;
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
-
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -469,6 +478,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = false;
     this.admissionDashVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
   }
 
   filterDistinctModules() {
@@ -492,13 +502,14 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.isSpecility = false;
     this.noReportData = false;
     this.noClaimData = false;
-
     this.filteredReports = [];
     this.filteredClaims = [];
     this.filteredIPDischargeReports = [];
+    this.filteredPackageReports = [];
 
     const normalized = reportType?.trim().toLowerCase();
     console.log('🧾 Normalized type:', normalized);
@@ -580,7 +591,27 @@ export class DashboardComponent implements AfterViewInit {
         },
       });
     }
+    // 📦 Package Status Report
+    else if (normalized.includes('package') && normalized.includes('status')) {
+      this.apiService.getPackageStatusReports().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isPackageReportVisible = false;
+            return;
+          }
 
+          this.originalPackageReports = [...data];
+          this.filteredPackageReports = [...data];
+          this.isPackageReportVisible = true;
+        },
+        error: (err) => {
+          console.error('❌ Failed to load Package Status report:', err);
+          this.noReportData = true;
+          this.isPackageReportVisible = false;
+        },
+      });
+    }
     // ⚠️ Unrecognized Report Type
     else {
       console.warn('⚠️ Unknown report type:', normalized);
@@ -592,6 +623,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = true;
     this.isDashVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -602,6 +634,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = true;
     this.isAdtReportVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -611,6 +644,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.noReportData = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -623,6 +657,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = true;
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -632,7 +667,18 @@ export class DashboardComponent implements AfterViewInit {
     this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
     this.isDashVisible = true;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     // this.isClaimVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+  }
+
+  goBackToSixthDashboard() {
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
+    this.isDashVisible = true;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -666,6 +712,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.cdRef.detectChanges(); // ✅ Forces UI update
     this.breadcrumbs = ['Master -> User'];
   }
@@ -683,6 +730,7 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.breadcrumbs = ['Master -> Module List'];
   }
 
@@ -827,6 +875,7 @@ export class DashboardComponent implements AfterViewInit {
     this.noClaimData = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.breadcrumbs = ['Welcome To Document Management Software : AINU'];
   }
 
@@ -863,55 +912,75 @@ export class DashboardComponent implements AfterViewInit {
     }
   }
 
-  filteredAdtReports() {
-    const term = this.searchText.toLowerCase().trim();
+  filteredAdtReports(): void {
     const from = this.fromDate ? new Date(this.fromDate) : null;
-    const to = this.toDate ? new Date(this.toDate) : null;
+    const to = this.toDate ? new Date(this.toDate + 'T23:59:59') : null;
 
     this.filteredReports = this.originalAdtAdmissionReports.filter(
       (report: any) => {
-        const patientName = String(report['Patient Name'] || '')
-          .trim()
-          .toLowerCase();
-        const admissionDateStr = report['Admission Date & Time'];
-        const admissionDate = admissionDateStr
-          ? new Date(admissionDateStr)
-          : null;
+        const rawDate = report['Admission Date & Time']?.trim();
+        let admissionDate: Date | null = null;
 
-        const matchText =
-          patientName.includes(term) ||
-          String(report.UHid || '')
-            .toLowerCase()
-            .includes(term) ||
-          String(report.IPNO || '')
-            .toLowerCase()
-            .includes(term) ||
-          String(admissionDateStr || '')
-            .toLowerCase()
-            .includes(term);
+        if (rawDate) {
+          const [datePart, timePart] = rawDate.split(' ');
+          const [day, month, year] = datePart.includes('-')
+            ? datePart.split('-')
+            : datePart.split('/');
+
+          admissionDate = new Date(
+            `${year}-${month}-${day}T${timePart || '00:00:00'}`
+          );
+        }
 
         const matchDate =
           (!from || (admissionDate && admissionDate >= from)) &&
           (!to || (admissionDate && admissionDate <= to));
 
-        const specialtyInReport =
-          report.specialty ||
-          report.Specialty ||
+        const specialty =
           report['Primary doctor Specialty'] ||
+          report['Admitting doctor Specialty'] ||
+          report['Specialty'] ||
           '';
 
         const matchSpecialty =
-          !this.selectedSpecialty ||
-          specialtyInReport.toLowerCase() ===
-            this.selectedSpecialty.toLowerCase();
+          !this.selectedSpecialty?.trim() ||
+          specialty
+            .trim()
+            .toLowerCase()
+            .includes(this.selectedSpecialty.trim().toLowerCase());
 
-        return matchText && matchDate && matchSpecialty;
+        const locationInReport = report['H Location'] || '';
+        const matchLocation =
+          !this.chosenLocation?.trim() ||
+          locationInReport.trim().toLowerCase() ===
+            this.chosenLocation.trim().toLowerCase();
+
+        // console.log('📍 Debug Record:', {
+        //   rawDate,
+        //   parsedAdmissionDate: admissionDate,
+        //   fromDate: from,
+        //   toDate: to,
+        //   specialty,
+        //   selectedSpecialty: this.selectedSpecialty,
+        //   location: report['H Location'],
+        //   selectedLocation: this.chosenLocation,
+        //   matchDate,
+        //   matchSpecialty,
+        //   matchLocation,
+        // });
+        return matchDate && matchSpecialty && matchLocation;
       }
     );
+
+    this.hasSearched = true;
   }
 
   clearAdtSearch() {
     this.searchText = '';
+    this.selectedSpecialty = '';
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
     this.filteredReports = [...this.originalAdtAdmissionReports]; // Reset data
   }
 
@@ -1171,6 +1240,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
   }
   viewAdtFormData(data: any) {
     this.updateBreadcrumb('view ADT admission reports data');
@@ -1185,6 +1255,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isLogVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
   }
   BackToAdtReport() {
     this.isAdtReportVisible = true;
@@ -1209,6 +1280,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.admissionviewDashVisible = false;
     this.breadcrumbs = ['Master -> Log List'];
   }
@@ -1225,6 +1297,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.admissionviewDashVisible = false;
     this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
     this.breadcrumbs = ['Master -> Specility List'];
     this.apiService.getSpecility().subscribe({
       next: (res) => {
@@ -1274,47 +1347,6 @@ export class DashboardComponent implements AfterViewInit {
     );
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-    }
-  }
-
-  uploadFile(): void {
-    if (!this.selectedFile) return;
-
-    this.apiService.uploadFile(this.selectedFile).subscribe({
-      next: (res) => {
-        alert('✅ File uploaded successfully');
-        console.log('🧾 Upload response:', res);
-
-        if (res?.data && Array.isArray(res.data)) {
-          // 🔄 Create a fresh array to force table refresh
-          this.filteredReports = [...res.data];
-          this.isAdtReportVisible = true;
-          this.noReportData = false;
-
-          // ✅ Reset filters
-          this.searchText = '';
-          this.searchCriteria = {
-            UHID: '',
-            IPNO: '',
-            patientName: '',
-            location: '',
-            admissionDate: '',
-          };
-        }
-
-        this.selectedFile = null;
-      },
-      error: (err) => {
-        alert('❌ File upload failed');
-        console.error(err);
-      },
-    });
-  }
-
   trackByIndex(index: number): number {
     return index;
   }
@@ -1356,31 +1388,6 @@ export class DashboardComponent implements AfterViewInit {
         c['Company Name']?.toLowerCase().includes(text)
     );
   }
-
-  // loadIPDischargeData(): void {
-  //   this.apiService.getIPDischargeReports().subscribe({
-  //     next: (data) => {
-  //       this.ipDischargeReports = [...data];
-  //       this.filteredIPDischargeReports = [...data];
-
-  //       this.specialties = Array.from(
-  //         new Set<string>(
-  //           data.map((r: any) =>
-  //             (
-  //               r['Primary doctor Specialty'] ||
-  //               r['Admitting doctor Specialty'] ||
-  //               r['Specialty'] ||
-  //               ''
-  //             ).trim()
-  //           )
-  //         )
-  //       ).filter((s) => s);
-  //     },
-  //     error: (err) => {
-  //       console.error('❌ API error:', err);
-  //     },
-  //   });
-  // }
 
   filteredIPDischargeReport(): void {
     const from = this.fromDate ? new Date(this.fromDate) : null;
@@ -1478,11 +1485,96 @@ export class DashboardComponent implements AfterViewInit {
     FileSaver.saveAs(data, fileName);
   }
 
+  downloadADTAsExcel() {
+    const fileName = 'Package_status_report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
+  }
+
+  downloadPackageStatusCSV() {
+    const rows = this.filteredReports;
+    if (!rows.length) return;
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','), // header row first
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Package_status_report.csv');
+    link.click();
+  }
+
+  downloadPackageStatusAsExcel() {
+    const fileName = 'ADT_Report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
+  }
+
+  downloadADTAsCSV() {
+    const rows = this.filteredReports;
+    if (!rows.length) return;
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','), // header row first
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'ADT_Report.csv');
+    link.click();
+  }
+
   selectAll: boolean = false;
 
   toggleSelectAll() {
     this.filteredIPDischargeReports.forEach(
       (report) => (report.isSelected = this.selectAll)
+    );
+    this.filteredReports.forEach(
+      (AdtAdmissionReport) => (AdtAdmissionReport.isSelected = this.selectAll)
+    );
+
+    this.filteredPackageReports.forEach(
+      (pkg) => (pkg.isSelected = this.selectAll)
+    );
+
+    this.filteredClaims.forEach(
+      (claims) => (claims.isSelected = this.selectAll)
     );
   }
 
@@ -1512,6 +1604,34 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
+  deleteSelectedPkgStatusReports() {
+    const selectedReports = this.filteredPackageReports.filter(
+      (pkg) => pkg.isSelected
+    );
+    if (selectedReports.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message:
+          'Are you sure you want to delete selected package status records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedReports.map((pkg) => pkg._id);
+
+        this.apiService
+          .softDeletePackageStatusReport(selectedIds)
+          .subscribe(() => {
+            this.showSuccessSnackbar('✅ Package records marked as deleted!');
+            this.selectAll = false;
+
+            this.fetchPackageStatusReport(); // 🔄 Refresh the list
+          });
+      }
+    });
+  }
   fetchIPDischargeReports() {
     this.apiService.getIPDischargeReports().subscribe({
       next: (data: any) => {
@@ -1528,5 +1648,170 @@ export class DashboardComponent implements AfterViewInit {
         console.error('❌ Error fetching IP discharge reports:', err);
       },
     });
+  }
+
+  fetchAdtAdmissionReports() {
+    this.apiService.getAdtAdmissionReport().subscribe({
+      next: (data: any) => {
+        this.adtAdmissionReports = data.filter(
+          (report: { isDeleted: boolean }) => !report.isDeleted
+        ); // ✅ Remove soft-deleted entries
+        this.filteredReports = [...this.adtAdmissionReports]; // ✅ Mirror for display
+        console.log('✅ Active ADT Admission Reports:', this.filteredReports);
+      },
+      error: (err) => {
+        console.error('❌ Error fetching ADT admission reports:', err);
+      },
+    });
+  }
+
+  fetchPackageStatusReport(): void {
+    this.apiService.getPackageStatusReports().subscribe({
+      next: (data: any) => {
+        this.packageReports = data.filter(
+          (report: { isDeleted: boolean }) => !report.isDeleted
+        ); // ✅ Remove deleted records
+        this.filteredPackageReports = [...this.packageReports]; // ✅ Mirror for display
+
+        console.log(
+          '✅ Active Package Status Reports:',
+          this.filteredPackageReports
+        );
+      },
+      error: (err) => {
+        console.error('❌ Error fetching Package Status Reports:', err);
+      },
+    });
+  }
+
+  deleteSelectedAdtAdmissionReports() {
+    const selectedReports = this.filteredReports.filter((r) => r.isSelected);
+    if (selectedReports.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message:
+          'Are you sure you want to delete selected ADT admission records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedReports.map((report) => report._id);
+
+        this.apiService.softDeleteAdtAdmissions(selectedIds).subscribe(() => {
+          this.showSuccessSnackbar('✅ ADT records marked as deleted!');
+          this.selectAll = false;
+
+          this.fetchAdtAdmissionReports(); // Refresh table
+        });
+      }
+    });
+  }
+
+  selectedIPFile: File | null = null;
+
+  onIPFileSelected(event: any): void {
+    const file = event.target?.files?.[0] || null;
+    if (file) {
+      this.selectedIPFile = file;
+      console.log('📥 Selected:', file.name);
+    }
+  }
+
+  uploadIPFile(): void {
+    if (!this.selectedIPFile) return;
+
+    this.apiService.uploadFile(this.selectedIPFile).subscribe({
+      next: () => {
+        this.showSuccessSnackbar(`✅  uploaded successfully!`);
+        this.selectedIPFile = null;
+        this.fetchIPDischargeReports(); // refresh table data
+      },
+      error: (err) => {
+        console.error('❌ Upload failed:', err);
+        this.showErrorSnackbar('Upload failed. Try again.');
+      },
+    });
+  }
+  showErrorSnackbar(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
+
+  fetchClaimRaisedData() {
+    this.apiService.getClaimReports().subscribe({
+      next: (data: any) => {
+        this.claimRaisedRecords = data.filter(
+          (claim: { isDeleted: boolean }) => !claim.isDeleted
+        ); // ✅ Filter out soft-deleted claims
+        this.filteredClaims = [...this.claimRaisedRecords]; // ✅ Sync for UI display
+        console.log('✅ Active Claim Raised Records:', this.filteredClaims);
+      },
+      error: (err) => {
+        console.error('❌ Error fetching claim raised records:', err);
+      },
+    });
+  }
+
+  deleteSelectedClaimReports() {
+    const selectedClaims = this.filteredClaims.filter((c) => c.isSelected);
+    if (selectedClaims.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message: 'Are you sure you want to delete selected claim records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedClaims.map((claim) => claim._id);
+
+        this.apiService.softDeleteClaimReport(selectedIds).subscribe(() => {
+          this.showSuccessSnackbar('✅ Claim records marked as deleted!');
+          this.selectAll = false;
+
+          this.fetchClaimRaisedData(); // Refresh table
+        });
+      }
+    });
+  }
+  downloadClaimAsCSV() {
+    const rows = this.filteredClaims;
+    if (!rows.length) return;
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','),
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'claim_status_Report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  downloadClaimAsExcel() {
+    const fileName = 'claim_status_report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
   }
 }

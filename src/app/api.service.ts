@@ -361,16 +361,31 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/ipdischarge`);
   }
 
-  //   softDeleteIPReports(reportIds: string[]): Observable<any> {
-  //     return this.http.post('${this.baseUrl}/ip-discharge-reports/soft-delete', {
-  //       reportIds: reportIds,
-  //     });
-  //   }
-  // }
-
   softDeleteIPReports(reportIds: string[]): Observable<any> {
     return this.http.post(`${this.baseUrl}/ip-discharge-reports/soft-delete`, {
       reportIds: reportIds,
+    });
+  }
+
+  softDeleteAdtAdmissions(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/adt-admission/delete-many`, {
+      reportIds,
+    });
+  }
+
+  getPackageStatusReports(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/package-status-report`);
+  }
+
+  softDeletePackageStatusReport(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/package-status-report/delete-many`, {
+      reportIds,
+    });
+  }
+
+  softDeleteClaimReport(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/claim/soft-delete`, {
+      reportIds,
     });
   }
 }
