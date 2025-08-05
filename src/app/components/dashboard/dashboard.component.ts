@@ -68,6 +68,29 @@ export class DashboardComponent implements AfterViewInit {
   isAdtReportVisible: boolean = false;
   admissionDashVisible: boolean = false;
   admissionviewDashVisible: boolean = false;
+  IpDischargeDashVisible: boolean = false;
+  claimRaisedViewVisible: boolean = false;
+  claimReceivedViewVisible: boolean = false;
+  insuranceCompanyViewVisible: boolean = false;
+  companyOutstandingViewVisible: boolean = false;
+  companyOutstandingAgeingViewVisible: boolean = false;
+  isCompanyOutstandingVisible: boolean = false;
+  companyOutstandingReports: any[] = [];
+  filteredCompanyOutstandingReports: any[] = [];
+  originalCompanyOutstandingReports: any[] = [];
+  isCompanyOutstandingAgeingVisible: boolean = false;
+  companyOutstandingAgeingReports: any[] = [];
+  filteredCompanyOutstandingAgeingReports: any[] = [];
+  originalCompanyOutstandingAgeingReports: any[] = [];
+  isDisallowReportVisible: boolean = false;
+  disallowReports: any[] = [];
+  filteredDisallowReports: any[] = [];
+  originalDisallowReports: any[] = [];
+  disallowViewVisible: boolean = false;
+  isExpiredPatientReportVisible: boolean = false;
+  expiredPatientReports: any[] = [];
+  filteredExpiredPatientReports: any[] = [];
+  originalExpiredPatientReports: any[] = [];
   isSideModuleVisible: boolean = false;
   isLogVisible: boolean = false;
   errorMessage: string = '';
@@ -149,6 +172,13 @@ export class DashboardComponent implements AfterViewInit {
   ipSearchText: string = '';
   hasSearched: boolean = false;
   selectedLocation: string = '';
+  isClaimReceviedAmountVisible: boolean = false;
+  filteredclaimedReceivedAmountReports: any[] = [];
+  originalclaimedReceivedAmountReports: any[] = [];
+  isInsuranceCompanyReport: boolean = false;
+  originalInsuranceCompanyReports: any[] = [];
+  filteredInsuranceCompanyReports: any[] = [];
+  insuranceCompanyRecords: any[] = [];
 
   ipSearch: any = {
     UHID: '',
@@ -305,12 +335,15 @@ export class DashboardComponent implements AfterViewInit {
     this.secondDashVisible = false;
     this.isAdtReportVisible = false;
     this.admissionviewDashVisible = false;
+    this.IpDischargeDashVisible = false;
     this.noReportData = false;
     this.isClaimVisible = false;
     this.noClaimData = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -391,6 +424,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     if (!userId) {
       console.error('❌ No userId found!');
       return;
@@ -479,6 +514,7 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionDashVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
   }
 
   filterDistinctModules() {
@@ -497,12 +533,16 @@ export class DashboardComponent implements AfterViewInit {
     console.log('▶️ Report clicked:', reportType);
     this.updateBreadcrumb(`${reportType} data`);
 
-    // Reset all view states
+    const normalized = reportType?.trim().toLowerCase();
+    console.log('🧾 Normalized type:', normalized);
+
+    // Reset all view states EXCEPT for insurance company report
     this.isDashVisible = false;
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
-    this.isPackageReportVisible = false; // Reset package report visibility
+    this.isPackageReportVisible = false;
+    this.isClaimReceviedAmountVisible = false;
     this.isSpecility = false;
     this.noReportData = false;
     this.noClaimData = false;
@@ -510,9 +550,16 @@ export class DashboardComponent implements AfterViewInit {
     this.filteredClaims = [];
     this.filteredIPDischargeReports = [];
     this.filteredPackageReports = [];
+    this.filteredclaimedReceivedAmountReports = [];
+    this.isCompanyOutstandingVisible = false;
+    this.isCompanyOutstandingAgeingVisible = false;
+    this.isDisallowReportVisible = false;
+    this.isExpiredPatientReportVisible = false;
 
-    const normalized = reportType?.trim().toLowerCase();
-    console.log('🧾 Normalized type:', normalized);
+    // Only reset insurance report if it's NOT an insurance report
+    if (!(normalized.includes('insurance') && normalized.includes('company'))) {
+      this.isInsuranceCompanyReport = false;
+    }
 
     // 🔎 ADT Admission Report
     if (
@@ -540,7 +587,30 @@ export class DashboardComponent implements AfterViewInit {
         },
       });
     }
+    // 🆕 Claim Received Amount Report — move this block up
+    else if (
+      normalized.includes('claim received amount') ||
+      normalized.includes('received amount report')
+    ) {
+      this.apiService.getClaimReceivedAmount().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isClaimReceviedAmountVisible = false;
+            return;
+          }
 
+          this.originalclaimedReceivedAmountReports = [...data];
+          this.filteredclaimedReceivedAmountReports = [...data];
+          this.isClaimReceviedAmountVisible = true;
+        },
+        error: (err) => {
+          console.error('❌ Failed to load Claim Received Amount report:', err);
+          this.noReportData = true;
+          this.isClaimReceviedAmountVisible = false;
+        },
+      });
+    }
     // 🆕 Claimed Raised Report
     else if (normalized.includes('claimed') || normalized.includes('claim')) {
       this.apiService.getClaimReports().subscribe({
@@ -552,8 +622,10 @@ export class DashboardComponent implements AfterViewInit {
           }
 
           this.claims = data;
+          this.originalClaimReports = [...data]; // ✅ Store original data for filtering
           this.filteredClaims = [...data];
           this.isClaimVisible = true;
+          console.log('✅ Claim reports loaded:', data.length, 'records');
         },
         error: (err) => {
           console.error('❌ Failed to load claim reports:', err);
@@ -612,6 +684,172 @@ export class DashboardComponent implements AfterViewInit {
         },
       });
     }
+    // 🏢 Insurance Company Report
+    else if (
+      normalized.includes('insurance') &&
+      normalized.includes('company') &&
+      normalized.includes('report')
+    ) {
+      this.apiService.getInsuranceCompanyReport().subscribe({
+        next: (data) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isInsuranceCompanyReport = false;
+            return;
+          }
+
+          this.originalInsuranceCompanyReports = [...data];
+          this.filteredInsuranceCompanyReports = [...data];
+          this.isInsuranceCompanyReport = true;
+          console.log(
+            '✅ Insurance company reports loaded:',
+            data.length,
+            'records'
+          );
+        },
+        error: (err) => {
+          console.error('❌ Failed to load Insurance Company report:', err);
+          this.noReportData = true;
+          this.isInsuranceCompanyReport = false;
+        },
+      });
+    }
+    // 🏢 Company Wise Outstanding Report
+    else if (
+      normalized.includes('company') &&
+      normalized.includes('wise') &&
+      normalized.includes('outstanding') &&
+      !normalized.includes('ageing')
+    ) {
+      this.apiService.getCompanyOutstandingReportDetails().subscribe({
+        next: (data: any) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isCompanyOutstandingVisible = false;
+            return;
+          }
+
+          this.originalCompanyOutstandingReports = data.filter(
+            (report: { isDeleted: boolean }) => !report.isDeleted
+          );
+          this.filteredCompanyOutstandingReports = [...this.originalCompanyOutstandingReports];
+          this.isCompanyOutstandingVisible = true;
+          console.log(
+            '✅ Company wise outstanding reports loaded:',
+            this.originalCompanyOutstandingReports.length,
+            'records'
+          );
+        },
+        error: (err: any) => {
+          console.error(
+            '❌ Failed to load Company Wise Outstanding report:',
+            err
+          );
+          this.noReportData = true;
+          this.isCompanyOutstandingVisible = false;
+        },
+      });
+    }
+    // 🏢 Company Outstanding Ageing Report Details
+    else if (
+      normalized.includes('company') &&
+      normalized.includes('outstanding') &&
+      normalized.includes('ageing') &&
+      normalized.includes('report')
+    ) {
+      this.apiService.getCompanyOutstandingAgeingReportDetails().subscribe({
+        next: (data: any) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isCompanyOutstandingAgeingVisible = false;
+            return;
+          }
+
+          this.originalCompanyOutstandingAgeingReports = data.filter(
+            (report: { isDeleted: boolean }) => !report.isDeleted
+          );
+          this.filteredCompanyOutstandingAgeingReports = [...this.originalCompanyOutstandingAgeingReports];
+          this.isCompanyOutstandingAgeingVisible = true;
+          console.log(
+            '✅ Company outstanding ageing reports loaded:',
+            this.originalCompanyOutstandingAgeingReports.length,
+            'records'
+          );
+        },
+        error: (err: any) => {
+          console.error(
+            '❌ Failed to load Company Outstanding Ageing Report Details:',
+            err
+          );
+          this.noReportData = true;
+          this.isCompanyOutstandingAgeingVisible = false;
+        },
+      });
+    }
+    // 🚫 Disallow Report
+    else if (
+      normalized.includes('disallow') &&
+      normalized.includes('report')
+    ) {
+      this.apiService.getDisallowReport().subscribe({
+        next: (data: any) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isDisallowReportVisible = false;
+            return;
+          }
+
+          this.originalDisallowReports = data.filter(
+            (report: { isDeleted: boolean }) => !report.isDeleted
+          );
+          this.filteredDisallowReports = [...this.originalDisallowReports];
+          this.isDisallowReportVisible = true;
+          console.log(
+            '✅ Disallow reports loaded:',
+            this.originalDisallowReports.length,
+            'records'
+          );
+        },
+        error: (err: any) => {
+          console.error(
+            '❌ Failed to load Disallow Report:',
+            err
+          );
+          this.noReportData = true;
+          this.isDisallowReportVisible = false;
+        },
+      });
+    }
+    // ⏰ Expired Patient Report
+    else if (
+      normalized.includes('expired') &&
+      (normalized.includes('patient') || normalized.includes('pateint'))
+    ) {
+      this.apiService.getExpiredPatientReport().subscribe({
+        next: (data: any) => {
+          if (!data || data.length === 0) {
+            this.noReportData = true;
+            this.isExpiredPatientReportVisible = false;
+            return;
+          }
+
+          this.originalExpiredPatientReports = data.filter(
+            (report: { isDeleted: boolean }) => !report.isDeleted
+          );
+          this.filteredExpiredPatientReports = [...this.originalExpiredPatientReports];
+          this.isExpiredPatientReportVisible = true;
+        },
+        error: (err: any) => {
+          console.error(
+            '❌ Failed to load Expired Patient Report:',
+            err
+          );
+          this.noReportData = true;
+          this.isExpiredPatientReportVisible = false;
+        },
+      });
+    }
+
     // ⚠️ Unrecognized Report Type
     else {
       console.warn('⚠️ Unknown report type:', normalized);
@@ -624,6 +862,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -635,6 +875,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isAdtReportVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -645,6 +886,8 @@ export class DashboardComponent implements AfterViewInit {
     this.noReportData = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop(); // Removes the last breadcrumb step
     }
@@ -658,6 +901,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isClaimVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -668,6 +912,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = true;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
     // this.isClaimVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
@@ -679,6 +924,33 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = true;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+  }
+  goBackToSevenDashboard() {
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
+    this.isDashVisible = true;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+  }
+
+  goBackToEightDashboard() {
+    this.filteredReports = [...this.originalReports]; // ✅ Restore previously filtered reports
+    this.isDashVisible = true;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.isCompanyOutstandingVisible = false;
+    this.isCompanyOutstandingAgeingVisible = false;
+    this.isDisallowReportVisible = false;
+    this.isExpiredPatientReportVisible = false;
     if (this.breadcrumbs.length > 1) {
       this.breadcrumbs.pop();
     }
@@ -707,12 +979,15 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashVisible = false;
     this.admissionDashVisible = false;
     this.admissionviewDashVisible = false;
+    this.IpDischargeDashVisible = false;
     this.isSideModuleVisible = false;
     this.isLogVisible = false;
     this.isClaimVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     this.cdRef.detectChanges(); // ✅ Forces UI update
     this.breadcrumbs = ['Master -> User'];
   }
@@ -731,6 +1006,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     this.breadcrumbs = ['Master -> Module List'];
   }
 
@@ -868,6 +1145,7 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionDashVisible = false;
     this.isAdtReportVisible = false;
     this.admissionviewDashVisible = false;
+    this.IpDischargeDashVisible = false;
     this.isSideModuleVisible = false;
     this.isLogVisible = false;
     this.noReportData = false;
@@ -876,6 +1154,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
     this.breadcrumbs = ['Welcome To Document Management Software : AINU'];
   }
 
@@ -1241,6 +1521,8 @@ export class DashboardComponent implements AfterViewInit {
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
   }
   viewAdtFormData(data: any) {
     this.updateBreadcrumb('view ADT admission reports data');
@@ -1250,12 +1532,14 @@ export class DashboardComponent implements AfterViewInit {
     localStorage.setItem('selectedAdtPatient', JSON.stringify(data));
 
     this.admissionviewDashVisible = true;
+    this.IpDischargeDashVisible = false;
     this.isAdtReportVisible = false;
     this.isClaimVisible = false;
     this.isLogVisible = false;
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
   }
   BackToAdtReport() {
     this.isAdtReportVisible = true;
@@ -1267,6 +1551,14 @@ export class DashboardComponent implements AfterViewInit {
     }
     this.admissionviewDashVisible = false;
     this.isAdtReportVisible = true;
+  }
+
+  BackToIpDischargeData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.IpDischargeDashVisible = false;
+    this.isIPDischargeVisible = true;
   }
 
   openLogList() {
@@ -1281,7 +1573,10 @@ export class DashboardComponent implements AfterViewInit {
     this.isSpecility = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
     this.admissionviewDashVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.IpDischargeDashVisible = false;
     this.breadcrumbs = ['Master -> Log List'];
   }
 
@@ -1298,6 +1593,9 @@ export class DashboardComponent implements AfterViewInit {
     this.admissionviewDashVisible = false;
     this.isIPDischargeVisible = false;
     this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.IpDischargeDashVisible = false;
     this.breadcrumbs = ['Master -> Specility List'];
     this.apiService.getSpecility().subscribe({
       next: (res) => {
@@ -1391,7 +1689,7 @@ export class DashboardComponent implements AfterViewInit {
 
   filteredIPDischargeReport(): void {
     const from = this.fromDate ? new Date(this.fromDate) : null;
-    const to = this.toDate ? new Date(this.toDate + 'T23:59:59') : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
 
     this.filteredIPDischargeReports = this.ipDischargeReports.filter(
       (report: any) => {
@@ -1402,16 +1700,26 @@ export class DashboardComponent implements AfterViewInit {
         let dischargeDate: Date | null = null;
 
         if (rawDate) {
-          const [datePart, timePart] = rawDate.split(' ');
-          const [day, month, year] = datePart.split('-');
-          dischargeDate = new Date(
-            `${year}-${month}-${day}T${timePart || '00:00:00'}`
-          );
+          dischargeDate = new Date(rawDate);
         }
 
-        const matchDate =
-          (!from || (dischargeDate && dischargeDate >= from)) &&
-          (!to || (dischargeDate && dischargeDate <= to));
+        const isSameDay = (d1: Date, d2: Date) =>
+          d1.getFullYear() === d2.getFullYear() &&
+          d1.getMonth() === d2.getMonth() &&
+          d1.getDate() === d2.getDate();
+
+        let matchDate = true;
+        if (from && dischargeDate) {
+          matchDate = matchDate && isSameDay(dischargeDate, from);
+        }
+        if (to && dischargeDate && from !== to) {
+          matchDate = matchDate && isSameDay(dischargeDate, to);
+        }
+        if (from && to && from.getTime() !== to.getTime() && dischargeDate) {
+          matchDate =
+            dischargeDate >= from &&
+            dischargeDate <= new Date(to.getTime() + 24 * 60 * 60 * 1000);
+        }
 
         const specialty =
           report['Primary doctor Specialty'] ||
@@ -1447,7 +1755,23 @@ export class DashboardComponent implements AfterViewInit {
     this.filteredIPDischargeReports = [...this.ipDischargeReports];
   }
 
-  viewIPDischargeReportFormData() {}
+  viewIPDischargeReportFormData(data: any) {
+    this.updateBreadcrumb('view Ip discharge reports data');
+    this.patient = data;
+    console.log('data', this.patient);
+    // Optional: Save to localStorage (if needed)
+    localStorage.setItem('selectedIpDischarge', JSON.stringify(data));
+
+    this.IpDischargeDashVisible = true;
+    this.isAdtReportVisible = false;
+    this.isClaimVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false; // Reset package report visibility
+    this.isClaimReceviedAmountVisible = false;
+  }
+
   downloadAsCSV(): void {
     const rows = this.filteredIPDischargeReports;
     if (!rows.length) return;
@@ -1575,6 +1899,22 @@ export class DashboardComponent implements AfterViewInit {
 
     this.filteredClaims.forEach(
       (claims) => (claims.isSelected = this.selectAll)
+    );
+
+    this.filteredInsuranceCompanyReports.forEach(
+      (insurance) => (insurance.isSelected = this.selectAll)
+    );
+    this.filteredCompanyOutstandingReports.forEach(
+      (comapnyAging) => (comapnyAging.isSelected = this.selectAll)
+    );
+    this.filteredCompanyOutstandingAgeingReports.forEach(
+      (ageingReport) => (ageingReport.isSelected = this.selectAll)
+    );
+    this.filteredDisallowReports.forEach(
+      (disallowReport) => (disallowReport.isSelected = this.selectAll)
+    );
+    this.filteredExpiredPatientReports.forEach(
+      (expiredReport) => (expiredReport.isSelected = this.selectAll)
     );
   }
 
@@ -1709,6 +2049,47 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
+  deleteSelectedCompanyOutstandingReports() {
+    const selectedReports = this.filteredCompanyOutstandingReports.filter(
+      (r) => r.isSelected
+    );
+    if (selectedReports.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message: 'Are you sure you want to delete selected company outstanding records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedReports.map((report) => report._id);
+
+        this.apiService.softDeleteCompanyOutstandingReport(selectedIds).subscribe(() => {
+          this.showSuccessSnackbar('✅ Company outstanding records marked as deleted!');
+          this.selectAll = false;
+
+          this.fetchCompanyOutstandingReports();
+        });
+      }
+    });
+  }
+
+  fetchCompanyOutstandingReports() {
+    this.apiService.getCompanyOutstandingReportDetails().subscribe({
+      next: (data: any) => {
+        this.companyOutstandingReports = data.filter(
+          (report: { isDeleted: boolean }) => !report.isDeleted
+        );
+        this.filteredCompanyOutstandingReports = [...this.companyOutstandingReports];
+        console.log('✅ Active Company Outstanding Reports:', this.filteredCompanyOutstandingReports);
+      },
+      error: (err) => {
+        console.error('❌ Error fetching Company Outstanding reports:', err);
+      },
+    });
+  }
+
   selectedIPFile: File | null = null;
 
   onIPFileSelected(event: any): void {
@@ -1800,7 +2181,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   downloadClaimAsExcel() {
-    const fileName = 'claim_status_report.xlsx';
+    const fileName = 'claim_received_amount_Report.xlsx';
     const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
     const workbook = {
       Sheets: { data: worksheet },
@@ -1814,4 +2195,723 @@ export class DashboardComponent implements AfterViewInit {
     const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
     FileSaver.saveAs(data, fileName);
   }
+
+  downloadClaimReceivedAmountAsCSV() {
+    const rows = this.filteredClaims;
+    if (!rows.length) return;
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','),
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'claim_received_amount_Report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  downloadClaimReceivedAmountAsExcel() {
+    const fileName = 'claim_received_amount_Report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
+  }
+
+  deleteSelectedClaimReceivedAmountReports() {
+    const selectedClaimsReceivedAmount =
+      this.filteredclaimedReceivedAmountReports.filter((c) => c.isSelected);
+    if (selectedClaimsReceivedAmount.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message:
+          'Are you sure you want to delete selected claim received amount records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedClaimsReceivedAmount.map(
+          (ReceivedAmount) => ReceivedAmount._id
+        );
+
+        this.apiService
+          .softDeleteClaimReceivedAmountReport(selectedIds)
+          .subscribe(() => {
+            this.showSuccessSnackbar('✅ Claim records marked as deleted!');
+            this.selectAll = false;
+
+            this.fetchClaimRaisedData(); // Refresh table
+          });
+      }
+    });
+  }
+
+  downloadCompanyInsuranceReportAsCSV(): void {
+    const rows = this.filteredInsuranceCompanyReports;
+    if (!rows.length) {
+      console.warn('⚠️ No data to download');
+      return;
+    }
+
+    const replacer = (key: string, value: any) => value ?? '';
+    const header = Object.keys(rows[0]);
+    const csv = [
+      header.join(','),
+      ...rows.map((row) =>
+        header.map((field) => JSON.stringify(row[field], replacer)).join(',')
+      ),
+    ].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'company_insurance_Report.csv');
+    link.setAttribute('target', '_blank');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  downloadCompanyInsuranceReportAsExcel() {
+    const fileName = 'company_insurance_Report.xlsx';
+    const worksheet = XLSX.utils.json_to_sheet(this.filteredReports);
+    const workbook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(data, fileName);
+  }
+  deleteSelectedCompanyInsuranceReport() {
+    const selectedInsuranceCompanyReport =
+      this.filteredInsuranceCompanyReports.filter((c) => c.isSelected);
+    if (selectedInsuranceCompanyReport.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message:
+          'Are you sure you want to delete selected insurance company records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedInsuranceCompanyReport.map(
+          (ReceivedInsurance) => ReceivedInsurance._id
+        );
+
+        this.apiService
+          .softDeleteCInsuranceCompanyReport(selectedIds)
+          .subscribe(() => {
+            this.showSuccessSnackbar(
+              '✅ Insurance company record marked as deleted!'
+            );
+            this.selectAll = false;
+
+            this.fetchCompanyInsuranceData(); // Refresh table
+          });
+      }
+    });
+  }
+  fetchCompanyInsuranceData() {
+    this.apiService.getInsuranceCompanyReport().subscribe({
+      next: (data: any) => {
+        this.insuranceCompanyRecords = data.filter(
+          (insurance: { isDeleted: boolean }) => !insurance.isDeleted
+        ); // ✅ Filter out soft-deleted claims
+        this.filteredInsuranceCompanyReports = [
+          ...this.insuranceCompanyRecords,
+        ]; // ✅ Sync for UI display
+        console.log(
+          '✅ Active Insurance company Reports:',
+          this.filteredInsuranceCompanyReports
+        );
+      },
+      error: (err) => {
+        console.error('❌ Error fetching insurance company Reports:', err);
+      },
+    });
+  }
+
+  filteredInsuranceReports(): void {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate + 'T23:59:59') : null;
+
+    this.filteredInsuranceCompanyReports =
+      this.originalInsuranceCompanyReports.filter((report: any) => {
+        const rawDate = report['Admit Date Time']?.trim();
+        let admissionDate: Date | null = null;
+
+        if (rawDate) {
+          const [datePart, timePart] = rawDate.split(' ');
+          const [day, month, year] = datePart.includes('-')
+            ? datePart.split('-')
+            : datePart.split('/');
+
+          admissionDate = new Date(
+            `${year}-${month}-${day}T${timePart || '00:00:00'}`
+          );
+        }
+
+        const matchDate =
+          (!from || (admissionDate && admissionDate >= from)) &&
+          (!to || (admissionDate && admissionDate <= to));
+
+        // const specialty =
+        //   report['Primary doctor Specialty'] ||
+        //   report['Admitting doctor Specialty'] ||
+        //   report['Specialty'] ||
+        //   '';
+
+        // const matchSpecialty =
+        //   !this.selectedSpecialty?.trim() ||
+        //   specialty
+        //     .trim()
+        //     .toLowerCase()
+        //     .includes(this.selectedSpecialty.trim().toLowerCase());
+
+        const locationInReport = report['H Location'] || '';
+        const matchLocation =
+          !this.chosenLocation?.trim() ||
+          locationInReport.trim().toLowerCase() ===
+            this.chosenLocation.trim().toLowerCase();
+
+        return matchDate && matchLocation;
+      });
+
+    this.hasSearched = true;
+  }
+
+  clearInsuranceSearch() {
+    this.searchText = '';
+    this.selectedSpecialty = '';
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredInsuranceCompanyReports = [
+      ...this.originalInsuranceCompanyReports,
+    ]; // Reset data
+  }
+  filteredClaimRaisedReports(): void {
+    const from = this.fromDate ? new Date(this.fromDate + 'T00:00:00') : null;
+    const to = this.toDate ? new Date(this.toDate + 'T23:59:59') : null;
+
+    const parseDate = (str: string): Date | null => {
+      if (!str?.trim()) return null;
+      const [datePart, timePart = '00:00:00'] = str.trim().split(' ');
+      const [day, month, year] = datePart.split(/[-/]/);
+      if (!day || !month || !year) return null;
+      return new Date(
+        `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`
+      );
+    };
+
+    // Ensure we have data to filter
+    if (!this.originalClaimReports || this.originalClaimReports.length === 0) {
+      console.warn('⚠️ No original claim reports data available');
+      this.filteredClaims = [];
+      this.hasSearched = true;
+      return;
+    }
+
+    this.filteredClaims = this.originalClaimReports.filter((report: any) => {
+      // Skip deleted records
+      if (report.isDeleted) return false;
+
+      // Parse claim date
+      const claimDate = parseDate(report['Covering Letter DateTime']);
+
+      // Date filtering
+      const matchDate =
+        (!from || (claimDate && claimDate >= from)) &&
+        (!to || (claimDate && claimDate <= to));
+
+      // Location filtering
+      const locationInReport = report['H Location']?.trim().toLowerCase() || '';
+      const chosen = this.chosenLocation?.trim().toLowerCase() || '';
+      const matchLocation = !chosen || locationInReport === chosen;
+
+      return matchDate && matchLocation;
+    });
+
+    this.hasSearched = true;
+    console.log(
+      '✅ Filtered Claims:',
+      this.filteredClaims.length,
+      'out of',
+      this.originalClaimReports.length
+    );
+  }
+
+  clearClaimRaisedReportsSearch(): void {
+    this.fromDate = '';
+    this.toDate = '';
+    // Don't clear chosenLocation as it's the user's selected location
+    this.filteredClaims = [...this.originalClaimReports];
+    this.hasSearched = false; // Reset search state
+  }
+
+  filteredClaimReceivedReports() {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
+
+    const isSameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+
+    this.filteredclaimedReceivedAmountReports =
+      this.originalclaimedReceivedAmountReports.filter((report: any) => {
+        const rawDate = report['Receipt Date/Time']?.trim();
+        let admissionDate: Date | null = null;
+
+        if (rawDate) {
+          const [datePart, timePart] = rawDate.split(' ');
+          const [day, month, year] = datePart.split('/'); // assuming dd/MM/yyyy
+
+          const paddedDay = day.padStart(2, '0');
+          const paddedMonth = month.padStart(2, '0');
+
+          admissionDate = new Date(
+            `${year}-${paddedMonth}-${paddedDay}T${timePart || '00:00:00'}`
+          );
+        }
+
+        const matchDate =
+          (!from || (admissionDate && isSameDay(admissionDate, from))) &&
+          (!to || (admissionDate && isSameDay(admissionDate, to)));
+
+        const locationInReport = report['H Location'] || '';
+        const matchLocation =
+          !this.chosenLocation?.trim() ||
+          locationInReport.trim().toLowerCase() ===
+            this.chosenLocation.trim().toLowerCase();
+
+        return matchDate && matchLocation;
+      });
+
+    this.hasSearched = true;
+  }
+
+  clearClaimReceivedSearch() {
+    this.searchText = '';
+    // this.selectedSpecialty = '';
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredclaimedReceivedAmountReports = [
+      ...this.originalclaimedReceivedAmountReports,
+    ]; // Reset data
+  }
+  filteredPackageStatusReports() {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
+
+    const isSameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+
+    this.filteredPackageReports = this.originalPackageReports.filter(
+      (report: any) => {
+        const rawDate = report['Receipt Date/Time']?.trim();
+        let admissionDate: Date | null = null;
+
+        if (rawDate) {
+          const [datePart, timePart] = rawDate.split(' ');
+          const [day, month, year] = datePart.split('/'); // assuming dd/MM/yyyy
+
+          const paddedDay = day.padStart(2, '0');
+          const paddedMonth = month.padStart(2, '0');
+
+          admissionDate = new Date(
+            `${year}-${paddedMonth}-${paddedDay}T${timePart || '00:00:00'}`
+          );
+        }
+
+        const matchDate =
+          (!from || (admissionDate && isSameDay(admissionDate, from))) &&
+          (!to || (admissionDate && isSameDay(admissionDate, to)));
+
+        const locationInReport = report['H Location'] || '';
+        const matchLocation =
+          !this.chosenLocation?.trim() ||
+          locationInReport.trim().toLowerCase() ===
+            this.chosenLocation.trim().toLowerCase();
+
+        return matchDate && matchLocation;
+      }
+    );
+
+    this.hasSearched = true;
+  }
+
+  clearfilteredPackageStatusSearch() {
+    this.searchText = '';
+    // this.selectedSpecialty = '';
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredPackageReports = [...this.originalPackageReports]; // Reset data
+  }
+
+  viewClaimRaisedFormData(data: any) {
+    this.updateBreadcrumb('view Claim Raised reports data');
+    this.patient = data;
+    console.log('claim data', this.patient);
+    localStorage.setItem('selectedClaimRaised', JSON.stringify(data));
+
+    this.claimRaisedViewVisible = true;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+    this.isClaimReceviedAmountVisible = false;
+  }
+
+  BackToClaimRaisedData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.claimRaisedViewVisible = false;
+    this.isClaimVisible = true;
+  }
+
+  viewClaimReceivedFormData(data: any) {
+    this.updateBreadcrumb('view Claim Received reports data');
+    this.patient = data;
+    console.log('claim received data', this.patient);
+    localStorage.setItem('selectedClaimReceived', JSON.stringify(data));
+
+    this.claimReceivedViewVisible = true;
+    this.isClaimReceviedAmountVisible = false;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.claimRaisedViewVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+  }
+
+  BackToClaimReceivedData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.claimReceivedViewVisible = false;
+    this.isClaimReceviedAmountVisible = true;
+  }
+
+  viewInsuranceCompanyFormData(data: any) {
+    this.updateBreadcrumb('view Insurance Company reports data');
+    this.patient = data;
+    console.log('insurance company data', this.patient);
+    localStorage.setItem('selectedInsuranceCompany', JSON.stringify(data));
+
+    this.insuranceCompanyViewVisible = true;
+    this.isInsuranceCompanyReport = false;
+    this.isClaimReceviedAmountVisible = false;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.claimRaisedViewVisible = false;
+    this.claimReceivedViewVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+  }
+
+  BackToInsuranceCompanyData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.insuranceCompanyViewVisible = false;
+    this.isInsuranceCompanyReport = true;
+  }
+
+  viewCompanyOutstandingFormData(data: any) {
+    this.updateBreadcrumb('view Company Outstanding reports data');
+    this.patient = data;
+    console.log('company outstanding data', this.patient);
+    localStorage.setItem('selectedCompanyOutstanding', JSON.stringify(data));
+
+    this.companyOutstandingViewVisible = true;
+    this.isCompanyOutstandingVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.isClaimReceviedAmountVisible = false;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.claimRaisedViewVisible = false;
+    this.claimReceivedViewVisible = false;
+    this.insuranceCompanyViewVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+  }
+
+  BackToCompanyOutstandingData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.companyOutstandingViewVisible = false;
+    this.isCompanyOutstandingVisible = true;
+  }
+
+  viewCompanyOutstandingAgeingFormData(data: any) {
+    this.updateBreadcrumb('view Company Outstanding Ageing reports data');
+    this.patient = data;
+    console.log('company outstanding ageing data', this.patient);
+    localStorage.setItem('selectedCompanyOutstandingAgeing', JSON.stringify(data));
+
+    this.companyOutstandingAgeingViewVisible = true;
+    this.isCompanyOutstandingAgeingVisible = false;
+    this.isCompanyOutstandingVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.isClaimReceviedAmountVisible = false;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.claimRaisedViewVisible = false;
+    this.claimReceivedViewVisible = false;
+    this.insuranceCompanyViewVisible = false;
+    this.companyOutstandingViewVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+  }
+
+  BackToCompanyOutstandingAgeingData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.companyOutstandingAgeingViewVisible = false;
+    this.isCompanyOutstandingAgeingVisible = true;
+  }
+
+  filterCompanyOutstandingReports(): void {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
+
+    this.filteredCompanyOutstandingReports = this.originalCompanyOutstandingReports.filter((report: any) => {
+      const rawDate = report['Date Of Admission']?.trim();
+      let admissionDate: Date | null = null;
+
+      if (rawDate) {
+        const [datePart, timePart] = rawDate.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const paddedDay = day.padStart(2, '0');
+        const paddedMonth = month.padStart(2, '0');
+        admissionDate = new Date(`${year}-${paddedMonth}-${paddedDay}T${timePart || '00:00:00'}`);
+      }
+
+      const matchDate =
+        (!from || (admissionDate && admissionDate >= from)) &&
+        (!to || (admissionDate && admissionDate <= to));
+
+      const locationInReport = report['H Location'] || '';
+      const matchLocation =
+        !this.chosenLocation?.trim() ||
+        locationInReport.trim().toLowerCase() === this.chosenLocation.trim().toLowerCase();
+
+      return matchDate && matchLocation;
+    });
+
+    this.hasSearched = true;
+  }
+
+  clearCompanyOutstandingSearch() {
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredCompanyOutstandingReports = [...this.originalCompanyOutstandingReports];
+  }
+
+  filterCompanyOutstandingAgeingReports(): void {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
+
+    this.filteredCompanyOutstandingAgeingReports = this.originalCompanyOutstandingAgeingReports.filter((report: any) => {
+      const rawDate = report['Claim raised on']?.trim();
+      let claimDate: Date | null = null;
+
+      if (rawDate) {
+        const [datePart, timePart] = rawDate.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const paddedDay = day.padStart(2, '0');
+        const paddedMonth = month.padStart(2, '0');
+        claimDate = new Date(`${year}-${paddedMonth}-${paddedDay}T${timePart || '00:00:00'}`);
+      }
+
+      const matchDate =
+        (!from || (claimDate && claimDate >= from)) &&
+        (!to || (claimDate && claimDate <= to));
+
+      const locationInReport = report['H Location'] || '';
+      const matchLocation =
+        !this.chosenLocation?.trim() ||
+        locationInReport.trim().toLowerCase() === this.chosenLocation.trim().toLowerCase();
+
+      return matchDate && matchLocation;
+    });
+
+    this.hasSearched = true;
+  }
+
+  clearCompanyOutstandingAgeingSearch() {
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredCompanyOutstandingAgeingReports = [...this.originalCompanyOutstandingAgeingReports];
+  }
+
+  filterDisallowReports(): void {
+    const from = this.fromDate ? new Date(this.fromDate) : null;
+    const to = this.toDate ? new Date(this.toDate) : null;
+
+    this.filteredDisallowReports = this.originalDisallowReports.filter((report: any) => {
+      const rawDate = report['Disallow Date']?.trim();
+      let disallowDate: Date | null = null;
+
+      if (rawDate) {
+        const [datePart, timePart] = rawDate.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const paddedDay = day.padStart(2, '0');
+        const paddedMonth = month.padStart(2, '0');
+        disallowDate = new Date(`${year}-${paddedMonth}-${paddedDay}T${timePart || '00:00:00'}`);
+      }
+
+      const matchDate =
+        (!from || (disallowDate && disallowDate >= from)) &&
+        (!to || (disallowDate && disallowDate <= to));
+
+      const locationInReport = report['H Location'] || '';
+      const matchLocation =
+        !this.chosenLocation?.trim() ||
+        locationInReport.trim().toLowerCase() === this.chosenLocation.trim().toLowerCase();
+
+      return matchDate && matchLocation;
+    });
+
+    this.hasSearched = true;
+  }
+
+  clearDisallowSearch() {
+    this.fromDate = '';
+    this.toDate = '';
+    this.hasSearched = false;
+    this.filteredDisallowReports = [...this.originalDisallowReports];
+  }
+
+  viewDisallowFormData(data: any) {
+    this.updateBreadcrumb('view Disallow Report data');
+    this.patient = data;
+    console.log('disallow data', this.patient);
+    localStorage.setItem('selectedDisallowReport', JSON.stringify(data));
+
+    this.disallowViewVisible = true;
+    this.isDisallowReportVisible = false;
+    this.isInsuranceCompanyReport = false;
+    this.isClaimReceviedAmountVisible = false;
+    this.isClaimVisible = false;
+    this.isAdtReportVisible = false;
+    this.IpDischargeDashVisible = false;
+    this.admissionviewDashVisible = false;
+    this.claimRaisedViewVisible = false;
+    this.claimReceivedViewVisible = false;
+    this.insuranceCompanyViewVisible = false;
+    this.companyOutstandingViewVisible = false;
+    this.companyOutstandingAgeingViewVisible = false;
+    this.isLogVisible = false;
+    this.isSpecility = false;
+    this.isIPDischargeVisible = false;
+    this.isPackageReportVisible = false;
+  }
+
+  BackToDisallowData() {
+    if (this.breadcrumbs.length > 1) {
+      this.breadcrumbs.pop();
+    }
+    this.disallowViewVisible = false;
+    this.isDisallowReportVisible = true;
+  }
+
+  deleteSelectedCompanyOutstandingAgeingReports() {
+    const selectedReports = this.filteredCompanyOutstandingAgeingReports.filter(
+      (r) => r.isSelected
+    );
+    if (selectedReports.length === 0) return;
+
+    const dialogRef = this.dialog.open(DeleteConfirmationPopupComponent, {
+      data: {
+        message: 'Are you sure you want to delete selected company outstanding ageing records?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const selectedIds = selectedReports.map((report) => report._id);
+
+        this.apiService.softDeleteCompanyOutstandingAgeingReportDetails(selectedIds).subscribe(() => {
+          this.showSuccessSnackbar('✅ Company outstanding ageing records marked as deleted!');
+          this.selectAll = false;
+
+          this.fetchCompanyOutstandingAgeingReports();
+        });
+      }
+    });
+  }
+
+  fetchCompanyOutstandingAgeingReports() {
+    this.apiService.getCompanyOutstandingAgeingReportDetails().subscribe({
+      next: (data: any) => {
+        this.companyOutstandingAgeingReports = data.filter(
+          (report: { isDeleted: boolean }) => !report.isDeleted
+        );
+        this.filteredCompanyOutstandingAgeingReports = [...this.companyOutstandingAgeingReports];
+        console.log('✅ Active Company Outstanding Ageing Reports:', this.filteredCompanyOutstandingAgeingReports);
+      },
+      error: (err) => {
+        console.error('❌ Error fetching Company Outstanding Ageing reports:', err);
+      },
+    });
+  }
 }
+

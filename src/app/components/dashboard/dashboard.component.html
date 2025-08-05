@@ -192,7 +192,19 @@
             !noClaimData &&
             !isSpecility &&
             !isIPDischargeVisible &&
-            !isPackageReportVisible
+            !isPackageReportVisible &&
+            !isClaimReceviedAmountVisible &&
+            !isInsuranceCompanyReport &&
+            !IpDischargeDashVisible &&
+            !claimRaisedViewVisible &&
+            !claimReceivedViewVisible &&
+            !insuranceCompanyViewVisible &&
+            !isCompanyOutstandingVisible &&
+            !companyOutstandingViewVisible &&
+            !isCompanyOutstandingAgeingVisible &&
+            !companyOutstandingAgeingViewVisible &&
+            !isDisallowReportVisible &&
+            !isExpiredPatientReportVisible
           "
           class="flex justify-center gap-6 transition-all duration-300"
           [ngClass]="{
@@ -1040,7 +1052,7 @@
           </div>
         </div>
 
-        <!-- claimed data table -->
+        <!-- claimed raised data table -->
 
         <div
           *ngIf="isClaimVisible"
@@ -1052,7 +1064,7 @@
             class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
           >
             <p class="text-lg font-bold text-red-800">
-              Claim raised reports data
+              Claim Raised Amount Report data
             </p>
 
             <!-- <div
@@ -1092,7 +1104,6 @@
               Back
             </button>
           </div>
-          <!-- 👇 Upload block placed here -->
           <!-- Fullscreen Table -->
           <div class="w-full h-[calc(100vh-150px)]">
             <div
@@ -1126,8 +1137,7 @@
                   </div>
                 </div>
                 <!-- 🔍 Filters -->
-                <!-- <div class="flex flex-wrap gap-4 items-end">
-                 
+                <div class="flex flex-wrap gap-4 items-end">
                   <div class="flex flex-col min-w-[160px]">
                     <label class="text-sm font-medium text-gray-700 mb-1"
                       >From Date</label
@@ -1138,7 +1148,7 @@
                       [(ngModel)]="fromDate"
                     />
                   </div>
-                 
+
                   <div class="flex flex-col min-w-[160px]">
                     <label class="text-sm font-medium text-gray-700 mb-1"
                       >To Date</label
@@ -1149,8 +1159,8 @@
                       [(ngModel)]="toDate"
                     />
                   </div>
-                
-                  <div class="flex flex-col min-w-[200px]">
+
+                  <!-- <div class="flex flex-col min-w-[200px]">
                     <label class="text-sm font-medium text-gray-700 mb-1"
                       >Specialty</label
                     >
@@ -1163,39 +1173,39 @@
                         {{ s }}
                       </option>
                     </select>
-                  </div>
-                 
+                  </div> -->
+
                   <div class="flex flex-col min-w-[140px]">
                     <label class="text-sm invisible mb-1">Search</label>
                     <button
-                      (click)="filteredAdtReports()"
-                      [disabled]="!fromDate && !toDate && !selectedSpecialty"
+                      (click)="filteredClaimRaisedReports()"
+                      [disabled]="!fromDate && !toDate"
                       class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
                     >
                       Search
                     </button>
                   </div>
-                 
+
                   <button
                     class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
-                    (click)="clearAdtSearch()"
+                    (click)="clearClaimRaisedReportsSearch()"
                   >
                     Clear
                   </button>
-                </div> -->
+                </div>
               </div>
               <!-- 📝 Report Count & No Data Message -->
-              <!-- <div
+              <div
                 *ngIf="hasSearched && filteredClaims.length === 0"
                 class="text-center text-red-600 font-semibold p-6 text-xl"
-               >
-                🚫 No ADT report records found.
+              >
+                🚫 No Claim raised Amount records found.
               </div>
               <p
                 *ngIf="hasSearched && filteredClaims.length > 0"
                 class="text-sm text-gray-600 mb-3"
               >
-                ADT reports data:
+                Claim raised Amount reports data:
                 <strong>{{ filteredClaims.length }}</strong>
               </p>
               <div
@@ -1204,10 +1214,311 @@
               >
                 No records found for location:
                 <strong>{{ chosenLocation }}</strong>
-              </div> -->
+              </div>
               <table
                 class="w-full border border-collapse border-gray-300"
-                *ngIf="filteredClaims.length > 0"
+                *ngIf="hasSearched && filteredClaims.length > 0"
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Claim No</th>
+                    <th class="p-2 border">Claim Amount</th>
+
+                    <th class="p-2 border">Covering Letter Date</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border bg-red-100 h-12">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let claimRaisedAmount of filteredClaims">
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="claimRaisedAmount.isSelected"
+                      />
+                    </td>
+
+                    <td class="border p-2">{{ claimRaisedAmount.UHID }}</td>
+                    <td class="border p-2">
+                      {{ claimRaisedAmount["Patient Name"] }}
+                    </td>
+                    <td class="border p-2">{{ claimRaisedAmount.ClaimNo }}</td>
+                    <td class="border p-2">
+                      {{ claimRaisedAmount["Claim Amount"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ claimRaisedAmount["Covering Letter DateTime"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ claimRaisedAmount["H Location"] }}
+                    </td>
+                    <td class="px-4 py-2 border text-center">
+                      <div
+                        class="flex items-center justify-center gap-3 text-lg"
+                      >
+                        <button
+                          (click)="viewClaimRaisedFormData(claimRaisedAmount)"
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- view claim raised data -->
+        <div
+          *ngIf="claimRaisedViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Claim Raised Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p><strong>Bill No:</strong> {{ patient["Bill No"][""] }}</p>
+              <p>
+                <strong>Claim Amount:</strong> {{ patient["Claim Amount"] }}
+              </p>
+              <p>
+                <strong>Claim Raised by:</strong>
+                {{ patient["Claim Raised by"] }}
+              </p>
+              <p>
+                <strong>Claim Status:</strong> {{ patient["Claim Status"] }}
+              </p>
+              <p><strong>ClaimNo:</strong> {{ patient.ClaimNo }}</p>
+              <p>
+                <strong>Company Name:</strong> {{ patient["Company Name"] }}
+              </p>
+              <p>
+                <strong>Company Type:</strong> {{ patient["Company Type"] }}
+              </p>
+              <p>
+                <strong>Covering Letter DateTime:</strong>
+                {{ patient["Covering Letter DateTime"] }}
+              </p>
+              <p>
+                <strong>Covering Letter No:</strong>
+                {{ patient["Covering Letter No"][""] }}
+              </p>
+              <p><strong>Episode:</strong> {{ patient.Episode }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+              <p><strong>IP/EM No:</strong> {{ patient["IP/EM No"] }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p>
+                <strong>Settle Status:</strong> {{ patient["Settle Status"] }}
+              </p>
+              <p><strong>UHID:</strong> {{ patient.UHID }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToClaimRaisedData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- claim amount received data -->
+        <div
+          *ngIf="isClaimReceviedAmountVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Claim Received Amount Report data
+            </p>
+
+            <!-- <div
+              class="flex items-center gap-2 mb-6"
+              *ngIf="!isClaimVisible"
+             >
+              <input
+                type="file"
+                class="hidden"
+                #ipFileInput
+                (change)="onIPFileSelected($event)"
+                accept=".csv,.xlsx"
+              />
+              <button
+                (click)="ipFileInput.click()"
+                class="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 transition"
+              >
+                📁 Choose File
+              </button>
+              <button
+                (click)="uploadIPFile()"
+                [disabled]="!selectedIPFile"
+                class="bg-green-600 text-white py-1 px-4 rounded hover:bg-green-700 transition disabled:opacity-50"
+              >
+                ⬆️ Upload
+              </button>
+              <span
+                *ngIf="selectedIPFile"
+                class="text-sm text-gray-600 max-w-[200px] truncate"
+                >{{ selectedIPFile.name }}</span
+              >
+            </div> -->
+            <button
+              (click)="goBackToSevenDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+          <!-- 👇 Upload block placed here -->
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- 🔄 Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- 📥 Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      (click)="downloadClaimReceivedAmountAsCSV()"
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      (click)="downloadClaimReceivedAmountAsExcel()"
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      (click)="deleteSelectedClaimReceivedAmountReports()"
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <!-- 🔍 Filters -->
+                <div class="flex flex-wrap gap-4 items-end">
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                    />
+                  </div>
+
+                  <!-- <div class="flex flex-col min-w-[200px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >Specialty</label
+                    >
+                    <select
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="selectedSpecialty"
+                    >
+                      <option value="">All Specialties</option>
+                      <option *ngFor="let s of specialties" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+                  </div> -->
+
+                  <div class="flex flex-col min-w-[140px]">
+                    <label class="text-sm invisible mb-1">Search</label>
+                    <button
+                      (click)="filteredClaimReceivedReports()"
+                      [disabled]="!fromDate && !toDate"
+                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <button
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    (click)="clearClaimReceivedSearch()"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <!-- 📝 Report Count & No Data Message -->
+              <div
+                *ngIf="
+                  hasSearched &&
+                  filteredclaimedReceivedAmountReports.length === 0
+                "
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Claim Received Amount records found.
+              </div>
+              <p
+                *ngIf="
+                  hasSearched && filteredclaimedReceivedAmountReports.length > 0
+                "
+                class="text-sm text-gray-600 mb-3"
+              >
+                Claim Received Amount reports data:
+                <strong>{{
+                  filteredclaimedReceivedAmountReports.length
+                }}</strong>
+              </p>
+              <div
+                *ngIf="
+                  hasSearched &&
+                  filteredclaimedReceivedAmountReports.length === 0
+                "
+                class="text-red-600 font-medium mt-2"
+              >
+                No records found for location:
+                <strong>{{ chosenLocation }}</strong>
+              </div>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="
+                  hasSearched && filteredclaimedReceivedAmountReports.length > 0
+                "
               >
                 <thead class="top-0 z-10 bg-red-100">
                   <tr>
@@ -1223,40 +1534,532 @@
                     <th class="p-2 border">Claim No</th>
                     <th class="p-2 border">Claim Amount</th>
                     <th class="p-2 border">Settle Status</th>
-                    <th class="p-2 border">Covering Letter Date</th>
+                    <th class="p-2 border">Receipt Date/Time</th>
                     <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">View</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let claim of filteredClaims">
-                     <td class="border p-2 text-center">
-                      <input type="checkbox" [(ngModel)]="claim.isSelected" />
+                  <tr
+                    *ngFor="
+                      let claimAmount of filteredclaimedReceivedAmountReports
+                    "
+                  >
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="claimAmount.isSelected"
+                      />
                     </td>
 
-                    <td class="border p-2">{{ claim.UHID }}</td>
-                    <td class="border p-2">{{ claim["Patient Name"] }}</td>
-                    <td class="border p-2">{{ claim.ClaimNo }}</td>
-                    <td class="border p-2">{{ claim["Claim Amount"] }}</td>
-                    <td class="border p-2">{{ claim["Company Name"] }}</td>
+                    <td class="border p-2">{{ claimAmount.UHID }}</td>
                     <td class="border p-2">
-                      {{ claim["Covering Letter DateTime"] }}
+                      {{ claimAmount["Patient Name with Title"] }}
                     </td>
-                    <td class="border p-2">{{ claim["H Location"] }}</td>
+                    <td class="border p-2">
+                      {{ claimAmount["Claim No"][""] || "N/A" }}
+                    </td>
+                    <td class="border p-2">
+                      {{ claimAmount["Claim Amount"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ claimAmount["Company Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ claimAmount["Receipt Date/Time"] }}
+                    </td>
+                    <td class="border p-2">{{ claimAmount["H Location"] }}</td>
                     <td class="px-4 py-2 border text-center">
                       <div
                         class="flex items-center justify-center gap-3 text-lg"
                       >
-                        <!-- <button
-                          (click)="viewAdtFormData(AdtAdmissionReport)"
+                        <button
+                          (click)="viewClaimReceivedFormData(claimAmount)"
                           class="text-gray-600 hover:text-gray-800"
                         >
                           <i class="fas fa-eye"></i>
-                        </button> -->
+                        </button>
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+        <!-- view claim received data -->
+        <div
+          *ngIf="claimReceivedViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Claim Received Amount Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p>
+                <strong>Admitting Doctor Name with Title:</strong>
+                {{ patient["Admitting Doctor Name with Title"] }}
+              </p>
+              <p><strong>Amount:</strong> {{ patient.Amount }}</p>
+              <p>
+                <strong>Bank Account No:</strong>
+                {{ patient["Bank Account No"][""] }}
+              </p>
+              <p>
+                <strong>Bill Date & Time:</strong>
+                {{ patient["Bill Date & Time"] }}
+              </p>
+              <p>
+                <strong>Bill Discount Amount:</strong>
+                {{ patient["Bill Discount Amount"] }}
+              </p>
+              <p>
+                <strong>Bill Gross Amount:</strong>
+                {{ patient["Bill Gross Amount"] }}
+              </p>
+              <p>
+                <strong>Bill Net Amount:</strong>
+                {{ patient["Bill Net Amount"] }}
+              </p>
+              <p><strong>BillNo:</strong> {{ patient.BillNo }}</p>
+              <p>
+                <strong>Chque No/Neft NO:</strong>
+                {{
+                  patient["Chque No/Neft NO"][" /Draft no"]["/ trasection No"][
+                    ""
+                  ]
+                }}
+              </p>
+              <p>
+                <strong>Claim Amount:</strong> {{ patient["Claim Amount"] }}
+              </p>
+              <p><strong>Claim No:</strong> {{ patient["Claim No"][""] }}</p>
+              <p>
+                <strong>Company Name:</strong> {{ patient["Company Name"] }}
+              </p>
+              <p>
+                <strong>Company Type:</strong> {{ patient["Company Type"] }}
+              </p>
+              <p>
+                <strong>Covering Letter Amount:</strong>
+                {{ patient["Covering Letter Amount"] }}
+              </p>
+              <p>
+                <strong>Covering Letter Date & Time:</strong>
+                {{ patient["Covering Letter Date & Time"] }}
+              </p>
+              <p>
+                <strong>Covering Letter No:</strong>
+                {{ patient["Covering Letter No"][""] }}
+              </p>
+              <p>
+                <strong>Disallow Amount:</strong>
+                {{ patient["Disallow Amount"] }}
+              </p>
+              <p>
+                <strong>Discount Amount:</strong>
+                {{ patient["Discount Amount"] }}
+              </p>
+              <p><strong>Due Amount:</strong> {{ patient["Due Amount"] }}</p>
+              <p><strong>Episode:</strong> {{ patient.Episode }}</p>
+              <p>
+                <strong>Facility Name:</strong> {{ patient["Facility Name"] }}
+              </p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+              <p>
+                <strong>HandlingCharges:</strong> {{ patient.HandlingCharges }}
+              </p>
+              <p><strong>IP/ER No:</strong> {{ patient["IP/ER No"][""] }}</p>
+              <p><strong>MOP:</strong> {{ patient.MOP }}</p>
+              <p>
+                <strong>Patient Name with Title:</strong>
+                {{ patient["Patient Name with Title"] }}
+              </p>
+              <p>
+                <strong>Patient Paid Amount:</strong>
+                {{ patient["Patient Paid Amount"] }}
+              </p>
+              <p>
+                <strong>Receipt Date/Time:</strong>
+                {{ patient["Receipt Date/Time"] }}
+              </p>
+              <p>
+                <strong>Receipt No:</strong> {{ patient["Receipt No"][""] }}
+              </p>
+              <p>
+                <strong>Received Amount:</strong>
+                {{ patient["Received Amount"] }}
+              </p>
+              <p><strong>S No:</strong> {{ patient.S.No }}</p>
+              <p><strong>Settled:</strong> {{ patient.Settled }}</p>
+              <p>
+                <strong>SettledDateTime:</strong> {{ patient.SettledDateTime }}
+              </p>
+              <p><strong>Status:</strong> {{ patient.Status }}</p>
+              <p><strong>Tds Amount:</strong> {{ patient["Tds Amount"] }}</p>
+              <p>
+                <strong>Transection Date&Time:</strong>
+                {{ patient["Transection Date&Time"] }}
+              </p>
+              <p><strong>UHID:</strong> {{ patient.UHID }}</p>
+              <p><strong>UserName:</strong> {{ patient.UserName }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToClaimReceivedData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- insurance company report -->
+        <div
+          *ngIf="isInsuranceCompanyReport"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Insurance company report data
+            </p>
+
+            <!-- <div
+              class="flex items-center gap-2 mb-6"
+              *ngIf="!isClaimVisible"
+             >
+              <input
+                type="file"
+                class="hidden"
+                #ipFileInput
+                (change)="onIPFileSelected($event)"
+                accept=".csv,.xlsx"
+              />
+              <button
+                (click)="ipFileInput.click()"
+                class="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 transition"
+              >
+                📁 Choose File
+              </button>
+              <button
+                (click)="uploadIPFile()"
+                [disabled]="!selectedIPFile"
+                class="bg-green-600 text-white py-1 px-4 rounded hover:bg-green-700 transition disabled:opacity-50"
+              >
+                ⬆️ Upload
+              </button>
+              <span
+                *ngIf="selectedIPFile"
+                class="text-sm text-gray-600 max-w-[200px] truncate"
+                >{{ selectedIPFile.name }}</span
+              >
+            </div> -->
+            <button
+              (click)="goBackToEightDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- 🔄 Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- 📥 Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      (click)="downloadCompanyInsuranceReportAsCSV()"
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      (click)="downloadCompanyInsuranceReportAsExcel()"
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      (click)="deleteSelectedCompanyInsuranceReport()"
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <!-- 🔍 Filters -->
+                <div class="flex flex-wrap gap-4 items-end">
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                    />
+                  </div>
+                  <!--
+                  <div class="flex flex-col min-w-[200px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >Specialty</label
+                    >
+                    <select
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="selectedSpecialty"
+                    >
+                      <option value="">All Specialties</option>
+                      <option *ngFor="let s of specialties" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+                  </div> -->
+
+                  <div class="flex flex-col min-w-[140px]">
+                    <label class="text-sm invisible mb-1">Search</label>
+                    <button
+                      (click)="filteredInsuranceReports()"
+                      [disabled]="!fromDate && !toDate"
+                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <button
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    (click)="clearInsuranceSearch()"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <!-- 📝 Report Count & No Data Message -->
+              <div
+                *ngIf="
+                  hasSearched && filteredInsuranceCompanyReports.length === 0
+                "
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Insurance company report found.
+              </div>
+              <p
+                *ngIf="
+                  hasSearched && filteredInsuranceCompanyReports.length > 0
+                "
+                class="text-sm text-gray-600 mb-3"
+              >
+                Insurance company reports data:
+                <strong>{{ filteredInsuranceCompanyReports.length }}</strong>
+              </p>
+              <div
+                *ngIf="
+                  hasSearched && filteredInsuranceCompanyReports.length === 0
+                "
+                class="text-red-600 font-medium mt-2"
+              >
+                No records found for location:
+                <strong>{{ chosenLocation }}</strong>
+              </div>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="
+                  hasSearched && filteredInsuranceCompanyReports.length > 0
+                "
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Claim No</th>
+                    <th class="p-2 border">Company Name</th>
+                    <th class="p-2 border">Physician Specialty</th>
+                    <th class="p-2 border">Admit Date/Time</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="
+                      let insuraceCompany of filteredInsuranceCompanyReports
+                    "
+                  >
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="insuraceCompany.isSelected"
+                      />
+                    </td>
+
+                    <td class="border p-2">{{ insuraceCompany.UHID }}</td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["Patient Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["Claim number"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["Company Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["Physician Specialty"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["Admit Date Time"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ insuraceCompany["H Location"] }}
+                    </td>
+                    <td class="px-4 py-2 border text-center">
+                      <div
+                        class="flex items-center justify-center gap-3 text-lg"
+                      >
+                        <button
+                          (click)="
+                            viewInsuranceCompanyFormData(insuraceCompany)
+                          "
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- view insurance company data -->
+        <div
+          *ngIf="insuranceCompanyViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Insurance Company Report Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p>
+                <strong>Admit Date Time:</strong>
+                {{ patient["Admit Date Time"] }}
+              </p>
+              <p><strong>Bill Amount:</strong> {{ patient["Bill Amount "] }}</p>
+              <p><strong>BillNo:</strong> {{ patient.BillNo }}</p>
+              <p><strong>Billdate:</strong> {{ patient.Billdate }}</p>
+              <p><strong>Claim Date:</strong> {{ patient["Claim Date"] }}</p>
+              <p>
+                <strong>Claim number:</strong> {{ patient["Claim number"] }}
+              </p>
+              <p>
+                <strong>Co-insurance Amount:</strong>
+                {{ patient["Co-insurance Amount"] }}
+              </p>
+              <p>
+                <strong>Company Name:</strong> {{ patient["Company Name"] }}
+              </p>
+              <p>
+                <strong>Company Type:</strong> {{ patient["Company Type"] }}
+              </p>
+              <p>
+                <strong>Contact Details:</strong>
+                {{ patient["Contact Details"] }}
+              </p>
+              <p>
+                <strong>Date Of Birth:</strong> {{ patient["Date Of Birth"] }}
+              </p>
+              <p><strong>Deduction:</strong> {{ patient.Deduction }}</p>
+              <p>
+                <strong>Discharge Date Time:</strong>
+                {{ patient["Discharge Date Time"] }}
+              </p>
+              <p><strong>Discount:</strong> {{ patient.Discount }}</p>
+              <p><strong>Gender:</strong> {{ patient.Gender }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+              <p>
+                <strong>Hospital Name:</strong> {{ patient["Hospital Name"] }}
+              </p>
+              <p><strong>IPID:</strong> {{ patient.IPID }}</p>
+              <p><strong>Net Amount:</strong> {{ patient["Net Amount"] }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p>
+                <strong>Patient Type:</strong> {{ patient["Patient Type"] }}
+              </p>
+              <p>
+                <strong>Physician Specialty:</strong>
+                {{ patient["Physician Specialty"] }}
+              </p>
+              <p><strong>Quantity:</strong> {{ patient.Quantity }}</p>
+              <p><strong>Ratecontract:</strong> {{ patient.Ratecontract }}</p>
+              <p>
+                <strong>Service Code:</strong> {{ patient["Service Code"] }}
+              </p>
+              <p>
+                <strong>Service Description:</strong>
+                {{ patient["Service Description"] }}
+              </p>
+              <p>
+                <strong>TPA Insurance:</strong> {{ patient["TPA Insurance"] }}
+              </p>
+              <p><strong>Total:</strong> {{ patient.Total }}</p>
+              <p>
+                <strong>Treating Physician:</strong>
+                {{ patient["Treating Physician"] }}
+              </p>
+              <p><strong>UHID:</strong> {{ patient.UHID }}</p>
+              <p><strong>Sr No:</strong> {{ patient.srno }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToInsuranceCompanyData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -1543,6 +2346,10 @@
                     <th class="p-2 border">IPNO</th>
                     <th class="p-2 border">UHID</th>
                     <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">Bill Generate DateTime</th>
+                    <th class="p-2 border">City</th>
+                    <th class="p-2 border bg-red-100 h-12">View</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1552,12 +2359,151 @@
                     </td>
                     <td class="border p-2">{{ report.IPNO }}</td>
                     <td class="border p-2">{{ report.UHid }}</td>
+                    <td class="border p-2">{{ report["Patient Name"] }}</td>
+                    <td class="border p-2">{{ report["H Location"] }}</td>
+                    <td class="border p-2">
+                      {{ report["Bill Generate DateTime"] }}
+                    </td>
+                    <td class="border p-2">{{ report.City }}</td>
+                    <td class="px-4 py-2 border text-center">
+                      <div
+                        class="flex items-center justify-center gap-3 text-lg"
+                      >
+                        <button
+                          (click)="viewIPDischargeReportFormData(report)"
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <!--
+                  <button
+                    class="text-gray-600 hover:text-gray-800"
+                    (click)="editAdtFormData()"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  -->
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
+
+        <!-- view ip discharge data -->
+
+        <div
+          *ngIf="IpDischargeDashVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              IP discharge Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p><strong>Address:</strong> {{ patient.Address }}</p>
+              <p>
+                <strong>Admitting doctor:</strong>
+                {{ patient["Admitting doctor"] }}
+              </p>
+              <p>
+                <strong>Admitting doctor Specialty:</strong>
+                {{ patient["Admitting doctor Specialty"] }}
+              </p>
+              <p><strong>Age:</strong> {{ patient.Age }}</p>
+              <p><strong>Bed Type:</strong> {{ patient["Bed Type"] }}</p>
+              <p>
+                <strong>Bill Generate DateTime:</strong>
+                {{ patient["Bill Generate DateTime"] }}
+              </p>
+              <p><strong>Bill No:</strong> {{ patient["Bill No"] }}</p>
+              <p>
+                <strong>Billable Bed Type:</strong>
+                {{ patient["Billable Bed Type"] }}
+              </p>
+              <p><strong>City:</strong> {{ patient.City }}</p>
+              <p><strong>Country:</strong> {{ patient.Country }}</p>
+              <p>
+                <strong>Diagnosis marked:</strong>
+                {{ patient["Diagnosis marked"] }}
+              </p>
+              <p>
+                <strong>Discharge Date & Time:</strong>
+                {{ patient["Discharge Date & Time "] }}
+              </p>
+              <p>
+                <strong>Discharge Intimation Date & Time:</strong>
+                {{ patient["Discharge Intimation Date & Time"] }}
+              </p>
+              <p>
+                <strong>Discharge Type:</strong> {{ patient["Discharge Type"] }}
+              </p>
+              <p>
+                <strong>Expected Date of Discharge:</strong>
+                {{ patient["Expected Date of Discharge "] }}
+              </p>
+              <p>
+                <strong>Father/SpouseName:</strong>
+                {{ patient["Father/SpouseName"] }}
+              </p>
+              <p><strong>Gender:</strong> {{ patient.Gender }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+              <p><strong>IPNO:</strong> {{ patient.IPNO }}</p>
+              <p><strong>IP_Visit:</strong> {{ patient.IP_Visit }}</p>
+              <p><strong>Is MLC:</strong> {{ patient["Is MLC"] }}</p>
+              <p>
+                <strong>LOS till Discharge:</strong>
+                {{ patient["LOS till Discharge"] }}
+              </p>
+              <p>
+                <strong>LOS till Discharge Intimation time:</strong>
+                {{ patient["LOS till Discharge Intimation time"] }}
+              </p>
+              <p><strong>MobileNo:</strong> {{ patient.MobileNo }}</p>
+              <p><strong>MonthlyIncome:</strong> {{ patient.MonthlyIncome }}</p>
+              <p><strong>Nationality:</strong> {{ patient.Nationality }}</p>
+              <p>
+                <strong>Operator Name:</strong> {{ patient["Operator Name"] }}
+              </p>
+              <p><strong>Package:</strong> {{ patient.Package }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p><strong>PatientType:</strong> {{ patient.PatientType }}</p>
+              <p><strong>PaymentType:</strong> {{ patient.PaymentType }}</p>
+              <p>
+                <strong>Primary doctor:</strong> {{ patient["Primary doctor"] }}
+              </p>
+              <p>
+                <strong>Primary doctor Specialty:</strong>
+                {{ patient["Primary doctor Specialty"] }}
+              </p>
+              <p>
+                <strong>Referral Doctor:</strong>
+                {{ patient["Referral Doctor"] }}
+              </p>
+              <p><strong>State:</strong> {{ patient.State }}</p>
+              <p><strong>UHid:</strong> {{ patient.UHid }}</p>
+              <p><strong>Ward Name:</strong> {{ patient["Ward Name"] }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToIpDischargeData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- package status report table -->
         <div
           *ngIf="isPackageReportVisible"
@@ -1608,87 +2554,34 @@
                     </button>
                   </div>
                 </div>
-                <!-- 🔍 Filters -->
-                <div class="flex flex-wrap gap-4 items-end">
-                  <!-- From Date -->
-                  <!-- <div class="flex flex-col min-w-[160px]">
-                    <label class="text-sm font-medium text-gray-700 mb-1"
-                      >From Date</label
-                    >
-                    <input
-                      type="date"
-                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                      [(ngModel)]="fromDate"
-                    />
-                  </div> -->
-                  <!-- To Date -->
-                  <!-- <div class="flex flex-col min-w-[160px]">
-                    <label class="text-sm font-medium text-gray-700 mb-1"
-                      >To Date</label
-                    >
-                    <input
-                      type="date"
-                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                      [(ngModel)]="toDate"
-                    />
-                  </div> -->
-                  <!-- Specialty -->
-                  <!-- <div class="flex flex-col min-w-[200px]">
-                    <label class="text-sm font-medium text-gray-700 mb-1"
-                      >Department</label
-                    >
-                    <select
-                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                      [(ngModel)]="selectedDepartment"
-                    >
-                      <option value="">All Department</option>
-                      <option *ngFor="let d of departments" [value]="d">
-                        {{ d }}
-                      </option>
-                    </select>
-                  </div> -->
-                  <!-- Search Button -->
-                  <!-- <div class="flex flex-col min-w-[140px]">
-                    <label class="text-sm invisible mb-1">Search</label>
-                    <button
-                      (click)="filteredAdtReports()"
-                      [disabled]="!fromDate && !toDate && !selectedSpecialty"
-                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
-                    >
-                      Search
-                    </button>
-                  </div> -->
-                  <!-- Clear Button -->
-                  <!-- <button
-                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
-                    (click)="clearAdtSearch()"
-                  >
-                    Clear
-                  </button> -->
-                </div>
               </div>
               <!-- 📝 Report Count & No Data Message -->
-              <!-- <div
-                *ngIf="filteredPackageReports.length === 0"
+              <div
+                *ngIf="hasSearched && filteredPackageReports.length === 0"
                 class="text-center text-red-600 font-semibold p-6 text-xl"
-               >
+              >
                 🚫 No package status report records found.
-              </div> -->
+              </div>
               <p
-                *ngIf="filteredPackageReports.length > 0"
+                *ngIf="hasSearched && filteredPackageReports.length > 0"
                 class="text-sm text-gray-600 mb-3"
               >
                 package status reports data:
-                <strong>{{ filteredPackageReports.length }}</strong>
+                <strong>{{
+                  hasSearched && filteredPackageReports.length
+                }}</strong>
               </p>
-              <!-- <div
-                *ngIf="filteredPackageReports.length === 0"
+              <div
+                *ngIf="hasSearched && filteredPackageReports.length === 0"
                 class="text-red-600 font-medium mt-2"
               >
                 No records found for location:
                 <strong>{{ chosenLocation }}</strong>
-              </div> -->
-              <table class="w-full border border-collapse border-gray-300">
+              </div>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="filteredPackageReports.length > 0"
+              >
                 <thead class="bg-gray-200">
                   <tr>
                     <th>
@@ -1704,7 +2597,7 @@
                     <th class="border p-2">Package Name</th>
                     <th class="border p-2">Patient Name</th>
                     <th class="border p-2">Department</th>
-                    <th class="border p-2">Details</th>
+                    <th class="border p-2">BedType</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1885,7 +2778,7 @@
             </div>
             <div class="flex justify-end mt-6">
               <button
-                (click)="BackToadtAdmissionData()"
+                (click)="BackToIpDischargeData()"
                 class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
                 Cancel
@@ -1893,7 +2786,545 @@
             </div>
           </div>
         </div>
+        <!-- Company Wise Outstanding Report detail -->
+        <div
+          *ngIf="isCompanyOutstandingVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Company Wise Outstanding Report Data
+            </p>
+            <button
+              (click)="goBackToEightDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- 🔄 Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- 📥 Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      (click)="deleteSelectedCompanyOutstandingReports()"
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <!-- 🔍 Filters -->
+                <div class="flex flex-wrap gap-4 items-end">
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                    />
+                  </div>
 
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[140px]">
+                    <label class="text-sm invisible mb-1">Search</label>
+                    <button
+                      (click)="filterCompanyOutstandingReports()"
+                      [disabled]="!fromDate && !toDate"
+                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <button
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    (click)="clearCompanyOutstandingSearch()"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <!-- 📝 Report Count & No Data Message -->
+              <div
+                *ngIf="
+                  hasSearched && filteredCompanyOutstandingReports.length === 0
+                "
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Company Wise Outstanding records found.
+              </div>
+              <p
+                *ngIf="
+                  hasSearched && filteredCompanyOutstandingReports.length > 0
+                "
+                class="text-sm text-gray-600 mb-3"
+              >
+                Company Wise Outstanding reports data:
+                <strong>{{ filteredCompanyOutstandingReports.length }}</strong>
+              </p>
+              <div
+                *ngIf="
+                  hasSearched && filteredCompanyOutstandingReports.length === 0
+                "
+                class="text-red-600 font-medium mt-2"
+              >
+                No records found for location:
+                <strong>{{ chosenLocation }}</strong>
+              </div>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="
+                  hasSearched && filteredCompanyOutstandingReports.length > 0
+                "
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Corporate Name</th>
+                    <th class="p-2 border">Bill Amount</th>
+                    <th class="p-2 border">Outstanding Amount</th>
+                    <th class="p-2 border">Date Of Admission</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="
+                      let outstandingReport of filteredCompanyOutstandingReports
+                    "
+                  >
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="outstandingReport.isSelected"
+                      />
+                    </td>
+                    <td class="border p-2">{{ outstandingReport.UHID }}</td>
+                    <td class="border p-2">
+                      {{ outstandingReport["Patient Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ outstandingReport["Corporate Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ outstandingReport.BillAmount }}
+                    </td>
+                    <td class="border p-2">
+                      {{ outstandingReport["Outstanding till to date"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ outstandingReport["Date Of Admission"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ outstandingReport["H Location"] }}
+                    </td>
+                    <td class="px-4 py-2 border text-center">
+                      <div
+                        class="flex items-center justify-center gap-3 text-lg"
+                      >
+                        <button
+                          (click)="
+                            viewCompanyOutstandingFormData(outstandingReport)
+                          "
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- view company outstanding report details data -->
+        <div
+          *ngIf="companyOutstandingViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Company Outstanding Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p>
+                <strong>Corporate Name:</strong> {{ patient["Corporate Name"] }}
+              </p>
+              <p>
+                <strong>Company Type:</strong> {{ patient["Company Type"] }}
+              </p>
+              <p><strong>UHID:</strong> {{ patient.UHID }}</p>
+              <p><strong>IPNO:</strong> {{ patient.IPNO }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p>
+                <strong>Date Of Admission:</strong>
+                {{ patient["Date Of Admission"] }}
+              </p>
+              <p><strong>BillNo:</strong> {{ patient.BillNo }}</p>
+              <p><strong>Episode:</strong> {{ patient.Episode }}</p>
+              <p><strong>IP_Visit:</strong> {{ patient.IP_Visit }}</p>
+              <p><strong>BillDatetime:</strong> {{ patient.BillDatetime }}</p>
+              <p><strong>BillAmount:</strong> {{ patient.BillAmount }}</p>
+              <p>
+                <strong>DiscountAmount:</strong> {{ patient.DiscountAmount }}
+              </p>
+              <p><strong>Net Amount:</strong> {{ patient["Net Amount"] }}</p>
+              <p><strong>PatientAmount:</strong> {{ patient.PatientAmount }}</p>
+              <p><strong>CreditAmount:</strong> {{ patient.CreditAmount }}</p>
+              <p>
+                <strong>Received Amount till to date:</strong>
+                {{ patient["Received Amount till to date"] }}
+              </p>
+              <p>
+                <strong>TDS Amount till to date:</strong>
+                {{ patient["TDS Amount till to date"] }}
+              </p>
+              <p>
+                <strong>Discount Amount till to date:</strong>
+                {{ patient["Discount Amount till to date"] }}
+              </p>
+              <p>
+                <strong>Disallow Amount till to date:</strong>
+                {{ patient["Disallow Amount till to date"] }}
+              </p>
+              <p>
+                <strong>Total Received till to date:</strong>
+                {{ patient["Total Received till to date"] }}
+              </p>
+              <p>
+                <strong>Outstanding till to date:</strong>
+                {{ patient["Outstanding till to date"] }}
+              </p>
+              <p>
+                <strong>Total Received till today:</strong>
+                {{ patient["Total Received till today"] }}
+              </p>
+              <p>
+                <strong>Total deduction till today:</strong>
+                {{ patient["Total deduction till today"] }}
+              </p>
+              <p>
+                <strong>Total current outstanding:</strong>
+                {{ patient["Total current outstanding"] }}
+              </p>
+              <p><strong>CurrentStatus:</strong> {{ patient.CurrentStatus }}</p>
+              <p><strong>ClaimNo:</strong> {{ patient.ClaimNo }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToCompanyOutstandingData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- company outstanding ageing report details -->
+        <div
+          *ngIf="isCompanyOutstandingAgeingVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Company Outstanding Ageing Report Details
+            </p>
+            <button
+              (click)="goBackToEightDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- 🔄 Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- 📥 Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      (click)="deleteSelectedCompanyOutstandingAgeingReports()"
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <!-- 🔍 Filters -->
+                <div class="flex flex-wrap gap-4 items-end">
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[140px]">
+                    <label class="text-sm invisible mb-1">Search</label>
+                    <button
+                      (click)="filterCompanyOutstandingAgeingReports()"
+                      [disabled]="!fromDate && !toDate"
+                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <button
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    (click)="clearCompanyOutstandingAgeingSearch()"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <!-- 📝 Report Count & No Data Message -->
+              <div
+                *ngIf="
+                  hasSearched &&
+                  filteredCompanyOutstandingAgeingReports.length === 0
+                "
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Company Outstanding Ageing records found.
+              </div>
+              <p
+                *ngIf="filteredCompanyOutstandingAgeingReports.length > 0"
+                class="text-sm text-gray-600 mb-3"
+              >
+                Company Outstanding Ageing reports data:
+                <strong>{{
+                  filteredCompanyOutstandingAgeingReports.length
+                }}</strong>
+              </p>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="filteredCompanyOutstandingAgeingReports.length > 0"
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Company Name</th>
+                    <th class="p-2 border">Claim Amount</th>
+                    <th class="p-2 border">Outstanding Amount</th>
+                    <th class="p-2 border">Current Status</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="
+                      let ageingReport of filteredCompanyOutstandingAgeingReports
+                    "
+                  >
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="ageingReport.isSelected"
+                      />
+                    </td>
+                    <td class="border p-2">{{ ageingReport.UHId }}</td>
+                    <td class="border p-2">
+                      {{ ageingReport["Patient Name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ ageingReport["Company name"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ ageingReport["Claim amount"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ ageingReport["Outstanding amount"] }}
+                    </td>
+                    <td class="border p-2">
+                      {{ ageingReport["Current status"] }}
+                    </td>
+                    <td class="border p-2">{{ ageingReport["H Location"] }}</td>
+                    <td class="px-4 py-2 border text-center">
+                      <div
+                        class="flex items-center justify-center gap-3 text-lg"
+                      >
+                        <button
+                          (click)="
+                            viewCompanyOutstandingAgeingFormData(ageingReport)
+                          "
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- view company outstanding ageing data -->
+        <div
+          *ngIf="companyOutstandingAgeingViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Company Outstanding Ageing Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p><strong>UHId:</strong> {{ patient.UHId }}</p>
+              <p>
+                <strong>Patient Name:</strong> {{ patient["Patient Name"] }}
+              </p>
+              <p>
+                <strong>Company type:</strong> {{ patient["Company type"] }}
+              </p>
+              <p>
+                <strong>Company name:</strong> {{ patient["Company name"] }}
+              </p>
+              <p>
+                <strong>Rate Contract:</strong> {{ patient["Rate Contract"] }}
+              </p>
+              <p>
+                <strong>Covering letter no:</strong>
+                {{ patient["Covering letter no"] }}
+              </p>
+              <p><strong>BillNo:</strong> {{ patient.BillNo }}</p>
+              <p><strong>IP/ER no:</strong> {{ patient["IP/ER no"] }}</p>
+              <p><strong>Episode:</strong> {{ patient.Episode }}</p>
+              <p>
+                <strong>Claim amount:</strong> {{ patient["Claim amount"] }}
+              </p>
+              <p>
+                <strong>Outstanding amount:</strong>
+                {{ patient["Outstanding amount"] }}
+              </p>
+              <p>
+                <strong>Received amount:</strong>
+                {{ patient["Received amount"] }}
+              </p>
+              <p>
+                <strong>Current status:</strong> {{ patient["Current status"] }}
+              </p>
+              <p>
+                <strong>Claim raised on:</strong>
+                {{ patient["Claim raised on"] }}
+              </p>
+              <p><strong>Slots:</strong> {{ patient.Slots }}</p>
+              <p><strong>BillDate:</strong> {{ patient.BillDate }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToCompanyOutstandingAgeingData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
         <!-- side module list edit and view -->
         <div
           *ngIf="isSideModuleVisible"
@@ -2008,6 +3439,314 @@
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+        <!-- disallow report -->
+        <div
+          *ngIf="isDisallowReportVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Disallow Report Data
+            </p>
+            <button
+              (click)="goBackToEightDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4 items-end">
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >From Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="fromDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[160px]">
+                    <label class="text-sm font-medium text-gray-700 mb-1"
+                      >To Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control w-full px-3 py-1.5 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                      [(ngModel)]="toDate"
+                    />
+                  </div>
+
+                  <div class="flex flex-col min-w-[140px]">
+                    <label class="text-sm invisible mb-1">Search</label>
+                    <button
+                      (click)="filterDisallowReports()"
+                      [disabled]="!fromDate && !toDate"
+                      class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition disabled:opacity-50"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <button
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    (click)="clearDisallowSearch()"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <!-- Report Count & No Data Message -->
+              <div
+                *ngIf="hasSearched && filteredDisallowReports.length === 0"
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Disallow records found.
+              </div>
+              <p
+                *ngIf="filteredDisallowReports.length > 0"
+                class="text-sm text-gray-600 mb-3"
+              >
+                Disallow reports data:
+                <strong>{{ filteredDisallowReports.length }}</strong>
+              </p>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="filteredDisallowReports.length > 0"
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Company Name</th>
+                    <th class="p-2 border">Disallow Amount</th>
+                    <th class="p-2 border">Disallow Date</th>
+                    <th class="p-2 border">H Location</th>
+                    <th class="p-2 border">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let disallowReport of filteredDisallowReports">
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="disallowReport.isSelected"
+                      />
+                    </td>
+                    <td class="border p-2">{{ disallowReport.UHID }}</td>
+                    <td class="border p-2">{{ disallowReport["Patient Name"] }}</td>
+                    <td class="border p-2">{{ disallowReport["Company Name"] }}</td>
+                    <td class="border p-2">{{ disallowReport["Disallow Amount"] }}</td>
+                    <td class="border p-2">{{ disallowReport["Disallow Date"] }}</td>
+                    <td class="border p-2">{{ disallowReport["H Location"] }}</td>
+                    <td class="px-4 py-2 border text-center">
+                      <div class="flex items-center justify-center gap-3 text-lg">
+                        <button
+                          (click)="viewDisallowFormData(disallowReport)"
+                          class="text-gray-600 hover:text-gray-800"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- view disallow report data -->
+        <div
+          *ngIf="disallowViewVisible"
+          class="transition-all duration-300"
+          [ngClass]="{
+            'ml-64': isSidebarOpen,
+            'ml-16': !isSidebarOpen
+          }"
+        >
+          <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-red-700 mb-4">
+              Disallow Report Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <p><strong>UHID:</strong> {{ patient.UHID }}</p>
+              <p><strong>Patient Name:</strong> {{ patient["Patient Name"] }}</p>
+              <p><strong>Bill No:</strong> {{ patient["Bill No"] }}</p>
+              <p><strong>Bill Amount:</strong> {{ patient["Bill Amount"] }}</p>
+              <p><strong>Bill date:</strong> {{ patient["Bill date"] }}</p>
+              <p><strong>Claim Amount:</strong> {{ patient["Claim Amount"] }}</p>
+              <p><strong>Company Type:</strong> {{ patient["Company Type"] }}</p>
+              <p><strong>Covering letter no:</strong> {{ patient["Covering letter no"][""] }}</p>
+              <p><strong>Disallow Amount:</strong> {{ patient["Disallow Amount"] }}</p>
+              <p><strong>Discount Amount:</strong> {{ patient["Discount Amount"] }}</p>
+              <p><strong>Episode:</strong> {{ patient.Episode }}</p>
+              <p><strong>H Location:</strong> {{ patient["H Location"] }}</p>
+              <p><strong>IP/ER No:</strong> {{ patient["IP/ER No"][""] }}</p>
+              <p><strong>Rate Contract Name:</strong> {{ patient["Rate Contract Name"] }}</p>
+              <p><strong>Received Amount:</strong> {{ patient["Received Amount"] }}</p>
+              <p><strong>SI No:</strong> {{ patient["SI No"][""] }}</p>
+              <p><strong>Tds Amount:</strong> {{ patient["Tds Amount"] }}</p>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="BackToDisallowData()"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- expired patient report -->
+        <div
+          *ngIf="isExpiredPatientReportVisible"
+          class="transition-all duration-300 min-h-screen"
+          [ngClass]="{ 'ml-64': isSidebarOpen, 'ml-16': !isSidebarOpen }"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between p-2 bg-red-100 rounded-lg shadow-md mb-4"
+          >
+            <p class="text-lg font-bold text-red-800">
+              Expired Patient Report Data
+            </p>
+            <button
+              (click)="goBackToEightDashboard()"
+              class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+            >
+              Back
+            </button>
+          </div>
+          <!-- Fullscreen Table -->
+          <div class="w-full h-[calc(100vh-150px)]">
+            <div
+              class="w-full h-full bg-white p-4 rounded-lg shadow-md overflow-y-auto"
+            >
+              <div class="mb-4">
+                <!-- Header + Download Buttons in same row -->
+                <div class="flex items-center justify-between mb-2">
+                  <!-- Heading -->
+                  <h2 class="text-xl font-bold">Search Results</h2>
+                  <!-- Download Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      class="flex items-center gap-1 text-sm text-red-800 font-semibold bg-red-100 px-3 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button
+                      class="flex items-center gap-1 text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded hover:bg-green-200 transition"
+                    >
+                      <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button
+                      class="bg-red-800 text-white font-semibold py-1.5 px-4 rounded hover:bg-red-900 transition"
+                    >
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Report Count & No Data Message -->
+              <div
+                *ngIf="filteredExpiredPatientReports.length === 0"
+                class="text-center text-red-600 font-semibold p-6 text-xl"
+              >
+                🚫 No Expired Patient records found.
+              </div>
+              <p
+                *ngIf="filteredExpiredPatientReports.length > 0"
+                class="text-sm text-gray-600 mb-3"
+              >
+                Expired Patient reports data:
+                <strong>{{ filteredExpiredPatientReports.length }}</strong>
+              </p>
+              <table
+                class="w-full border border-collapse border-gray-300"
+                *ngIf="filteredExpiredPatientReports.length > 0"
+              >
+                <thead class="top-0 z-10 bg-red-100">
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectAll"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                    <th class="p-2 border">UHID</th>
+                    <th class="p-2 border">Patient Name</th>
+                    <th class="p-2 border">Age/Gender</th>
+                    <th class="p-2 border">Primary Doctor</th>
+                    <th class="p-2 border">Admit Date & Time</th>
+                    <th class="p-2 border">Expiry Date Time</th>
+                    <th class="p-2 border">H Location</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let expiredReport of filteredExpiredPatientReports">
+                    <td class="border p-2 text-center">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="expiredReport.isSelected"
+                      />
+                    </td>
+                    <td class="border p-2">{{ expiredReport.UHID }}</td>
+                    <td class="border p-2">{{ expiredReport.PatientName }}</td>
+                    <td class="border p-2">{{ expiredReport["Age/Gender"] }}</td>
+                    <td class="border p-2">{{ expiredReport["Primary Doctor"] }}</td>
+                    <td class="border p-2">{{ expiredReport["Admit Date & Time"] }}</td>
+                    <td class="border p-2">{{ expiredReport.ExpirydateTime }}</td>
+                    <td class="border p-2">{{ expiredReport["H Location"] }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

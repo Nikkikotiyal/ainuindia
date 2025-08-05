@@ -388,4 +388,63 @@ export class ApiService {
       reportIds,
     });
   }
+
+  getClaimReceivedAmount(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/claimed-received-amount`);
+  }
+
+  softDeleteClaimReceivedAmountReport(reportIds: string[]): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/soft-delete-received-amount/delete-many`,
+      {
+        reportIds,
+      }
+    );
+  }
+
+  getInsuranceCompanyReport(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/insurance-company-report`);
+  }
+
+  softDeleteCInsuranceCompanyReport(reportIds: string[]): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/soft-delete-insurance-company/delete-many`,
+      {
+        reportIds,
+      }
+    );
+  }
+
+  getCompanyOutstandingAgeingDetails(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/company-outstanding-report-details`);
+  }
+
+  softDeleteCompanyOutstandingReport(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/company-outstanding-report-details/delete-many`, {
+      reportIds,
+    });
+  }
+
+  getCompanyOutstandingReportDetails(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/company-outstanding-report-details`, {
+    });
+  }
+
+  getCompanyOutstandingAgeingReportDetails(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/company-outstanding-ageing-report-details`);
+  }
+
+  softDeleteCompanyOutstandingAgeingReportDetails(reportIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/company-outstanding-ageing-report-details/delete-many`, {
+      reportIds,
+    });
+  }
+
+  getDisallowReport(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/disallow-report`);
+  }
+
+  getExpiredPatientReport(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/expired-patient-report`);
+  }
 }
